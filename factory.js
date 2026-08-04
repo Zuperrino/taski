@@ -752,19 +752,39 @@ const SkillFactory = {
     return (this._role && this._role.think) || this._orphanThink || null;
   },
 
-  /* Живой текст ответа: копится в одном пузыре, пока идёт генерация. */
+  /* Живой текст ответа по мере генерации.
+
+     Роли отвечают служебным объектом JSON, и показывать его пользователю как
+     обычное сообщение нельзя — раньше в чат печатался сырой словарь, а следом
+     то же самое приходило ещё раз готовым сообщением. Поэтому поток копится в
+     свёрнутом блоке «черновой ответ»: видно, что генерация идёт, но экран не
+     засоряется. Готовый человеческий текст приходит отдельным событием message. */
   deltaBubble() {
     const holder = this._role || this;
     if (!holder.delta) {
-      holder.delta = this.el("div", { class: "sf-msg bot live" });
-      this.roleSteps().append(holder.delta);
+      const body = this.el("div", { class: "sf-think-body" });
+      const caret = this.el("span", { class: "caret", text: "▸" });
+      const count = this.el("span", { class: "sf-think-count", text: "" });
+      const head = this.el("div", { class: "sf-think-head draft" }, caret,
+        this.el("span", { class: "sf-think-label", text: "пишет ответ…" }), count);
+      const box = this.el("div", { class: "sf-think" }, head, body);
+      head.addEventListener("click", () => {
+        const open = box.classList.toggle("open");
+        caret.textContent = open ? "▾" : "▸";
+      });
+      this.roleSteps().append(box);
+      holder.delta = { box, body, head, count, chars: 0 };
     }
     return holder.delta;
   },
 
   closeLive() {
     const holder = this._role || this;
-    if (holder.delta) { holder.delta.classList.remove("live"); holder.delta = null; }
+    if (holder.delta) {
+      holder.delta.head.querySelector(".sf-think-label").textContent = "черновой ответ";
+      holder.delta.head.classList.add("done");
+      holder.delta = null;
+    }
     const think = this.currentThink();
     if (think) {
       think.head.classList.add("done");
@@ -918,10 +938,18 @@ const SkillFactory = {
         this.scroll();
         break;
       }
-      case "delta":
+      case "delta": {
         if (this._role) this._role.status.textContent = "пишет ответ";
-        this.deltaBubble().append(document.createTextNode(event.text));
+        const draft = this.deltaBubble();
+        draft.body.append(document.createTextNode(event.text));
+        draft.chars += event.text.length;
+        draft.count.textContent = draft.chars + " симв.";
         this.scroll();
+        break;
+      }
+      case "retry":
+        if (this._role) this._role.status.textContent = `повтор ${event.attempt}`;
+        this.pushStep(`${event.model} ответила сбоем, повторяю (попытка ${event.attempt})`, "switch");
         break;
       case "model_switch":
         this.closeLive();
@@ -940,7 +968,7 @@ const SkillFactory = {
         break;
       case "message":
         this.closeLive();
-        this.pushMsg("bot", event.text);
+        if ((event.text || "").trim()) this.pushMsg("bot", event.text);
         break;
       case "question":
         this.closeLive();
