@@ -165,6 +165,8 @@
 }
 #page-skills .sf-think-head:hover { background: var(--bg-hover); }
 #page-skills .sf-think-head.done { color: var(--muted); }
+#page-skills .sf-think-head.draft { color: var(--accent-text); }
+#page-skills .sf-think-head.draft.done { color: var(--muted); }
 #page-skills .sf-think-head .caret { font-size: 10px; }
 #page-skills .sf-think-count { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
 #page-skills .sf-think-body {
@@ -206,8 +208,9 @@
 }
 #page-skills .sf-stop.show { display: flex; }
 #page-skills .sf-stop:hover { color: #fff; background: var(--red); }
-#page-skills .sf-msg.bot.live::after {
-  content: "▌"; color: var(--accent-text); animation: sf-blink 1s steps(2) infinite;
+/* Пока роль пишет ответ, у заголовка её чернового блока мигает точка. */
+#page-skills .sf-think-head.draft:not(.done) .sf-think-label::after {
+  content: " ●"; animation: sf-blink 1s steps(2) infinite;
 }
 @keyframes sf-blink { 50% { opacity: 0; } }
 #page-skills .sf-step.stage { font-weight: 600; color: var(--text); }
