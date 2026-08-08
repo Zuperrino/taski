@@ -100,6 +100,10 @@ const SkillFactory = {
   /* Сводка критиков, уже сказанная в этом прогоне: отчёт пересобирается после
      каждой оценки и приносит её с собой снова. */
   _saidReview: "",
+  /* Держать ли ленту у низа и какое значение прокрутки выставили сами
+     (см. watchStick). Начинаем прилипшими: разговор читают с конца. */
+  _stick: true,
+  _autoTop: 0,
 
   /* Подсказка у кнопки публикации. Про Ctrl+S тут не сказано намеренно: клавиша
      сохраняет черновик, а запись в каталог стенда идёт только кнопкой. */
@@ -202,7 +206,10 @@ const SkillFactory = {
     if (!page || this._built) return;
     this._built = true;
     page.innerHTML = "";
-    page.append(this.buildSide(), this.buildMain());
+    // Корень вкладки держит ширины колонок: список — сосед рабочей области, а не
+    // её потомок, и переменная, объявленная внутри, до него бы не дошла.
+    this.els.page = page;
+    page.append(this.buildSide(), this.buildSideResizer(), this.buildMain());
     this.bindShortcuts();
     this.loadShowRaw();
     this.loadState();
@@ -219,10 +226,12 @@ const SkillFactory = {
       this.el("button", { text: "Черновики", onclick: () => this.switchList("drafts") }),
     );
     const list = this.el("div", { class: "sf-list" });
-    Object.assign(this.els, { search, listTabs: tabs, list });
-    return this.el("div", { class: "sf-side" },
+    const side = this.el("div", { class: "sf-side" },
       this.el("div", { class: "sf-side-head" }, search,
-        this.el("button", { class: "iconbtn", title: "Обновить список", text: "⟳", onclick: () => this.reloadList() })),
+        this.el("button", {
+          class: "iconbtn", title: "Перечитать каталог стенда и черновики",
+          "aria-label": "Обновить список", text: "⟳", onclick: () => this.reloadList(),
+        })),
       this.el("div", { class: "sf-newrow" },
         this.el("button", { class: "primary", text: "✨ Создать (AI)", title: "Описать задачу словами — агенты соберут скилл",
                             onclick: () => this.newAiDraft() })),
@@ -231,6 +240,19 @@ const SkillFactory = {
         this.el("button", { text: "+ Приём", onclick: () => this.newDraft("reference") })),
       tabs, list,
     );
+    Object.assign(this.els, { search, listTabs: tabs, list, side });
+    return side;
+  },
+
+  /* Ползунок ширины списка. Отдельным узлом между списком и рабочей областью:
+     список тоже приходится подгонять — в одних каталогах имена короткие, в
+     других не помещаются вовсе. */
+  buildSideResizer() {
+    const node = this.el("div", {
+      class: "sf-resizer sf-resizer-side", title: "Потянуть — ширина списка скиллов",
+    });
+    this.els.sideResizer = node;
+    return node;
   },
 
   buildMain() {
@@ -239,7 +261,10 @@ const SkillFactory = {
       oninput: (e) => { this.state.filename = e.target.value; this.markDirty(); },
     });
     const modelSelect = this.el("select", {
-      class: "sf-model", title: "Модель для агентов",
+      class: "sf-model",
+      title: "Какой моделью работают агенты. Меняйте, если модель отказывает "
+             + "по нагрузке или отвечает не тем, что просили",
+      "aria-label": "Модель для агентов",
       onchange: (e) => { this.state.model = e.target.value; },
     });
     /* Тумблер разработчика: сырой ответ модели это служебный JSON, обычному
@@ -248,7 +273,9 @@ const SkillFactory = {
       type: "checkbox", onchange: (e) => this.setShowRaw(e.target.checked),
     });
     const rawToggle = this.el("label", {
-      class: "sf-rawtoggle", title: "Показывать в карточках ролей кнопку «сырой ответ»",
+      class: "sf-rawtoggle",
+      title: "Показывать в карточках ролей кнопку «сырой ответ». Нужно при "
+             + "разборе того, почему роль ответила именно так",
     }, rawCheck, this.el("span", { text: "Сырые ответы" }));
     const banner = this.el("div", { class: "sf-banner" });
 
@@ -261,33 +288,46 @@ const SkillFactory = {
     });
     const gate = this.el("span", { class: "sf-gate" });
     const saved = this.el("span", { class: "sf-saved", title: "Время последней записи черновика" });
-    /* Редкое — под «⋯»: выбор модели, тумблер разработчика, выгрузка и удаление
-       нужны не в каждом сеансе, а место в тулбаре занимали постоянно, оттесняя
-       главное — проверку и публикацию. */
-    const more = this.el("div", { class: "sf-more" },
-      modelSelect, rawToggle,
-      btn("Скачать", { class: "sf-act", onclick: () => this.download(false) }),
-      btn("Архив", { class: "sf-act", title: "Скилл, отчёт проверки и история чата", onclick: () => this.download(true) }),
-      btn("Удалить", { class: "sf-del sf-act", onclick: () => this.remove() }),
-    );
-    const moreBtn = btn("⋯", {
-      class: "sf-more-btn", title: "Модель, выгрузка и прочее",
-      onclick: (e) => { e.stopPropagation(); more.classList.toggle("on"); },
-    });
-    document.addEventListener("click", (e) => {
-      if (more.classList.contains("on") && !more.contains(e.target)) more.classList.remove("on");
-    });
 
+    /* Всё, что можно сделать со скиллом, стоит на самой панели: пряталось под
+       «⋯» именно то, что ищут глазами, а лишний клик за выгрузкой или сменой
+       модели ничего не экономил. Подсказка у каждой кнопки говорит, что она
+       делает и когда её звать. */
     const toolbar = this.el("div", { class: "sf-toolbar" },
       this.el("span", { class: "sf-dot", title: "Есть несохранённые правки", text: "●" }), filename, saved,
-      btn("Проверить", { class: "sf-act", title: "Статика, прогон на данных и ревью критиков",
-                         onclick: () => this.check(true) }),
-      btn("Быстро", { class: "sf-act", title: "Только статика и прогон, без обращения к модели",
-                      onclick: () => this.check(false) }),
+      btn("Проверить", {
+        class: "sf-act",
+        title: "Полная проверка: статика, прогон запросов на данных и три критика. "
+               + "Это она открывает публикацию",
+        onclick: () => this.check(true),
+      }),
+      btn("Быстро", {
+        class: "sf-act",
+        title: "Статика и прогон на данных без критиков. Когда правите по мелочи "
+               + "и ждать модель не хочется",
+        onclick: () => this.check(false),
+      }),
       this.buildEvalPop(),
       this.el("span", { class: "sf-spacer" }),
+      modelSelect, rawToggle,
+      btn("Скачать", {
+        class: "sf-act",
+        title: "Сохранить файл скилла на диск. Когда нужно унести его руками "
+               + "или положить в репозиторий",
+        onclick: () => this.download(false),
+      }),
+      btn("Архив", {
+        class: "sf-act",
+        title: "Скилл, отчёт проверки и весь разговор одним архивом. Когда "
+               + "нужно показать кому-то, как получился этот результат",
+        onclick: () => this.download(true),
+      }),
+      btn("Удалить", {
+        class: "sf-del sf-act",
+        title: "Убрать черновик. Опубликованный скилл каталога это не трогает",
+        onclick: () => this.remove(),
+      }),
       publishBtn, gate,
-      this.el("div", { class: "sf-more-wrap" }, moreBtn, more),
     );
 
     const progress = this.el("div", { class: "sf-progress" });
@@ -299,8 +339,8 @@ const SkillFactory = {
         })),
       this.el("span", { class: "sf-spacer" }),
       this.el("button", {
-        class: "sf-chat-toggle", title: "Свернуть или показать разговор с агентами",
-        text: "Разговор", onclick: () => this.toggleChat(),
+        class: "sf-edit-toggle", title: "Свернуть редактор в корешок и отдать место разговору",
+        text: "Свернуть", onclick: () => this.toggleEditor(),
       }));
 
     const form = this.el("div", { class: "sf-pane on" }, this.el("div", { class: "sf-form" }));
@@ -313,52 +353,94 @@ const SkillFactory = {
     const report = this.el("div", { class: "sf-pane" }, this.el("div", { class: "sf-report" }));
     const diff = this.el("div", { class: "sf-pane" }, this.buildDiff());
 
-    /* Разговор с агентами — не режим наравне с текстом, а вторая половина
-       работы: человек правит скилл и одновременно видит, что говорят роли.
-       Поэтому чат вынесен в постоянную колонку справа, а переключаются только
-       представления самого скилла. Обёртки sf-pane у него нет намеренно: эта
-       обёртка прячется, пока ей не включат режим, а разговор виден всегда. */
-    const resizer = this.el("div", { class: "sf-resizer", title: "Потянуть; двойной клик — свернуть" });
+    /* Разговор с агентами стоит в середине и занимает больше всех места: в нём
+       проходит почти вся работа, а карточки ролей и мнения совета широкие.
+       Редактор скилла ушёл вбок постоянной колонкой заданной ширины — к сырому
+       тексту, форме, отчёту и диффу обращаются наездами. Обёртки sf-pane у
+       разговора нет намеренно: она прячется, пока ей не включат режим, а
+       разговор виден всегда.
+
+       Вкладки представлений переехали внутрь колонки редактора: они относятся
+       только к ней, а над разговором висели бы ни к чему. */
+    const resizer = this.el("div", {
+      class: "sf-resizer sf-resizer-edit", title: "Потянуть; двойной клик — свернуть редактор",
+    });
     const chatCol = this.el("div", { class: "sf-chat-col" }, this.buildChat());
-    const split = this.el("div", { class: "sf-split" },
-      this.el("div", { class: "sf-body" }, form, text, report, diff), resizer, chatCol);
+    const body = this.el("div", { class: "sf-body" },
+      modes, this.el("div", { class: "sf-panes" }, form, text, report, diff));
+    const split = this.el("div", { class: "sf-split" }, chatCol, resizer, body);
 
     Object.assign(this.els, {
       filename, saved, modelSelect, rawCheck, banner, toolbar, modes, progress, publishBtn, gate,
-      form: form.firstChild, editor, report: report.firstChild, split, chatCol, resizer,
+      form: form.firstChild, editor, report: report.firstChild, split, chatCol, resizer, body,
       panes: { form, text, report, diff },
-      main: this.el("div", { class: "sf-main" }, toolbar, banner, progress, modes, split),
+      main: this.el("div", { class: "sf-main" }, toolbar, banner, progress, split),
     });
     this.initSplit();
     return this.els.main;
   },
 
-  /* ---------- колонка разговора ----------
-     Ширина и свёрнутость переживают перезагрузку: человек подгоняет их под свой
-     монитор один раз. Свёрнутая колонка остаётся корешком, а не исчезает: иначе
-     непонятно, куда делся разговор и как его вернуть. */
-  CHAT_MIN: 300,
-  CHAT_MAX: 560,
-  CHAT_KEY: "heimdall.factory.chat",
+  /* ---------- ширины колонок ----------
+     Разговор в середине забирает всё, что не заняли соседи, поэтому тянутся
+     именно они: список слева и редактор справа. Обе ширины переживают
+     перезагрузку — человек подгоняет их под свой монитор один раз.
+
+     Пределы широкие намеренно. Раньше у колонки разговора стоял потолок в
+     560 пикселей, и ползунок на большом мониторе почти не двигался: место было,
+     а взять его было нельзя. */
+  SIDE_MIN: 170,
+  SIDE_MAX: 560,
+  EDIT_MIN: 320,
+  EDIT_MAX: 1100,
+  CHAT_MIN: 380,
+  LAYOUT_KEY: "heimdall.factory.layout",
+  OLD_LAYOUT_KEY: "heimdall.factory.chat",
+
+  clamp(value, min, max) { return Math.min(max, Math.max(min, value)); },
 
   initSplit() {
     let saved = {};
-    try { saved = JSON.parse(localStorage.getItem(this.CHAT_KEY) || "{}"); } catch (_) { saved = {}; }
-    if (saved.width) this.els.split.style.setProperty("--sf-chat-w", saved.width);
-    if (saved.collapsed) this.els.split.classList.add("chat-collapsed");
+    try { saved = JSON.parse(localStorage.getItem(this.LAYOUT_KEY) || "{}"); } catch (_) { saved = {}; }
+    /* Старый ключ хранил ширину разговора и его свёрнутость. Смысл у обоих
+       полей теперь другой, перенести их нельзя — поэтому просто убираем, чтобы
+       не лежал мусор. */
+    try { localStorage.removeItem(this.OLD_LAYOUT_KEY); } catch (_) { /* приватный режим */ }
 
-    this.els.resizer.addEventListener("mousedown", (e) => {
+    // Ширины клэмпим при чтении: сохранённые с широкого монитора значения на
+    // узком раздавили бы разговор до нечитаемого.
+    this.setWidth("--sf-side-w", this.clamp(Number(saved.side) || 290, this.SIDE_MIN, this.SIDE_MAX));
+    this.setWidth("--sf-edit-w", this.clamp(Number(saved.edit) || 520, this.EDIT_MIN, this.EDIT_MAX));
+    if (saved.editCollapsed) this.els.split.classList.add("edit-collapsed");
+
+    this.dragWidth(this.els.sideResizer, "--sf-side-w", () => this.els.side, 1,
+                   this.SIDE_MIN, this.SIDE_MAX);
+    this.dragWidth(this.els.resizer, "--sf-edit-w", () => this.els.body, -1,
+                   this.EDIT_MIN, this.EDIT_MAX, () => this.editorHidden());
+
+    this.els.resizer.addEventListener("dblclick", () => this.toggleEditor());
+    this.els.body.addEventListener("click", (e) => {
+      // По корешку клик разворачивает: свёрнутая колонка сама себе кнопка.
+      if (this.editorHidden() && !e.target.closest("button")) this.openEditor();
+    });
+  },
+
+  setWidth(name, px) { this.els.page.style.setProperty(name, px + "px"); },
+
+  /* Один обработчик на оба ползунка. Знак говорит, в какую сторону мышь
+     расширяет колонку: список растёт вправо, редактор — влево. */
+  dragWidth(handle, name, target, sign, min, max, blocked) {
+    if (!handle) return;
+    handle.addEventListener("mousedown", (e) => {
       e.preventDefault();
-      if (this.chatHidden()) return;
-      this.els.resizer.classList.add("dragging");
+      if (blocked && blocked()) return;
+      handle.classList.add("dragging");
       const startX = e.clientX;
-      const startW = this.els.chatCol.getBoundingClientRect().width;
+      const startW = target().getBoundingClientRect().width;
       const move = (ev) => {
-        const width = Math.min(this.CHAT_MAX, Math.max(this.CHAT_MIN, startW - (ev.clientX - startX)));
-        this.els.split.style.setProperty("--sf-chat-w", width + "px");
+        this.setWidth(name, this.clamp(startW + sign * (ev.clientX - startX), min, max));
       };
       const up = () => {
-        this.els.resizer.classList.remove("dragging");
+        handle.classList.remove("dragging");
         window.removeEventListener("mousemove", move);
         window.removeEventListener("mouseup", up);
         this.saveSplit();
@@ -366,33 +448,37 @@ const SkillFactory = {
       window.addEventListener("mousemove", move);
       window.addEventListener("mouseup", up);
     });
-    this.els.resizer.addEventListener("dblclick", () => this.toggleChat());
-    this.els.chatCol.addEventListener("click", (e) => {
-      // По корешку клик разворачивает: свёрнутая колонка сама себе кнопка.
-      if (this.chatHidden() && !e.target.closest("button")) this.openChat();
-    });
   },
 
-  chatHidden() { return this.els.split.classList.contains("chat-collapsed"); },
+  editorHidden() { return this.els.split.classList.contains("edit-collapsed"); },
 
-  toggleChat() {
-    this.els.split.classList.toggle("chat-collapsed");
+  toggleEditor() {
+    this.els.split.classList.toggle("edit-collapsed");
     this.saveSplit();
   },
 
+  openEditor() {
+    if (!this.editorHidden()) return;
+    this.els.split.classList.remove("edit-collapsed");
+    this.saveSplit();
+  },
+
+  /* Имя осталось прежним: его зовут отовсюду, где работа возвращает внимание к
+     разговору. Смысл теперь один — прилипнуть к концу ленты и показать его.
+     Прятать разговор больше нечем: он в середине и виден всегда. */
   openChat() {
-    if (!this.chatHidden()) return;
-    this.els.split.classList.remove("chat-collapsed");
-    this.saveSplit();
+    this.setStick(true);
     this.scroll();
   },
 
   saveSplit() {
+    const style = this.els.page.style;
     const value = {
-      width: this.els.split.style.getPropertyValue("--sf-chat-w"),
-      collapsed: this.chatHidden(),
+      side: parseInt(style.getPropertyValue("--sf-side-w"), 10) || 290,
+      edit: parseInt(style.getPropertyValue("--sf-edit-w"), 10) || 520,
+      editCollapsed: this.editorHidden(),
     };
-    try { localStorage.setItem(this.CHAT_KEY, JSON.stringify(value)); } catch (_) { /* приватный режим */ }
+    try { localStorage.setItem(this.LAYOUT_KEY, JSON.stringify(value)); } catch (_) { /* приватный режим */ }
   },
 
   buildChat() {
@@ -408,7 +494,15 @@ const SkillFactory = {
     const planBox = this.el("div", { class: "sf-plan" });
     Object.assign(this.els, { trustDot, trustText, chatBusy: busy, planBox });
     try { this._planOpen = localStorage.getItem("heimdall.factory.plan") === "1"; } catch (_) { this._planOpen = false; }
-    const log = this.el("div", { class: "sf-log" });
+    /* Лента живёт под aria-live: реплики агентов приходят потоком, и без этого
+       читающая программа не проговаривает ничего до конца работы. */
+    const log = this.el("div", { class: "sf-log", "aria-live": "polite", "aria-relevant": "additions" });
+    this.watchStick(log);
+    const jump = this.el("button", {
+      class: "sf-jump", text: "↓ к последним", title: "Вернуться к концу разговора",
+      onclick: () => { this._stick = true; this.scroll(); },
+    });
+    Object.assign(this.els, { jump });
     const input = this.el("textarea", {
       placeholder: "Опишите задачу или скажите, что улучшить. Enter — отправить, Shift+Enter — перенос строки.",
       onkeydown: (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); this.send(); } },
@@ -426,7 +520,8 @@ const SkillFactory = {
       this.el("option", { value: "create", text: "Сборка с нуля" }),
       this.el("option", { value: "improve", text: "Улучшение" }));
     Object.assign(this.els, { log, input, send, stop, flow });
-    return this.el("div", { class: "sf-chat" }, head, planBox, log,
+    return this.el("div", { class: "sf-chat" }, head, planBox,
+      this.el("div", { class: "sf-log-wrap" }, log, this.els.jump),
       this.el("div", { class: "sf-composer" }, input,
         this.el("div", { class: "sf-composer-btns" }, flow, send, stop)));
   },
@@ -670,11 +765,11 @@ const SkillFactory = {
     this.els.banner.textContent = "";
   },
 
-  /* То же самое сообщение уже стоит в ленте чата: баннером его повторяем, только
-     когда лента не на экране. Иначе один сбой виден дважды. */
-  bannerAside(kind, text) {
-    if (this.chatHidden()) this.banner(kind, text);
-  },
+  /* Раньше то же сообщение дублировалось баннером, когда разговор был свёрнут.
+     Теперь разговор стоит в середине и виден всегда, поэтому дубля нет: один
+     сбой — одна строка в ленте. Вызовы оставлены на месте, чтобы точки, где
+     сообщение считается важным, не потерялись. */
+  bannerAside(_kind, _text) {},
 
   /* ---------- список слева ---------- */
   switchList(tab) {
@@ -979,12 +1074,15 @@ const SkillFactory = {
 
   switchMode(mode) {
     /* Черновики, сохранённые до того, как разговор стал колонкой, помнят режим
-       «чат». Показывать в этом случае нечего — открываем форму и разворачиваем
-       колонку: человек хотел видеть именно разговор. */
+       «чат». Показывать в этом случае нечего — открываем форму: разговор и так
+       на экране. */
     if (!this.els.panes[mode]) {
       this.openChat();
       mode = "form";
     }
+    // Переключение представления бессмысленно при свёрнутом редакторе: кнопки
+    // «Открыть отчёт» и переходы к месту замечания ведут именно сюда.
+    this.openEditor();
     this.state.mode = mode;
     [...this.els.modes.children].forEach((b) => b.classList.toggle("on", b.dataset.mode === mode));
     for (const [id, pane] of Object.entries(this.els.panes)) pane.classList.toggle("on", id === mode);
@@ -1434,6 +1532,14 @@ const SkillFactory = {
       return;
     }
     host.append(this.el("div", { class: "sf-group", text: "Замечания" }));
+    /* Разом чинить можно и отсюда: список в отчёте полный, а по одному его
+       разбирать — столько же прогонов, сколько замечаний. */
+    host.append(this.el("div", { class: "sf-report-act" },
+      this.el("button", {
+        class: "small primary sf-act", text: `Починить эти находки (${issues.length})`,
+        title: "Отметить, что именно чинить, и запустить правку с перепроверкой",
+        onclick: () => this.openFixPicker(issues, "Что чинить из отчёта проверки"),
+      })));
     const titles = { error: "Ошибка", warning: "Предупреждение", advice: "Совет" };
     for (const issue of issues) {
       /* Замечание называет место (поле формы, имя колонки, «прогон»), но найти
@@ -1556,7 +1662,16 @@ const SkillFactory = {
      а разбор целиком остаётся в отчёте. */
   showVerdicts() {
     if (this.state.judgement) this.els.log.append(this.judgeCard(this.state.judgement));
-    if (this.state.councilReport) this.els.log.append(this.councilCard(this.state.councilReport));
+    if (this.state.councilReport) {
+      /* Совет возвращаем целиком, а не одной карточкой свода: мнения участников
+         лежат в вердикте, и без них от совета оставался только итог, под
+         которым непонятно, кто и что сказал. */
+      const box = this.councilBox();
+      this.councilLineup(this.state.councilReport.models);
+      this.sayCouncil(this.state.councilReport);
+      box.digest.append(this.councilCard(this.state.councilReport));
+      this._councilBox = null;
+    }
     this.scroll();
   },
 
@@ -1598,7 +1713,13 @@ const SkillFactory = {
     });
   },
 
-  judgeCounts(lines) {
+  /* Фразу счёта складывает сервер и кладёт в вердикт полем headline: раньше её
+     собирали и здесь, и там, и два счёта об одном и том же расходились
+     формулировкой. Свой расчёт остаётся запасным — вердикт мог прийти от старой
+     сборки, лежащей в черновике. */
+  judgeCounts(lines, data) {
+    const ready = String((data && data.headline) || "");
+    if (ready) return ready.replace(/^Сверка с постановкой: /, "");
     const counts = { done: 0, missed: 0, twisted: 0, unclear: 0 };
     for (const line of lines) counts[line.status] += 1;
     return `выполнено ${counts.done} · искажено ${counts.twisted} · не выполнено ${counts.missed}`;
@@ -1635,7 +1756,7 @@ const SkillFactory = {
     const box = this.el("div", { class: "sf-judge" });
     box.append(this.el("div", { class: "sf-judge-head" },
       this.el("span", { class: "sf-judge-counts",
-                        text: lines.length ? this.judgeCounts(lines) : "сверять было нечего" }),
+                        text: lines.length ? this.judgeCounts(lines, data) : "сверять было нечего" }),
       this.JUDGE_VERDICT_WORDS[verdict]
         ? this.el("span", { class: "sf-council-verdict", text: this.JUDGE_VERDICT_WORDS[verdict] }) : null,
       data && data.llm_model ? this.el("span", { class: "sf-say-model", text: data.llm_model }) : null));
@@ -1661,15 +1782,31 @@ const SkillFactory = {
   judgeCard(data) {
     const lines = this.judgeLines(data);
     const bad = lines.filter((line) => line.status !== "done");
+    const mine = this.evalIssues(data, "судья");
+    const act = this.el("div", { class: "sf-evalcard-act" });
+    if (mine.length) {
+      act.append(this.el("button", {
+        class: "small primary sf-act", text: `Починить эти находки (${mine.length})`,
+        title: "Отметить, что именно чинить, и запустить правку с перепроверкой",
+        onclick: () => this.openFixPicker(mine, "Что чинить из сверки с постановкой"),
+      }));
+    }
+    // В отчёт зовём, только если там таблица целиком: когда всё выполнено или
+    // всё уже показано здесь, идти туда незачем.
+    if (lines.length > bad.length) {
+      act.append(this.el("button", {
+        class: "small sf-evalcard-go", text: "Вся таблица сверки в отчёте",
+        onclick: () => this.switchMode("report"),
+      }));
+    }
     return this.el("div", { class: "sf-evalcard judge" },
       this.el("div", { class: "sf-evalcard-head" },
         this.el("span", { text: "🎯 Сверка с постановкой" }),
         data && data.llm_model ? this.el("span", { class: "sf-say-model", text: data.llm_model }) : null),
       this.el("div", { class: "sf-evalcard-line",
-                       text: lines.length ? this.judgeCounts(lines) : "сверять было не с чем" }),
+                       text: lines.length ? this.judgeCounts(lines, data) : "сверять было не с чем" }),
       bad.length ? this.judgeTable(bad) : null,
-      this.el("button", { class: "small sf-evalcard-go", text: "Открыть отчёт",
-                          onclick: () => this.switchMode("report") }));
+      act.children.length ? act : null);
   },
 
   /* ---------- совет моделей ----------
@@ -1711,13 +1848,19 @@ const SkillFactory = {
   /* Сколько мнений собралось. Кворум важен сам по себе: свод по двум ответившим
      из пяти — это не мнение совета, и молчать об этом нельзя. */
   councilQuorum(data, views) {
+    const short = data ? data.quorum_met === false : false;
+    const ready = String((data && data.headline) || "");
+    if (ready) {
+      // Признак неполного кворума уже вписан в готовую фразу, второй раз его
+      // дописывать нельзя.
+      return { text: ready.replace(/^Совет моделей: /, ""), short, full: true };
+    }
     const answered = Number((data && data.answered) || 0);
     const asked = ((data && data.models) || []).length || views.length;
     const quorum = Number((data && data.quorum) || 0);
     const parts = [`ответили ${answered} из ${asked}`];
     if (quorum) parts.push(`кворум ${quorum}`);
-    const short = data ? data.quorum_met === false : false;
-    return { text: parts.join(", "), short };
+    return { text: parts.join(", "), short, full: false };
   },
 
   councilBlock(data) {
@@ -1733,14 +1876,15 @@ const SkillFactory = {
     if (digest) {
       box.append(this.el("div", { class: "sf-council-sum" },
         this.el("div", { class: "sf-council-sum-head" },
-          this.el("span", { text: "Свод" }),
+          this.el("span", { text: "Свод мнений" }),
           digest.verdict ? this.el("span", { class: "sf-council-verdict", text: digest.verdict }) : null,
           digest.model ? this.el("span", { class: "sf-say-model", text: digest.model }) : null),
         digest.text ? this.el("div", { class: "sf-council-sum-text", text: digest.text }) : null,
         ...digest.actions.map((item) => this.el("div", { class: "sf-council-action", text: "— " + item }))));
     }
     box.append(this.el("div", { class: "sf-council-quorum" + (quorum.short ? " warn" : ""),
-      text: quorum.short ? quorum.text + ": кворум не набран, свод неполон" : quorum.text }));
+      text: quorum.short && !quorum.full
+        ? quorum.text + ": кворум не набран, свод неполон" : quorum.text }));
     for (const view of views) {
       box.append(this.el("div", { class: "sf-council-op" + (view.silent ? " silent" : "") },
         this.el("div", { class: "sf-council-op-head" },
@@ -1759,19 +1903,46 @@ const SkillFactory = {
     return box;
   },
 
+  /* Итог совета в ленте. Он тут единственный: раньше рядом стояли и эта
+     карточка, и та же мысль репликой агента, и третий раз всё это лежало в
+     отчёте. Теперь карточка — вывод, а отчёт открывается, только когда в нём
+     правда есть что смотреть сверх сказанного.
+
+     Подписи разведены: «Совет моделей» — это этап, внутри которого высказались
+     участники, а «Свод мнений» — то, что сделал из их мнений сводчик. Одно имя
+     на двоих читалось как повтор одного и того же. */
   councilCard(data) {
     const views = this.councilViews(data);
     const digest = this.councilDigest(data);
+    const silent = views.filter((view) => view.silent).length;
+    const mine = this.evalIssues(data, "совет");
+    const act = this.el("div", { class: "sf-evalcard-act" });
+    if (mine.length) {
+      act.append(this.el("button", {
+        class: "small primary sf-act", text: `Починить эти находки (${mine.length})`,
+        title: "Отметить, что именно чинить, и запустить правку с перепроверкой",
+        onclick: () => this.openFixPicker(mine, "Что чинить из замечаний совета"),
+      }));
+    }
+    // Кнопка в отчёт нужна, только когда там есть непоказанное: мнения
+    // участников уже стоят в ленте выше.
+    if (silent || !digest) {
+      act.append(this.el("button", {
+        class: "small sf-evalcard-go", text: "Разбор в отчёте",
+        onclick: () => this.switchMode("report"),
+      }));
+    }
     return this.el("div", { class: "sf-evalcard council" },
       this.el("div", { class: "sf-evalcard-head" },
-        this.el("span", { text: "👥 Совет моделей" }),
+        this.el("span", { text: "🧾 Свод мнений" }),
         digest && digest.verdict
           ? this.el("span", { class: "sf-council-verdict", text: digest.verdict }) : null,
         digest && digest.model ? this.el("span", { class: "sf-say-model", text: digest.model }) : null),
       this.el("div", { class: "sf-evalcard-line", text: this.councilQuorum(data, views).text }),
       digest && digest.text ? this.el("div", { class: "sf-council-sum-text", text: digest.text }) : null,
-      this.el("button", { class: "small sf-evalcard-go", text: "Открыть отчёт",
-                          onclick: () => this.switchMode("report") }));
+      ...digest ? digest.actions.map(
+        (item) => this.el("div", { class: "sf-council-action", text: "— " + item })) : [],
+      act.children.length ? act : null);
   },
 
   /* Места, к которым замечание относится, но показать их негде: прогон и файл
@@ -1899,7 +2070,7 @@ const SkillFactory = {
     scout: "Разведчик каталога", author: "Автор", fixer: "Автор",
     critic: "Критик", interviewer: "Интервьюер", judge: "Судья",
     council: "Участник совета", councilor: "Участник совета", council_member: "Участник совета",
-    council_judge: "Свод совета", council_summary: "Свод совета", summarizer: "Свод совета",
+    council_judge: "Свод мнений", council_summary: "Свод мнений", summarizer: "Свод мнений",
   },
 
   /* extra — узел, который встаёт в реплику под текстом: так роль, переписавшая
@@ -1913,7 +2084,8 @@ const SkillFactory = {
        обсуждение читалось как один сплошной журнал. */
     const seat = this.isCouncilRole(role) ? this.councilSeat(model || title) : "";
     const node = this.el("div", { class: "sf-say role-" + role + seat },
-      this.el("span", { class: "sf-say-icon", text: this.ROLE_ICONS[role] || "•" }),
+      this.el("span", { class: "sf-say-icon", "aria-hidden": "true",
+                        text: this.ROLE_ICONS[role] || "•" }),
       this.el("div", { class: "sf-say-body" },
         this.el("div", { class: "sf-say-who" },
           this.el("span", { text: title || this.SAY_TITLES[role] || role }),
@@ -2023,7 +2195,7 @@ const SkillFactory = {
     if (total > this.ISSUES_IN_CHAT) {
       box.append(this.el("button", {
         class: "small sf-found-all",
-        text: `Показать все замечания (${total}) в отчёте`,
+        text: `Все замечания (${total}) в отчёте`,
         onclick: () => this.switchMode("report"),
       }));
     }
@@ -2096,10 +2268,44 @@ const SkillFactory = {
     this.bannerAside(warn ? "warn" : "info", text);
   },
 
+  /* ---------- прилипание ленты к низу ----------
+     Пока роль думает, лента дописывается десятками раз в секунду, и на каждый
+     кадр звалась прокрутка. Решение «прокручивать, если человек и так у низа»
+     считалось заново каждый раз, а один щелчок колеса меньше порога — поэтому
+     лента возвращалась к низу быстрее, чем человек успевал отпустить колесо, и
+     читать размышления было невозможно.
+
+     Теперь намерение запоминается. Свою же прокрутку узнаём по значению,
+     которое сами и выставили: рост содержимого события прокрутки не создаёт,
+     поэтому всё, что не совпало, сделал человек. */
+  watchStick(box) {
+    box.addEventListener("scroll", () => {
+      if (box.scrollTop === this._autoTop) return;
+      const gap = box.scrollHeight - box.scrollTop - box.clientHeight;
+      this.setStick(gap < 24);
+    });
+  },
+
+  setStick(on) {
+    if (this._stick === on) return;
+    this._stick = on;
+    if (this.els.jump) this.els.jump.classList.toggle("show", !on);
+  },
+
+  /* То же для собственного блока роли: он скроллится сам и своей памятью. */
+  watchBlockStick(block) {
+    block.body.addEventListener("scroll", () => {
+      if (block.body.scrollTop === block.autoTop) return;
+      const gap = block.body.scrollHeight - block.body.scrollTop - block.body.clientHeight;
+      block.stick = gap < 24;
+    });
+  },
+
   scroll() {
-    /* Не дёргаем прокрутку, если человек сам отлистал вверх читать размышления. */
     const log = this.els.log;
-    if (log.scrollHeight - log.scrollTop - log.clientHeight < 120) log.scrollTop = log.scrollHeight;
+    if (!log || !this._stick) return;
+    log.scrollTop = log.scrollHeight;
+    this._autoTop = log.scrollTop;
   },
 
   /* ---------- карточка роли ----------
@@ -2191,13 +2397,13 @@ const SkillFactory = {
     const known = this._roles.get(key);
     if (known) return known;
 
-    const icon = this.ROLE_ICONS[event.role] || "•";
+    const icon = this.ROLE_ICONS[event.role] || "•";  // украшение: подпись роли рядом словами
     const model = this.el("span", { class: "sf-role-model", text: event.model || "модель по умолчанию" });
     const timer = this.el("span", { class: "sf-role-time", text: "0 с" });
     const status = this.el("span", { class: "sf-role-status", text: "работает" });
     const live = this.el("span", { class: "sf-role-live" });
     const head = this.el("div", { class: "sf-role-head" },
-      this.el("span", { class: "sf-role-icon", text: icon }),
+      this.el("span", { class: "sf-role-icon", "aria-hidden": "true", text: icon }),
       this.el("span", { class: "sf-role-title", text: event.role_title || event.role }),
       model, live, this.el("span", { class: "sf-spacer" }), timer, status);
     const steps = this.el("div", { class: "sf-role-steps" });
@@ -2289,13 +2495,15 @@ const SkillFactory = {
     head.addEventListener("click", () => {
       const open = box.classList.toggle("open");
       caret.textContent = open ? "▾" : "▸";
-      if (open) body.scrollTop = body.scrollHeight;
+      // Раскрыли блок — снова показываем его конец: интересен свежий кусок.
+      if (open && card.think) { card.think.stick = true; this.tail(card.think); }
     });
     card.steps.append(box);
     card.think = {
-      box, head, body, node, label, count,
+      box, head, body, node, label, count, stick: true, autoTop: 0,
       text: "", chars: 0, started: Date.now(), stopped: 0, done: false,
     };
+    this.watchBlockStick(card.think);
     return card.think;
   },
 
@@ -2328,9 +2536,8 @@ const SkillFactory = {
     }
     const shown = (think.chars > think.text.length ? "…\n" : "") + think.text;
     if (think.node.nodeValue !== shown) {
-      const atBottom = think.body.scrollHeight - think.body.scrollTop - think.body.clientHeight < 40;
       think.node.nodeValue = shown;
-      if (atBottom) think.body.scrollTop = think.body.scrollHeight;
+      this.tail(think);
     }
     think.count.textContent = this.thinkNote(think);
   },
@@ -2361,7 +2568,8 @@ const SkillFactory = {
       this.el("span", { class: "sf-think-label", text: "пишет ответ" }));
     const box = this.el("div", { class: "sf-think open" }, head, body);
     card.steps.append(box);
-    card.stream = { box, body, node };
+    card.stream = { box, body, node, stick: true, autoTop: 0 };
+    this.watchBlockStick(card.stream);
     return card.stream;
   },
 
@@ -2369,9 +2577,17 @@ const SkillFactory = {
     const live = this.liveBlock(card);
     const shown = card.raw.slice(-this.LIVE_TAIL);
     if (live.node.nodeValue === shown) return;
-    const atBottom = live.body.scrollHeight - live.body.scrollTop - live.body.clientHeight < 40;
     live.node.nodeValue = (card.rawChars > shown.length ? "…" : "") + shown;
-    if (atBottom) live.body.scrollTop = live.body.scrollHeight;
+    this.tail(live);
+  },
+
+  /* Держит собственный блок (размышления, живой ответ) у конца текста, пока
+     человек не отлистал его сам. Память та же, что у ленты: без неё блок
+     возвращался к низу на каждом куске потока. */
+  tail(block) {
+    if (!block.stick) return;
+    block.body.scrollTop = block.body.scrollHeight;
+    block.autoTop = block.body.scrollTop;
   },
 
   /* Кнопка сырого ответа всегда в подвале завершённой карточки, а показывает её
@@ -2467,7 +2683,9 @@ const SkillFactory = {
     p.innerHTML = "";
     p.append(
       this.el("span", { class: "sf-spin" }),
-      this.el("span", { class: "sf-stage-name", text: (this.STAGE_ICONS[this.state.stage] || "•") + " " + (this._stageTitle || "работаю") }),
+      this.el("span", { class: "sf-stage-name" },
+        this.el("span", { "aria-hidden": "true", text: (this.STAGE_ICONS[this.state.stage] || "•") + " " }),
+        this.el("span", { text: this._stageTitle || "работаю" })),
       this.el("span", { class: "sf-elapsed", text: seconds + " с" }),
       detail ? this.el("span", { class: "sf-detail", text: detail }) : null,
       parallel ? this.el("span", { class: "sf-detail", text: parallel }) : null,
@@ -2500,13 +2718,109 @@ const SkillFactory = {
 
   async fixOne(issue) {
     if (this.state.busy) return;
-    if (!this.state.draftId) {
-      this.banner("warn", "Исправление работает с черновиком. Заведите черновик из этого скилла.");
-      return;
-    }
+    if (!this.fixReady()) return;
     this.openChat();
     this.pushMsg("user", "Исправить: " + issue.message);
     await this.stream({ mode: "fix", issues: [issue], model: this.state.model });
+  },
+
+  /* ---------- форма «что чинить» ----------
+     Замечаний после совета набирается с десяток, и чинить их по одному — это
+     десять прогонов. Форма даёт отметить нужные разом и словами уточнить, как
+     именно чинить: одним прогоном автор правит отмеченное, а следом идёт
+     проверка, поэтому итог виден сразу.
+
+     Замечания шлём объектами как есть: своего опознавателя у них нет, а
+     нумеровать их нельзя — отчёт пересобирается после каждой оценки, и номер
+     показал бы на другое замечание. */
+  fixReady() {
+    if (!this.state.draftId) {
+      this.banner("warn", "Исправление работает с черновиком. Заведите черновик из этого скилла.");
+      return false;
+    }
+    return true;
+  },
+
+  /* Замечания оценки. Берём их из самого вердикта, а не из отчёта: отчёт
+     вбирает их следующим событием, и на момент отрисовки карточки его там ещё
+     нет. Отчёт остаётся запасным — вердикт, пролежавший в черновике от старой
+     сборки, своего списка не несёт. */
+  evalIssues(data, head) {
+    const own = Array.isArray(data && data.issues) ? data.issues : [];
+    if (own.length) return own;
+    const report = this.state.report || {};
+    const all = Array.isArray(report.issues) ? report.issues : [];
+    if (!head) return all;
+    return all.filter((issue) => String(issue.source || "").toLowerCase().startsWith(head));
+  },
+
+  openFixPicker(issues, title) {
+    if (this.state.busy || !this.fixReady()) return;
+    const rows = (issues || []).filter((item) => item && typeof item === "object");
+    if (!rows.length) {
+      this.banner("info", "Чинить нечего: замечаний с этим источником в отчёте нет.");
+      return;
+    }
+    // Форма живёт в единственном числе: две открытые карточки спорили бы за то,
+    // какой набор поедет на сервер.
+    if (this._fixBox) this._fixBox.remove();
+
+    const boxes = [];
+    const wish = this.el("textarea", {
+      class: "sf-fixpick-wish", rows: "2",
+      placeholder: "Пожелание к правке, необязательно: как именно чинить, чего не трогать",
+    });
+    const go = this.el("button", { class: "small primary sf-act", text: "", onclick: () => this.fixPicked() });
+    const count = () => {
+      const picked = boxes.filter((item) => item.input.checked).length;
+      go.textContent = `Починить и перепроверить (${picked})`;
+      go.disabled = picked === 0;
+    };
+
+    const list = this.el("div", { class: "sf-fixpick-list" });
+    for (const issue of rows) {
+      const input = this.el("input", { type: "checkbox", checked: "checked", onchange: () => count() });
+      input.checked = true;
+      boxes.push({ input, issue });
+      list.append(this.el("label", { class: "sf-fixpick-row sev-" + String(issue.severity || "advice") },
+        input,
+        this.el("span", { class: "sf-fixpick-body" },
+          this.el("span", { class: "sf-fixpick-msg", text: String(issue.message || issue.code || "") }),
+          this.el("span", { class: "sf-fixpick-meta" },
+            issue.where ? this.el("span", { class: "sf-issue-where", text: String(issue.where) }) : null,
+            this.sourceChip(issue.source)))));
+    }
+
+    const box = this.el("div", { class: "sf-fixpick" },
+      this.el("div", { class: "sf-fixpick-head", text: title || "Что чинить" }),
+      list,
+      wish,
+      this.el("div", { class: "act" }, go,
+        this.el("button", {
+          class: "small sf-act", text: "Отмена", onclick: () => this.closeFixPicker(),
+        })));
+    this._fixBox = box;
+    this._fixPick = { boxes, wish };
+    count();
+    this.els.log.append(box);
+    this.openChat();
+  },
+
+  closeFixPicker() {
+    if (this._fixBox) this._fixBox.remove();
+    this._fixBox = null;
+    this._fixPick = null;
+  },
+
+  async fixPicked() {
+    if (this.state.busy || !this._fixPick) return;
+    const picked = this._fixPick.boxes.filter((item) => item.input.checked).map((item) => item.issue);
+    if (!picked.length) return;
+    const wish = this._fixPick.wish.value.trim();
+    this.closeFixPicker();
+    this.openChat();
+    this.pushMsg("user", `Починить отмеченное (${picked.length})` + (wish ? `\nПожелание: ${wish}` : ""));
+    await this.stream({ mode: "fix", issues: picked, wish, model: this.state.model });
   },
 
   stop() {
@@ -2724,11 +3038,18 @@ const SkillFactory = {
         this.state.reportFresh = !this._textTouched;
         this.renderPublishGate();
         this.renderReport();
-        this.pushStep(`проверка: ошибок ${event.report.counts.error}, `
-          + `предупреждений ${event.report.counts.warning}, советов ${event.report.counts.advice}`,
-          event.report.ok ? "ok" : "bad");
-        this.sayReview(event.report.review);
-        this.sayIssues(event.report);
+        /* Отчёт, помеченный merged, пересобран после оценки — новой проверки за
+           ним не стояло. Раньше его приход проговаривался как настоящая
+           проверка, и после совета человек читал те же замечания и ту же сводку
+           критиков по второму разу. Поля нет — значит сборка сервиса старая, и
+           ведём себя как раньше. */
+        if (!event.merged) {
+          this.pushStep(`проверка: ошибок ${event.report.counts.error}, `
+            + `предупреждений ${event.report.counts.warning}, советов ${event.report.counts.advice}`,
+            event.report.ok ? "ok" : "bad");
+          this.sayReview(event.report.review);
+          this.sayIssues(event.report);
+        }
         break;
       case "done": {
         /* Готовность считает сервер и присылает полем gap: пустая строка — можно
