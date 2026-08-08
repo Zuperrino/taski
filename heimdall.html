@@ -1,0 +1,4083 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heimdall</title>
+<style>
+/* ============ Heimdall — светлая тема по умолчанию + тёмная по data-theme ============ */
+:root {
+  --bg: #f6f7f9;
+  --bg-panel: #ffffff;
+  --bg-elev: #fbfcfd;
+  --bg-hover: #eef1f5;
+  --bg-active: #e7edf5;
+  --border: #e3e7ec;
+  --border-strong: #cbd2da;
+  --text: #1c2430;
+  --muted: #6b7683;
+  --faint: #9aa4b0;
+  --accent: #e2a33b;
+  --accent-text: #9a5f06;
+  --accent-hover: #cf9029;
+  --accent-bg: rgba(226, 163, 59, 0.14);
+  --on-accent: #3a2708;
+  --green: #1f9d55;
+  --green-bg: rgba(31, 157, 85, 0.12);
+  --yellow: #b7791f;
+  --yellow-bg: rgba(183, 121, 31, 0.12);
+  --red: #c0392b;
+  --red-bg: rgba(192, 57, 43, 0.10);
+  --cyan: #0e7490;
+  --blue: #2f6feb;
+  --purple: #7c3aed;
+  --shadow: rgba(20, 30, 50, 0.14);
+  --scrollbar-thumb: #cbd2da;
+  --row-hover: rgba(20, 30, 50, 0.05);
+  --accent-drag: rgba(226, 163, 59, 0.30);
+  --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, Menlo, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 6px;
+  --accent-deep: #b97a1e;
+  --chart-1: #b5791f;
+  --chart-2: #0e7490;
+  --chart-3: #2f6feb;
+  --chart-4: #7c3aed;
+  --chart-5: #1f9d55;
+  --chart-6: #a3860f;
+  --chart-7: #c0392b;
+  --chart-8: #6b7683;
+  --sidebar-w: 300px;
+  --bottom-h: 300px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #22262c;
+  --bg-panel: #282d34;
+  --bg-elev: #2e343c;
+  --bg-hover: #333a43;
+  --bg-active: #3a424c;
+  --border: #363d47;
+  --border-strong: #454e5a;
+  --text: #d6dde6;
+  --muted: #93a0b0;
+  --faint: #6b7686;
+  --accent: #e2a33b;
+  --accent-text: #f0bb5e;
+  --accent-hover: #eeb452;
+  --accent-bg: rgba(226, 163, 59, 0.14);
+  --on-accent: #14181e;
+  --green: #4fc08a;
+  --green-bg: rgba(79, 192, 138, 0.13);
+  --yellow: #e0c45c;
+  --yellow-bg: rgba(224, 196, 92, 0.12);
+  --red: #e26a5a;
+  --red-bg: rgba(226, 106, 90, 0.12);
+  --cyan: #56b6c2;
+  --blue: #6f9ee8;
+  --purple: #b08ae0;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --scrollbar-thumb: #454e5a;
+  --row-hover: rgba(255, 255, 255, 0.05);
+  --accent-drag: rgba(226, 163, 59, 0.30);
+  --accent-deep: #b97a1e;
+  --chart-1: #e2a33b;
+  --chart-2: #56b6c2;
+  --chart-3: #6f9ee8;
+  --chart-4: #b08ae0;
+  --chart-5: #4fc08a;
+  --chart-6: #e0c45c;
+  --chart-7: #e26a5a;
+  --chart-8: #8a94a3;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+::selection { background: rgba(226, 163, 59, 0.3); }
+
+/* scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 5px; border: 2px solid var(--bg-panel); }
+*::-webkit-scrollbar-track { background: transparent; }
+
+code, .mono { font-family: var(--mono); font-size: 12px; }
+
+/* ============ Каркас ============ */
+.app { height: 100vh; display: flex; flex-direction: column; }
+
+.titlebar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 12px; height: 38px; flex: none;
+  background: var(--bg-panel); border-bottom: 1px solid var(--border);
+}
+.titlebar .logo {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 650; font-size: 13px; letter-spacing: 0.2px;
+}
+.logo-mark {
+  width: 18px; height: 18px; border-radius: 4px; flex: none;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+  display: grid; place-items: center;
+  color: var(--on-accent); font-family: var(--mono); font-size: 11px; font-weight: 700;
+}
+.titlebar .spacer { flex: 1; }
+
+.main { flex: 1; display: flex; min-height: 0; }
+
+/* ============ Сайдбар ============ */
+.sidebar {
+  width: var(--sidebar-w); min-width: 0; flex: none;
+  background: var(--bg-panel);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.sidebar.collapsed { display: none; }
+.sidebar.collapsed + .resizer-v { display: none; }
+.sidebar-head { padding: 8px 10px 6px; display: flex; flex-direction: column; gap: 6px; }
+.sidebar-title {
+  font-size: 11px; font-weight: 650; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tree { flex: 1; overflow: auto; padding: 2px 6px 12px; }
+
+.tree-schema-label {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 4px 3px; cursor: pointer; user-select: none;
+  color: var(--muted); font-family: var(--mono); font-size: 11.5px;
+}
+.tree-schema-label:hover { color: var(--text); }
+.tree-caret { width: 10px; flex: none; font-size: 9px; color: var(--faint); transition: transform 0.12s; display: inline-block; }
+.tree-caret.open { transform: rotate(90deg); }
+
+.tree-model {
+  border-radius: var(--radius); margin: 1px 0;
+}
+.tree-model-row {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 6px 4px 16px; cursor: pointer; border-radius: var(--radius);
+  user-select: none;
+}
+.tree-model-row:hover { background: var(--bg-hover); }
+.tree-model.selected > .tree-model-row { background: var(--bg-active); }
+.tree-model.selected > .tree-model-row .tree-model-name { color: var(--accent-text); }
+.tree-model-name { font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-model-desc { padding: 0 6px 4px 32px; color: var(--faint); font-size: 11px; line-height: 1.3; }
+
+.tree-children { padding: 1px 0 5px 24px; display: flex; flex-direction: column; gap: 0; }
+.tree-leaf {
+  display: flex; align-items: center; gap: 6px;
+  padding: 2px 6px; border-radius: 4px; min-width: 0;
+}
+.tree-leaf:hover { background: var(--bg-hover); }
+.tree-leaf .leaf-name { font-family: var(--mono); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-leaf .leaf-extra { color: var(--faint); font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: right; }
+.tree-leaf.param { opacity: 0.5; }
+.tree-section-label { padding: 4px 6px 1px; color: var(--faint); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; }
+.tree-empty { padding: 20px 10px; color: var(--faint); text-align: center; }
+
+/* иконки типов */
+.ticon {
+  width: 15px; height: 15px; flex: none; border-radius: 3px;
+  display: grid; place-items: center;
+  font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  background: var(--bg-elev); color: var(--muted); border: 1px solid var(--border);
+}
+.ticon.t-num { color: var(--cyan); }
+.ticon.t-date { color: var(--accent-text); }
+.ticon.t-arr { color: var(--purple); }
+.ticon.t-uuid { color: var(--blue); }
+.ticon.t-bool { color: var(--green); }
+.ticon.t-metric { color: var(--green); background: var(--green-bg); border-color: transparent; }
+.ticon.t-virtual { color: var(--purple); }
+
+/* ============ Ресайзеры ============ */
+.resizer-v { width: 5px; flex: none; cursor: col-resize; background: transparent; border-left: 1px solid var(--border); transition: background 0.1s; }
+.resizer-v:hover, .resizer-v.dragging { background: var(--accent-drag); }
+.resizer-h { height: 5px; flex: none; cursor: row-resize; background: transparent; border-top: 1px solid var(--border); transition: background 0.1s; }
+.resizer-h:hover, .resizer-h.dragging { background: var(--accent-drag); }
+
+/* ============ Центр ============ */
+.center { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.ws-tabs {
+  display: flex; align-items: stretch; gap: 2px; flex: none;
+  background: var(--bg-panel); border-bottom: 1px solid var(--border);
+  padding: 0 8px;
+}
+.ws-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 14px; height: 36px; cursor: pointer; user-select: none;
+  color: var(--muted); font-size: 12.5px; font-weight: 500;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.ws-tab:hover { color: var(--text); }
+.ws-tab.active { color: var(--accent-text); border-bottom-color: var(--accent); }
+.ws-tab .ws-tab-icon { font-size: 13px; opacity: 0.8; }
+
+.workspace { flex: 1; min-height: 0; position: relative; display: flex; }
+.ws-page { display: none; flex: 1; min-width: 0; min-height: 0; }
+.ws-page.active { display: flex; }
+
+.page-scroll { flex: 1; overflow: auto; padding: 18px 22px 30px; }
+.page-placeholder {
+  flex: 1; display: grid; place-items: center; color: var(--faint);
+}
+.page-placeholder .ph-inner { text-align: center; max-width: 360px; }
+.page-placeholder .ph-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.5; }
+
+/* ============ Нижняя панель ============ */
+.bottom-panel {
+  height: var(--bottom-h); flex: none; min-height: 0;
+  background: var(--bg-panel);
+  display: flex; flex-direction: column;
+}
+.bottom-panel.collapsed { height: 33px !important; }
+.bottom-panel.collapsed .bp-body { display: none; }
+.bp-tabs {
+  display: flex; align-items: center; gap: 2px; flex: none;
+  padding: 0 8px; height: 33px; border-bottom: 1px solid var(--border);
+}
+.bp-tab {
+  padding: 0 11px; height: 33px; display: flex; align-items: center; gap: 6px;
+  cursor: pointer; color: var(--muted); font-size: 12px; user-select: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.bp-tab:hover { color: var(--text); }
+.bp-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.bp-tab .bp-dot { width: 6px; height: 6px; border-radius: 50%; }
+.bp-body { flex: 1; min-height: 0; overflow: auto; position: relative; }
+.bp-pad { padding: 12px 14px; }
+.bp-meta {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 7px 14px; border-bottom: 1px solid var(--border);
+  color: var(--muted); font-size: 11.5px;
+  position: sticky; top: 0; background: var(--bg-panel); z-index: 3;
+}
+.bp-empty { padding: 30px; text-align: center; color: var(--faint); }
+
+/* ============ Статус-бар ============ */
+.statusbar {
+  height: 26px; flex: none; display: flex; align-items: center; gap: 14px;
+  padding: 0 12px; background: var(--bg-panel); border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 11.5px;
+}
+.statusbar .sb-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.statusbar .sb-spacer { flex: 1; }
+.sb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+.sb-dot.ok { background: var(--green); box-shadow: 0 0 5px color-mix(in srgb, var(--green) 70%, transparent); }
+.sb-dot.bad { background: var(--red); }
+.sb-dot.wait { background: var(--yellow); }
+
+/* ============ Базовые контролы ============ */
+button, .btn {
+  font-family: var(--sans); font-size: 12.5px; color: var(--text);
+  background: var(--bg-elev); border: 1px solid var(--border-strong);
+  border-radius: var(--radius); padding: 5px 12px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  transition: background 0.1s, border-color 0.1s;
+}
+button:hover, .btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.primary {
+  background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600;
+}
+button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+button.small, .btn.small { padding: 2px 8px; font-size: 11.5px; }
+button.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+button.ghost:hover { color: var(--text); background: var(--bg-hover); }
+button.danger-ghost { background: transparent; border-color: transparent; color: var(--faint); }
+button.danger-ghost:hover { color: var(--red); background: var(--red-bg); }
+button.iconbtn { padding: 4px 7px; }
+
+input[type="text"], input[type="number"], input[type="date"], input[type="password"], select, textarea {
+  font-family: var(--sans); font-size: 12.5px; color: var(--text);
+  background: var(--bg); border: 1px solid var(--border-strong);
+  border-radius: var(--radius); padding: 5px 8px; outline: none;
+  min-width: 0;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+input::placeholder, textarea::placeholder { color: var(--faint); }
+input.mono, textarea.mono, select.mono { font-family: var(--mono); font-size: 12px; }
+input[type="date"] { color-scheme: inherit; }
+select { cursor: pointer; }
+label.checkline { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); cursor: pointer; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > .field-label { font-size: 11px; color: var(--muted); font-weight: 550; letter-spacing: 0.3px; }
+.field > .field-hint { font-size: 10.5px; color: var(--faint); }
+.field.invalid > input, .field.invalid > select { border-color: var(--red); }
+.field-error { font-size: 11px; color: var(--red); }
+
+.searchbox { position: relative; }
+.searchbox input { width: 100%; padding-left: 26px; }
+.searchbox::before {
+  content: "⌕"; position: absolute; left: 8px; top: 50%; transform: translateY(-54%);
+  color: var(--faint); font-size: 14px; pointer-events: none;
+}
+
+/* segmented */
+.seg { display: inline-flex; background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 2px; gap: 2px; }
+.seg button { border: none; background: transparent; padding: 3px 10px; border-radius: 4px; color: var(--muted); font-size: 12px; }
+.seg button:hover { background: var(--bg-hover); }
+.seg button.on { background: var(--bg-active); color: var(--text); }
+.seg button.on.seg-accent { background: var(--accent-bg); color: var(--accent-text); }
+
+/* ============ Бейджи и чипсы ============ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.4px;
+  padding: 1px 7px; border-radius: 20px;
+  background: var(--bg-elev); color: var(--muted); border: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+.badge.mono { font-family: var(--mono); }
+.badge.b-history { color: var(--accent-text); background: var(--accent-bg); border-color: transparent; }
+.badge.b-array { color: var(--purple); background: rgba(176,138,224,0.12); border-color: transparent; }
+.badge.b-joins { color: var(--blue); background: rgba(111,158,232,0.12); border-color: transparent; }
+.badge.b-plain { color: var(--muted); }
+.badge.b-green { color: var(--green); background: var(--green-bg); border-color: transparent; }
+.badge.b-yellow { color: var(--yellow); background: var(--yellow-bg); border-color: transparent; }
+.badge.b-red { color: var(--red); background: var(--red-bg); border-color: transparent; }
+.badge.b-cyan { color: var(--cyan); background: rgba(86,182,194,0.12); border-color: transparent; }
+.badge.b-dim { opacity: 0.55; }
+
+.minibadge {
+  display: inline-block; font-size: 9.5px; font-weight: 650; padding: 0 5px;
+  border-radius: 3px; line-height: 15px; vertical-align: 1px;
+  background: var(--bg-elev); color: var(--muted); border: 1px solid var(--border);
+  font-family: var(--mono); letter-spacing: 0.3px;
+}
+.minibadge.m-virtual { color: var(--purple); border-color: rgba(176,138,224,0.4); }
+.minibadge.m-time { color: var(--accent-text); border-color: rgba(226,163,59,0.4); }
+.minibadge.m-param { color: var(--faint); }
+.minibadge.m-k1 { color: var(--green); } .minibadge.m-k2 { color: var(--yellow); } .minibadge.m-k3 { color: var(--red); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-active); border: 1px solid var(--border-strong);
+  border-radius: 20px; padding: 2px 5px 2px 9px;
+  font-family: var(--mono); font-size: 11.5px; user-select: none;
+}
+.chip .chip-x {
+  width: 15px; height: 15px; border-radius: 50%; display: grid; place-items: center;
+  cursor: pointer; color: var(--faint); font-size: 12px; line-height: 1;
+}
+.chip .chip-x:hover { background: var(--red-bg); color: var(--red); }
+.chip.c-metric { border-color: rgba(79,192,138,0.45); color: var(--green); }
+.chip.c-param { border-style: dashed; opacity: 0.75; }
+.chip.c-warn { border-color: rgba(224,196,92,0.6); }
+.chip.static { padding: 2px 9px; }
+
+.gran-chip {
+  display: inline-block; font-family: var(--mono); font-size: 10.5px;
+  border: 1px solid var(--border-strong); border-radius: 4px; padding: 1px 6px;
+  color: var(--muted); background: var(--bg);
+}
+.gran-chip.on { color: var(--accent-text); border-color: rgba(226,163,59,0.5); background: var(--accent-bg); }
+
+/* ============ Таблицы ============ */
+table.dt { border-collapse: collapse; width: 100%; font-size: 12px; }
+table.dt th {
+  text-align: left; font-weight: 600; font-size: 11px; color: var(--muted);
+  padding: 6px 10px; border-bottom: 1px solid var(--border-strong);
+  position: sticky; top: 0; background: var(--bg-panel); z-index: 2;
+  white-space: nowrap;
+}
+table.dt td { padding: 4px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.dt tr:hover td { background: var(--row-hover); }
+table.dt td.num, table.dt th.num { text-align: right; font-family: var(--mono); }
+table.dt td.mono { font-family: var(--mono); font-size: 11.5px; }
+td .null { color: var(--faint); font-style: italic; }
+
+/* карточные таблицы обзорщика */
+table.spec { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+table.spec th {
+  text-align: left; font-weight: 600; font-size: 10.5px; color: var(--faint);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  padding: 5px 10px; border-bottom: 1px solid var(--border-strong);
+}
+table.spec td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.spec tr:last-child td { border-bottom: none; }
+table.spec tr.param-row td { opacity: 0.55; }
+
+/* ============ Карточки / секции ============ */
+.card {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.card + .card { margin-top: 14px; }
+.card-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 9px 14px; border-bottom: 1px solid var(--border);
+}
+.card-head .card-title { font-weight: 650; font-size: 12.5px; }
+.card-head .card-sub { color: var(--faint); font-size: 11.5px; }
+.card-body { padding: 0; }
+.card-body.padded { padding: 12px 14px; }
+
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12.5px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+
+/* ============ Код и подсветка ============ */
+pre.code {
+  margin: 0; padding: 12px 14px; overflow: auto;
+  font-family: var(--mono); font-size: 12px; line-height: 1.55;
+  background: var(--bg); border-radius: var(--radius);
+  tab-size: 4; white-space: pre;
+}
+pre.code.framed { border: 1px solid var(--border); }
+.tok-kw { color: var(--accent-text); font-weight: 600; }
+.tok-str { color: var(--green); }
+.tok-num { color: var(--cyan); }
+.tok-com { color: var(--faint); font-style: italic; }
+.tok-fn { color: var(--blue); }
+.tok-type { color: var(--purple); }
+.tok-key { color: var(--blue); }
+.tok-punct { color: var(--muted); }
+
+/* ============ Конструктор ============ */
+.builder-grid { display: flex; flex-direction: column; gap: 14px; max-width: 1060px; }
+.mode-banner {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px 14px; border-radius: 8px;
+  background: var(--bg-panel); border: 1px solid var(--border);
+}
+.mode-pill {
+  font-family: var(--mono); font-weight: 700; font-size: 12px; letter-spacing: 1px;
+  padding: 3px 12px; border-radius: 20px;
+}
+.mode-pill.m-rows { color: var(--blue); background: rgba(111,158,232,0.14); }
+.mode-pill.m-aggregate { color: var(--green); background: var(--green-bg); }
+.mode-pill.m-history { color: var(--accent-text); background: var(--accent-bg); }
+.mode-explain { color: var(--muted); font-size: 12px; flex: 1; min-width: 200px; }
+.preflight { display: flex; flex-direction: column; gap: 5px; }
+.preflight-item {
+  display: flex; align-items: baseline; gap: 8px; font-size: 12px;
+  padding: 5px 10px; border-radius: var(--radius);
+}
+.preflight-item.warn { color: var(--yellow); background: var(--yellow-bg); }
+.preflight-item.err { color: var(--red); background: var(--red-bg); }
+
+.picker-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 1100px) { .picker-cols { grid-template-columns: 1fr; } }
+.picker { display: flex; flex-direction: column; }
+.picker .chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 9px 12px; min-height: 38px; }
+.picker .chips:empty::after { content: attr(data-empty); color: var(--faint); font-size: 11.5px; font-family: var(--sans); }
+.picker-search { padding: 0 12px 8px; }
+.picker-list { max-height: 180px; overflow: auto; border-top: 1px solid var(--border); }
+.picker-item {
+  display: flex; align-items: center; gap: 8px; padding: 4px 12px;
+  cursor: pointer; user-select: none; min-width: 0;
+}
+.picker-item:hover { background: var(--bg-hover); }
+.picker-item.selected { color: var(--accent-text); }
+.picker-item.param { opacity: 0.55; }
+.picker-item .pi-name { font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
+.picker-item .pi-desc { color: var(--faint); font-size: 11px; flex: 1; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-item .pi-check { width: 14px; color: var(--accent); flex: none; font-size: 11px; }
+
+.warn-inline {
+  margin: 0 12px 10px; padding: 6px 10px; border-radius: var(--radius);
+  background: var(--yellow-bg); color: var(--yellow); font-size: 11.5px;
+}
+
+/* временное измерение */
+.td-grid { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; padding: 12px 14px; }
+.td-grid .field { min-width: 130px; }
+
+/* ---- дерево фильтров ---- */
+.fgroup { border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg); }
+.fgroup.f-and { border-left: 3px solid var(--blue); }
+.fgroup.f-or { border-left: 3px solid var(--purple); }
+.fgroup.f-not { border-left: 3px solid var(--red); }
+.fgroup-head {
+  display: flex; align-items: center; gap: 8px; padding: 6px 9px;
+}
+.fgroup-body { display: flex; flex-direction: column; gap: 7px; padding: 0 9px 9px 9px; }
+.fgroup-body .fgroup, .fgroup-body .fcond { margin-left: 10px; }
+.fjoin-label { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-left: 10px; user-select: none; }
+.fcond {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 5px 7px;
+}
+.fcond select, .fcond input { font-size: 12px; padding: 3px 7px; }
+.fcond select.f-col { font-family: var(--mono); max-width: 200px; }
+.fcond select.f-op { font-family: var(--mono); }
+.filters-empty { color: var(--faint); font-size: 12px; padding: 2px 10px 4px; }
+
+/* тег-инпут */
+.taginput {
+  display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  background: var(--bg); border: 1px solid var(--border-strong);
+  border-radius: var(--radius); padding: 2px 5px; min-width: 180px; max-width: 380px;
+}
+.taginput:focus-within { border-color: var(--accent); }
+.taginput input { border: none; background: transparent; flex: 1; min-width: 60px; padding: 3px 3px; }
+.taginput .chip { font-size: 11px; padding: 0 3px 0 7px; }
+
+/* сортировка и лимиты */
+.sort-rows { display: flex; flex-direction: column; gap: 7px; padding: 12px 14px; }
+.sort-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.limits-grid { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; padding: 12px 14px; }
+.actions-bar { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+
+/* ============ График ============ */
+.chart-wrap { padding: 8px 14px 14px; }
+.chart-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 9px 14px 0; }
+.chart-legend { display: flex; gap: 12px; flex-wrap: wrap; padding: 4px 14px 0; font-size: 11.5px; color: var(--muted); }
+.chart-legend .lg-item { display: flex; align-items: center; gap: 5px; }
+.lg-swatch { width: 14px; height: 3px; border-radius: 2px; }
+svg.linechart text { font-family: var(--mono); font-size: 10px; fill: var(--faint); }
+svg.linechart .gridline { stroke: var(--border); stroke-width: 1; }
+svg.linechart .axis { stroke: var(--border-strong); stroke-width: 1; }
+.chart-tip {
+  position: fixed; z-index: 90; pointer-events: none;
+  background: var(--bg-elev); border: 1px solid var(--border-strong);
+  border-radius: var(--radius); padding: 6px 9px; font-size: 11px;
+  box-shadow: 0 6px 20px var(--shadow); display: none; max-width: 260px;
+}
+.chart-tip .tip-date { font-family: var(--mono); color: var(--muted); margin-bottom: 2px; }
+.chart-tip .tip-val { font-family: var(--mono); }
+
+/* ============ Ошибки ============ */
+.error-block { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.error-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.error-msg { font-size: 13px; }
+.error-raw summary { cursor: pointer; color: var(--muted); font-size: 11.5px; user-select: none; }
+.ch-error {
+  background: var(--red-bg); border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
+  border-radius: var(--radius); padding: 10px 12px;
+  font-family: var(--mono); font-size: 12px; color: var(--red); white-space: pre-wrap;
+}
+.ch-error .ch-code { color: var(--red); font-weight: 700; }
+
+/* ============ SQL-консоль ============ */
+.sql-layout { display: flex; flex: 1; min-height: 0; min-width: 0; }
+.sql-main { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 14px 16px; gap: 10px; }
+.sql-editor {
+  flex: 1; resize: none; font-family: var(--mono); font-size: 12.5px; line-height: 1.6;
+  background: var(--bg); color: var(--text); border: 1px solid var(--border-strong);
+  border-radius: 8px; padding: 12px 14px; min-height: 120px;
+}
+.sql-side {
+  width: 270px; flex: none; border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; min-height: 0; background: var(--bg-panel);
+}
+.sql-side-tabs { display: flex; flex: none; border-bottom: 1px solid var(--border); }
+.sql-side-tab { flex: 1; text-align: center; padding: 8px 4px; font-size: 11.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; user-select: none; }
+.sql-side-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.sql-side-body { flex: 1; overflow: auto; padding: 8px; }
+.ins-group-label { font-family: var(--mono); font-size: 11px; color: var(--faint); padding: 6px 4px 2px; }
+.ins-item {
+  display: flex; align-items: center; gap: 6px; padding: 3px 6px; border-radius: 4px;
+  cursor: pointer; font-family: var(--mono); font-size: 11.5px; min-width: 0;
+}
+.ins-item:hover { background: var(--bg-hover); color: var(--accent-text); }
+.ins-item span.ins-dim { color: var(--faint); font-size: 10.5px; flex: 1; text-align: right; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.example-item {
+  display: block; padding: 7px 9px; border-radius: var(--radius); cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg); margin-bottom: 7px;
+}
+.example-item:hover { border-color: var(--border-strong); background: var(--bg-hover); }
+.example-item .ex-title { font-size: 12px; font-weight: 550; margin-bottom: 2px; }
+.example-item .ex-desc { font-size: 11px; color: var(--faint); }
+
+/* ============ YAML-редактор ============ */
+.yaml-layout { display: flex; flex: 1; min-height: 0; min-width: 0; }
+
+/* Узкий экран: боковые колонки уходят под редактор, а не давят его до нуля.
+   Порог один на весь интерфейс, включая вкладку Завода. */
+@media (max-width: 900px) {
+  .sql-layout, .yaml-layout { flex-direction: column; }
+  .sql-side { width: auto; max-height: 240px; border-left: none; border-top: 1px solid var(--border); }
+  .yaml-preview { border-left: none; border-top: 1px solid var(--border); max-height: 260px; }
+  /* Каталог перекрывает рабочую область, а не отжимает её: на узком экране
+     отдавать ему треть ширины нечем. */
+  .sidebar { position: absolute; z-index: 6; top: 0; bottom: 0; left: 0;
+             box-shadow: 6px 0 20px color-mix(in srgb, var(--text) 18%, transparent); }
+  .main { position: relative; }
+}
+.yaml-form { flex: 1.15; min-width: 0; overflow: auto; padding: 16px 18px 40px; }
+.yaml-preview { flex: 1; min-width: 0; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg-panel); }
+.yaml-preview-head { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); flex: none; }
+.yaml-preview-head .card-title { flex: 1; font-weight: 600; font-size: 12px; }
+.yaml-preview pre.code { flex: 1; overflow: auto; border-radius: 0; background: var(--bg-panel); }
+.form-section { margin-bottom: 16px; }
+.form-section-head {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 8px;
+}
+.form-section-head h3 { margin: 0; font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.form-grid .span2 { grid-column: span 2; }
+.repeat-item {
+  border: 1px solid var(--border); border-radius: 8px; background: var(--bg-panel);
+  padding: 10px 12px; margin-bottom: 8px; position: relative;
+}
+.repeat-item .repeat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.repeat-item .repeat-grid .span2 { grid-column: span 2; }
+.repeat-remove { position: absolute; top: 6px; right: 6px; }
+.validation-summary {
+  border: 1px solid rgba(226,106,90,0.4); background: var(--red-bg);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+}
+.validation-summary ul { margin: 4px 0 0; padding-left: 18px; }
+.validation-summary li { color: var(--red); font-size: 12px; margin: 2px 0; }
+.validation-ok {
+  border: 1px solid rgba(79,192,138,0.35); background: var(--green-bg);
+  border-radius: 8px; padding: 8px 14px; margin-bottom: 14px; color: var(--green); font-size: 12px;
+}
+
+/* diff-отчёт публикации */
+.pub-report { display: flex; flex-direction: column; gap: 10px; }
+.pub-ds { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.pub-ds-head { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg-elev); flex-wrap: wrap; }
+.pub-ds-body { padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+.diff-line { font-family: var(--mono); font-size: 11.5px; display: flex; gap: 7px; flex-wrap: wrap; align-items: baseline; }
+.diff-section { color: var(--muted); min-width: 80px; }
+.diff-added { color: var(--green); }
+.diff-removed { color: var(--red); text-decoration: line-through; }
+.diff-changed { color: var(--yellow); }
+.routes-line { font-family: var(--mono); font-size: 11px; color: var(--cyan); }
+
+/* ============ Модалки и тосты ============ */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(5,8,12,0.65); z-index: 100;
+  display: grid; place-items: center;
+}
+.modal {
+  width: min(480px, 92vw); max-height: 86vh; overflow: auto;
+  background: var(--bg-panel); border: 1px solid var(--border-strong);
+  border-radius: 10px; box-shadow: 0 20px 60px var(--shadow);
+}
+.modal.wide { width: min(640px, 94vw); }
+.modal-head { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.modal-head h2 { margin: 0; font-size: 14px; flex: 1; }
+.modal-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.modal-foot { padding: 10px 16px 14px; display: flex; gap: 8px; justify-content: flex-end; }
+
+#toastRoot { position: fixed; bottom: 38px; right: 16px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--bg-elev); border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--accent); border-radius: var(--radius);
+  padding: 8px 14px; font-size: 12.5px; box-shadow: 0 8px 24px var(--shadow);
+  animation: toast-in 0.18s ease-out;
+}
+.toast.t-ok { border-left-color: var(--green); }
+.toast.t-err { border-left-color: var(--red); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ============ Скелетоны ============ */
+.skeleton-rows { padding: 14px; display: flex; flex-direction: column; gap: 9px; }
+.sk-line {
+  height: 13px; border-radius: 4px;
+  background: linear-gradient(90deg, var(--bg-elev) 25%, var(--bg-active) 50%, var(--bg-elev) 75%);
+  background-size: 220% 100%; animation: sk 1.1s linear infinite;
+}
+@keyframes sk { from { background-position: 130% 0; } to { background-position: -90% 0; } }
+
+/* ============ Обзорщик ============ */
+.exp-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-width: 1060px; }
+.exp-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.exp-title-row h1 { margin: 0; font-size: 19px; font-family: var(--mono); font-weight: 650; }
+.exp-title-row .exp-schema { color: var(--faint); font-family: var(--mono); font-size: 13px; }
+.exp-desc { color: var(--muted); font-size: 13px; max-width: 760px; text-wrap: pretty; }
+.exp-meta { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; color: var(--muted); font-size: 12px; }
+.exp-cards { max-width: 1060px; }
+
+.hist-diagram {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 11.5px; padding: 4px 0 8px;
+}
+.hist-node { border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 6px 10px; background: var(--bg); }
+.hist-node .hn-label { color: var(--faint); font-size: 10px; }
+.hist-arrow { color: var(--accent); font-size: 15px; }
+.join-diagram { display: flex; flex-direction: column; gap: 8px; }
+.join-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-family: var(--mono); font-size: 11.5px; }
+.join-cond { color: var(--faint); }
+
+/* tooltip (порождается JS) */
+.hover-tip {
+  position: fixed; z-index: 150; pointer-events: none; display: none;
+  background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: var(--radius);
+  padding: 6px 10px; font-size: 11.5px; max-width: 380px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+.hover-tip code { color: var(--cyan); }
+[data-tip] { cursor: help; }
+
+/* пагинация */
+.pager { display: flex; align-items: center; gap: 8px; }
+.pager .pg-info { color: var(--muted); font-size: 11.5px; font-family: var(--mono); }
+
+/* Вкладка «Завод скиллов» оформлена в app/skill_factory/static/factory.css
+   и подключается ссылкой ниже — стили едут вместе с пакетом Завода. */
+
+</style>
+<link rel="stylesheet" href="/skill-factory/api/v1/ui/factory.css">
+</head>
+<body>
+<div class="app">
+  <div class="titlebar">
+    <button class="ghost iconbtn" id="sidebarToggle" title="Свернуть/развернуть каталог">☰</button>
+    <div class="logo"><span class="logo-mark">H</span><span>Heimdall</span></div>
+    <span class="spacer"></span>
+    <button class="ghost iconbtn" id="themeToggle" title="Светлая/тёмная тема">◐</button>
+    <button class="ghost iconbtn" id="settingsBtn" title="Настройки подключения">⚙ Настройки</button>
+  </div>
+
+  <div class="main">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-title"><span>Каталог датасетов</span></div>
+        <div class="searchbox"><input type="text" id="treeSearch" placeholder="Поиск моделей и колонок…"></div>
+      </div>
+      <div class="tree" id="treeRoot"></div>
+    </div>
+    <div class="resizer-v" id="vResizer"></div>
+
+    <div class="center">
+      <div class="ws-tabs">
+        <div class="ws-tab" data-tab="explorer"><span class="ws-tab-icon">▦</span>Обзорщик</div>
+        <div class="ws-tab" data-tab="builder"><span class="ws-tab-icon">⚙</span>Конструктор</div>
+        <div class="ws-tab" data-tab="sql"><span class="ws-tab-icon">⌘</span>SQL-консоль</div>
+        <div class="ws-tab" data-tab="yaml"><span class="ws-tab-icon">≡</span>Редактор датасета</div>
+        <div class="ws-tab" data-tab="skills"><span class="ws-tab-icon">✎</span>Завод скиллов</div>
+      </div>
+      <div class="workspace">
+        <div class="ws-page" data-page="explorer" id="page-explorer" data-screen-label="Обзорщик"></div>
+        <div class="ws-page" data-page="builder" id="page-builder" data-screen-label="Конструктор запросов"></div>
+        <div class="ws-page" data-page="sql" id="page-sql" data-screen-label="SQL-консоль"></div>
+        <div class="ws-page" data-page="yaml" id="page-yaml" data-screen-label="Редактор датасета"></div>
+        <div class="ws-page" data-page="skills" id="page-skills" data-screen-label="Завод скиллов"></div>
+      </div>
+      <div class="resizer-h" id="hResizer"></div>
+      <div class="bottom-panel" id="bottomPanel">
+        <div class="bp-tabs" id="bpTabs"></div>
+        <div class="bp-body" id="bpBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar" id="statusbar"></div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ===== src/util.js ===== */
+/* ============ Heimdall — утилиты ============ */
+"use strict";
+
+const U = {
+  $(sel, root) { return (root || document).querySelector(sel); },
+  $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); },
+
+  esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  },
+
+  el(tag, attrs, ...children) {
+    const node = document.createElement(tag);
+    if (attrs) {
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v == null || v === false) continue;
+        if (k === "class") node.className = v;
+        else if (k === "html") node.innerHTML = v;
+        else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2), v);
+        else if (k === "dataset") Object.assign(node.dataset, v);
+        else if (v === true) node.setAttribute(k, "");
+        else node.setAttribute(k, v);
+      }
+    }
+    for (const ch of children.flat(Infinity)) {
+      if (ch == null || ch === false) continue;
+      node.append(ch.nodeType ? ch : document.createTextNode(ch));
+    }
+    return node;
+  },
+
+  debounce(fn, ms) {
+    let t = null;
+    return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+  },
+
+  fmtNum(v) {
+    if (typeof v !== "number") return String(v);
+    if (Number.isInteger(v)) return v.toLocaleString("ru-RU");
+    return v.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
+  },
+
+  clamp(v, a, b) { return Math.min(b, Math.max(a, v)); },
+
+  clone(o) { return JSON.parse(JSON.stringify(o)); },
+
+  copy(text, label) {
+    const finish = (ok) => Toast.show(ok ? (label || "Скопировано в буфер обмена") : "Не удалось скопировать", ok ? "ok" : "err");
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => finish(true), () => U.copyFallback(text, finish));
+    } else U.copyFallback(text, finish);
+  },
+  copyFallback(text, finish) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.append(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    ta.remove(); finish(ok);
+  },
+
+  download(filename, text, mime) {
+    const blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.append(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 200);
+  }
+};
+
+/* ============ Типы ClickHouse ============ */
+const CHTypes = {
+  // → { base: 'string'|'number'|'date'|'datetime'|'bool'|'uuid'|'array', nullable, elem }
+  parse(t) {
+    let s = String(t || "").trim();
+    let nullable = false;
+    let m;
+    while ((m = /^(Nullable|LowCardinality)\((.*)\)$/.exec(s))) {
+      if (m[1] === "Nullable") nullable = true;
+      s = m[2];
+    }
+    if ((m = /^Array\((.*)\)$/.exec(s))) {
+      return { base: "array", nullable, elem: CHTypes.parse(m[1]) };
+    }
+    let base = "string";
+    if (/^(U?Int\d*|Float\d*|Decimal.*)$/i.test(s)) base = "number";
+    else if (/^DateTime/i.test(s)) base = "datetime";
+    else if (/^Date/i.test(s)) base = "date";
+    else if (/^Bool/i.test(s)) base = "bool";
+    else if (/^UUID$/i.test(s)) base = "uuid";
+    return { base, nullable, elem: null };
+  },
+  icon(t) {
+    const p = CHTypes.parse(t);
+    const map = {
+      string: ["T", ""], number: ["#", "t-num"], date: ["◷", "t-date"],
+      datetime: ["◷", "t-date"], bool: ["✓", "t-bool"], uuid: ["id", "t-uuid"], array: ["[]", "t-arr"]
+    };
+    const [ch, cls] = map[p.base] || ["?", ""];
+    return `<span class="ticon ${cls}" title="${U.esc(t)}">${ch}</span>`;
+  },
+  isDateLike(t) { const b = CHTypes.parse(t).base; return b === "date" || b === "datetime"; }
+};
+
+/* ============ Гранулярности и даты ============ */
+const GRAN = {
+  all: ["day", "week", "week_end", "month", "month_end", "quarter", "quarter_end", "year", "year_end", "hour", "minute"],
+  labels: {
+    day: "день", week: "неделя", week_end: "конец недели", month: "месяц", month_end: "конец месяца",
+    quarter: "квартал", quarter_end: "конец квартала", year: "год", year_end: "конец года",
+    hour: "час", minute: "минута"
+  },
+  sqlFn: {
+    day: "toDate", week: "toStartOfWeek", week_end: "toLastDayOfWeek",
+    month: "toStartOfMonth", month_end: "toLastDayOfMonth",
+    quarter: "toStartOfQuarter", quarter_end: "toLastDayOfQuarter",
+    year: "toStartOfYear", year_end: "toLastDayOfYear",
+    hour: "toStartOfHour", minute: "toStartOfMinute"
+  },
+  stepExpr: {
+    day: "toIntervalDay(1)", week: "toIntervalWeek(1)", week_end: "toIntervalWeek(1)",
+    month: "toIntervalMonth(1)", month_end: "toIntervalMonth(1)",
+    quarter: "toIntervalQuarter(1)", quarter_end: "toIntervalQuarter(1)",
+    year: "toIntervalYear(1)", year_end: "toIntervalYear(1)",
+    hour: "toIntervalHour(1)", minute: "toIntervalMinute(1)"
+  }
+};
+
+const Dates = {
+  iso(d) {
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  },
+  parse(s) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ""));
+    if (!m) return null;
+    return new Date(+m[1], +m[2] - 1, +m[3]);
+  },
+  addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; },
+  addMonths(d, n) { const r = new Date(d); r.setMonth(r.getMonth() + n); return r; },
+  lastOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); },
+
+  // даты-метки бакетов в [from, to)
+  buckets(fromISO, toISO, gran) {
+    const from = Dates.parse(fromISO), to = Dates.parse(toISO);
+    if (!from || !to || from >= to) return [];
+    const out = [];
+    const push = (d) => { if (d >= from && d < to) out.push(Dates.iso(d)); };
+    let guard = 0;
+    if (gran === "day" || gran === "hour" || gran === "minute") {
+      let cur = new Date(from);
+      while (cur < to && guard++ < 1500) { push(cur); cur = Dates.addDays(cur, 1); }
+    } else if (gran === "week" || gran === "week_end") {
+      // начало недели = понедельник
+      let cur = new Date(from);
+      const dow = (cur.getDay() + 6) % 7;
+      cur = Dates.addDays(cur, -dow);
+      while (cur < to && guard++ < 800) {
+        push(gran === "week_end" ? Dates.addDays(cur, 6) : cur);
+        cur = Dates.addDays(cur, 7);
+      }
+    } else if (gran === "month" || gran === "month_end") {
+      let cur = new Date(from.getFullYear(), from.getMonth(), 1);
+      while (cur < to && guard++ < 400) {
+        push(gran === "month_end" ? Dates.lastOfMonth(cur) : cur);
+        cur = Dates.addMonths(cur, 1);
+      }
+    } else if (gran === "quarter" || gran === "quarter_end") {
+      let cur = new Date(from.getFullYear(), Math.floor(from.getMonth() / 3) * 3, 1);
+      while (cur < to && guard++ < 200) {
+        push(gran === "quarter_end" ? Dates.lastOfMonth(Dates.addMonths(cur, 2)) : cur);
+        cur = Dates.addMonths(cur, 3);
+      }
+    } else if (gran === "year" || gran === "year_end") {
+      let cur = new Date(from.getFullYear(), 0, 1);
+      while (cur < to && guard++ < 100) {
+        push(gran === "year_end" ? new Date(cur.getFullYear(), 11, 31) : cur);
+        cur = Dates.addMonths(cur, 12);
+      }
+    }
+    if (!out.length) {
+      // диапазон уже одного бакета — вернуть хотя бы стартовую точку
+      out.push(fromISO);
+    }
+    return out;
+  },
+
+  spanYears(fromISO, toISO) {
+    const f = Dates.parse(fromISO), t = Dates.parse(toISO);
+    if (!f || !t) return 0;
+    return (t - f) / (365.25 * 24 * 3600 * 1000);
+  },
+
+  parseLookback(s) { // "5y" | "18m" | "90d" → годы
+    const m = /^(\d+)\s*([ymd])$/.exec(String(s || "").trim());
+    if (!m) return 100;
+    const n = +m[1];
+    return m[2] === "y" ? n : m[2] === "m" ? n / 12 : n / 365.25;
+  }
+};
+
+/* ============ Подсветка синтаксиса ============ */
+const Hl = {
+  SQL_KW: /\b(SELECT|FROM|WHERE|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|OFFSET|BY|AS|AND|OR|NOT|IN|LIKE|ILIKE|IS|NULL|JOIN|LEFT|RIGHT|INNER|FULL|ON|WITH|FILL|STEP|TO|INTERPOLATE|SETTINGS|DESCRIBE|DESC|SHOW|TABLES|UNION|ALL|DISTINCT|CASE|WHEN|THEN|ELSE|END|BETWEEN|ASC|DESC|ARRAY|FIRST|LAST|NULLS|INTERVAL|YEAR|MONTH|DAY|PREWHERE|FINAL|SAMPLE|USING|EXISTS|ANY|HAVING)\b/gi,
+
+  sql(src) {
+    let s = U.esc(src);
+    // комментарии и строки сначала (защита плейсхолдерами без цифр,
+    // иначе проход по числам разрушает индексы плейсхолдеров)
+    const stash = [];
+    const phEncode = (n) => String(n).replace(/\d/g, (d) => "abcdefghij"[+d]);
+    const phDecode = (s2) => +s2.split("").map((c) => "abcdefghij".indexOf(c)).join("");
+    const keep = (cls, text) => { stash.push(`<span class="${cls}">${text}</span>`); return `\u0000${phEncode(stash.length - 1)}\u0000`; };
+    s = s.replace(/\/\*[\s\S]*?\*\//g, (m) => keep("tok-com", m));
+    s = s.replace(/--[^\n]*/g, (m) => keep("tok-com", m));
+    s = s.replace(/&#39;(?:[^&]|&(?!#39;))*?&#39;/g, (m) => keep("tok-str", m));
+    s = s.replace(Hl.SQL_KW, (m) => keep("tok-kw", m));
+    s = s.replace(/\b([A-Za-z_][A-Za-z0-9_]*)\s*(?=\()/g, (m, fn) => keep("tok-fn", fn));
+    s = s.replace(/\b\d+(\.\d+)?\b/g, (m) => keep("tok-num", m));
+    s = s.replace(/\u0000([a-j]+)\u0000/g, (m, i) => stash[phDecode(i)]);
+    return s;
+  },
+
+  json(src) {
+    let s = typeof src === "string" ? src : JSON.stringify(src, null, 2);
+    s = U.esc(s);
+    s = s.replace(/(&quot;(?:[^&]|&(?!quot;))*?&quot;)(\s*:)?/g, (m, str, colon) =>
+      colon ? `<span class="tok-key">${str}</span>${colon}` : `<span class="tok-str">${str}</span>`);
+    s = s.replace(/\b(-?\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, '<span class="tok-num">$1</span>');
+    s = s.replace(/\b(true|false|null)\b/g, '<span class="tok-kw">$1</span>');
+    return s;
+  },
+
+  yaml(src) {
+    return U.esc(src).split("\n").map((line) => {
+      if (/^\s*#/.test(line)) return `<span class="tok-com">${line}</span>`;
+      let out = line;
+      // комментарий в конце строки
+      let comment = "";
+      const ci = out.search(/\s#\s/);
+      if (ci >= 0) { comment = `<span class="tok-com">${out.slice(ci)}</span>`; out = out.slice(0, ci); }
+      out = out.replace(/^(\s*-?\s*)([A-Za-z_][A-Za-z0-9_]*)(:)/, (m, pre, key, colon) =>
+        `${pre}<span class="tok-key">${key}</span><span class="tok-punct">${colon}</span>`);
+      out = out.replace(/(&quot;(?:[^&]|&(?!quot;))*?&quot;)/g, '<span class="tok-str">$1</span>');
+      out = out.replace(/\b(true|false|null)\b/g, '<span class="tok-kw">$1</span>');
+      out = out.replace(/(:\s|\[|,\s)(-?\d+(\.\d+)?)(?=[,\s\]]|$)/g, '$1<span class="tok-num">$2</span>');
+      return out + comment;
+    }).join("\n");
+  },
+
+  chError(text) {
+    let s = U.esc(text);
+    s = s.replace(/^(Code:\s*\d+\.)/, '<span class="ch-code">$1</span>');
+    s = s.replace(/\(([A-Z_]{4,})\)/g, '(<span class="ch-code">$1</span>)');
+    return s;
+  }
+};
+
+/* ============ Тосты ============ */
+const Toast = {
+  show(msg, kind) {
+    const root = U.$("#toastRoot");
+    const t = U.el("div", { class: `toast t-${kind || "ok"}` }, msg);
+    root.append(t);
+    setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity 0.3s"; }, 2300);
+    setTimeout(() => t.remove(), 2700);
+  }
+};
+
+/* ============ Глобальный тултип ============ */
+const Tip = {
+  init() {
+    const tip = U.el("div", { class: "hover-tip" });
+    document.body.append(tip);
+    document.addEventListener("mouseover", (e) => {
+      const t = e.target.closest("[data-tip]");
+      if (!t) { tip.style.display = "none"; return; }
+      tip.innerHTML = t.dataset.tip;
+      tip.style.display = "block";
+      const r = t.getBoundingClientRect();
+      tip.style.left = Math.min(r.left, window.innerWidth - 400) + "px";
+      tip.style.top = (r.bottom + 6) + "px";
+    });
+    document.addEventListener("mouseout", (e) => {
+      if (e.target.closest("[data-tip]")) tip.style.display = "none";
+    });
+  }
+};
+
+/* ============ Русские сообщения ошибок REST ============ */
+const ERROR_RU = {
+  "query-empty": "Выберите хотя бы колонки или метрики",
+  "rows-requires-dimensions": "Для плоских строк нужны колонки",
+  "history-requires-metrics": "Запрос по истории требует хотя бы одну метрику",
+  "time-dimensions-not-applicable": "Эта модель не историческая — временное измерение не применимо",
+  "granularity-not-allowed": "Такой шаг времени не разрешён для этой колонки",
+  "column-not-a-time-dimension": "Эта колонка не является временным измерением",
+  "param-metric-not-supported": "Параметризованные метрики пока не поддержаны в REST",
+  "param-virtual-not-supported": "Параметризованные колонки пока не поддержаны в REST",
+  "order-by-metric-not-allowed-in-rows": "Сортировка по метрике доступна только при агрегации",
+  "limit-by-not-supported-in-history": "LIMIT BY не работает в исторических запросах",
+  "array-join-not-supported-in-history": "Развёртка массивов не работает в исторических запросах",
+  "missing-time-range": "Укажите период или дату среза",
+  "range-exceeds-lookback": "Период шире допустимой глубины истории",
+  "extra_forbidden": "В запросе есть неизвестные поля",
+  "network": "Нет соединения с сервером. Проверьте base URL; для обхода CORS откройте файл с того же origin, что сервис.",
+  "unknown-column": "Неизвестная колонка",
+  "unknown-metric": "Неизвестная метрика",
+  "order-by-kind-mismatch": "Вид поля в сортировке (kind) не совпадает с фактическим",
+  "forbidden": "Доступ запрещён",
+  "request-validation-error": "Тело запроса не прошло проверку",
+  "clickhouse-query-error": "Ошибка выполнения запроса в ClickHouse",
+  "clickhouse-unavailable": "ClickHouse недоступен, повторите запрос позже",
+  "internal-error": "Внутренняя ошибка сервера (request_id — в ответе)"
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { U, CHTypes, GRAN, Dates, Hl, Toast, Tip, ERROR_RU });
+
+</script>
+<script>
+/* ===== src/api.js ===== */
+/* ============ Heimdall — API-слой ============ */
+"use strict";
+
+class ApiError extends Error {
+  constructor(status, code, detail, raw) {
+    super(detail || code);
+    this.status = status; this.code = code; this.detail = detail;
+    this.raw = raw || { code, detail };
+  }
+}
+
+/* ---------- Помощники по модели ---------- */
+const ModelInfo = {
+  key(m) { return `${m.schema_name}.${m.logic_model}`; },
+  kindBadges(m) {
+    const out = [];
+    if (m.history) out.push(["history", "⏱", "b-history"]);
+    if (m.array_join) out.push(["array_join", "⊞", "b-array"]);
+    if (m.joins && m.joins.length) out.push(["joined", "⇄", "b-joins"]);
+    if (!out.length) out.push(["обычный", "▦", "b-plain"]);
+    return out;
+  },
+  // все видимые колонки: обычные + виртуальные + параметризованные (с флагами)
+  allColumns(m) {
+    const out = [];
+    for (const c of m.columns || []) out.push({ ...c, _kind: "column" });
+    for (const c of m.virtual_columns || []) out.push({ ...c, _kind: "virtual" });
+    for (const c of m.param_virtual_columns || []) out.push({ ...c, _kind: "param" });
+    return out;
+  },
+  allMetrics(m) {
+    const out = [];
+    for (const x of m.metrics || []) out.push({ ...x, _kind: "metric" });
+    for (const x of m.param_metrics || []) out.push({ ...x, _kind: "param" });
+    return out;
+  },
+  column(m, name) { return ModelInfo.allColumns(m).find((c) => c.column_name === name) || null; },
+  metric(m, name) { return ModelInfo.allMetrics(m).find((x) => x.metric_name === name) || null; },
+  timeColumns(m) {
+    return (m.columns || []).filter((c) => Array.isArray(c.granularities) && c.granularities.length);
+  }
+};
+
+/* ============ Логика запроса: режим, валидация, SQL ============ */
+const QueryLogic = {
+  ALLOWED_FIELDS: ["columns", "metrics", "time_dimensions", "filters", "order_by", "limit", "offset", "limit_by"],
+
+  mode(body) {
+    if (Array.isArray(body.time_dimensions) && body.time_dimensions.length) return "history";
+    if (Array.isArray(body.metrics) && body.metrics.length) return "aggregate";
+    return "rows";
+  },
+
+  validate(model, body) {
+    const err = (status, code, detail) => new ApiError(status, code, detail);
+    for (const k of Object.keys(body)) {
+      if (!QueryLogic.ALLOWED_FIELDS.includes(k))
+        return err(422, "extra_forbidden", `Неизвестное поле тела запроса: '${k}'`);
+    }
+    const cols = body.columns || [], mets = body.metrics || [];
+    const tds = body.time_dimensions || [];
+    const mode = QueryLogic.mode(body);
+
+    if (body.limit != null && (body.limit < 1 || body.limit > 1000))
+      return err(422, "extra_forbidden", "limit должен быть в диапазоне 1..1000");
+
+    // неизвестные имена
+    for (const c of cols) {
+      if (!ModelInfo.column(model, c)) return err(400, "unknown-column", `Колонка '${c}' не найдена в модели '${model.logic_model}'`);
+    }
+    for (const m of mets) {
+      if (!ModelInfo.metric(model, m)) return err(400, "unknown-metric", `Метрика '${m}' не найдена в модели '${model.logic_model}'`);
+    }
+
+    // параметризованные элементы
+    for (const m of mets) {
+      const mm = ModelInfo.metric(model, m);
+      if (mm && mm._kind === "param") return err(422, "param-metric-not-supported", `Метрика '${m}' параметризована и недоступна через REST`);
+    }
+    for (const c of cols) {
+      const cc = ModelInfo.column(model, c);
+      if (cc && cc._kind === "param") return err(422, "param-virtual-not-supported", `Колонка '${c}' параметризована и недоступна через REST`);
+    }
+
+    if (tds.length) {
+      if (!model.history) return err(422, "time-dimensions-not-applicable", `Модель '${model.logic_model}' не историческая`);
+      if (tds.length > 1) return err(422, "extra_forbidden", "time_dimensions может содержать только один элемент");
+      const td = tds[0];
+      const col = (model.columns || []).find((c) => c.column_name === td.name);
+      if (!col) return err(400, "unknown-column", `Колонка '${td.name}' не найдена`);
+      if (!Array.isArray(col.granularities) || !col.granularities.length)
+        return err(422, "column-not-a-time-dimension", `Колонка '${td.name}' не является временным измерением`);
+      if (td.granularity && !col.granularities.includes(td.granularity))
+        return err(422, "granularity-not-allowed", `Гранулярность '${td.granularity}' не разрешена для '${td.name}'. Доступно: ${col.granularities.join(", ")}`);
+      if (!td.range || !td.range.from || !td.range.to)
+        return err(422, "missing-time-range", "Не задан период: укажите range.from и range.to");
+      const lookback = Dates.parseLookback(model.history.lookback_safety?.default_lookback || "100y");
+      if (Dates.spanYears(td.range.from, td.range.to) > lookback)
+        return err(422, "range-exceeds-lookback", `Период превышает допустимую глубину истории (${model.history.lookback_safety.default_lookback})`);
+      if (!mets.length) return err(422, "history-requires-metrics", "Исторический запрос требует хотя бы одну метрику");
+      if (body.limit_by) return err(422, "limit-by-not-supported-in-history", "limit_by запрещён в историческом режиме");
+    }
+
+    if (mode === "rows") {
+      if (!cols.length && !mets.length) return err(422, "query-empty", "Тело запроса пустое: нет ни колонок, ни метрик");
+      for (const ob of body.order_by || []) {
+        const kind = ob.kind || (ModelInfo.metric(model, ob.field) ? "metric" : "column");
+        if (kind === "metric") return err(422, "order-by-metric-not-allowed-in-rows", `Сортировка по метрике '${ob.field}' недоступна в режиме строк`);
+      }
+    }
+    if (mode === "aggregate" && body.limit_by && model.history)
+      return err(422, "limit-by-not-supported-in-history", "limit_by запрещён для исторических моделей");
+    return null;
+  },
+
+  /* ---------- значение → SQL-литерал ---------- */
+  lit(v) {
+    if (v == null) return "NULL";
+    if (typeof v === "number") return String(v);
+    if (typeof v === "boolean") return v ? "true" : "false";
+    return `'${String(v).replace(/'/g, "\\'")}'`;
+  },
+
+  filterSql(node) {
+    if (!node) return "";
+    switch (node.type) {
+      case "condition":
+        return `${node.column} ${node.operator} ${QueryLogic.lit(node.value)}`;
+      case "condition_in":
+        return `${node.column} ${node.operator} (${(node.value || []).map(QueryLogic.lit).join(", ")})`;
+      case "condition_like":
+        return `${node.column} ${node.operator} ${QueryLogic.lit(node.pattern)}`;
+      case "condition_null":
+        return `${node.column} ${node.operator}`;
+      case "condition_array":
+        if (node.operator === "has") return `has(${node.column}, ${QueryLogic.lit(node.value)})`;
+        return `${node.operator}(${node.column}, [${(node.value || []).map(QueryLogic.lit).join(", ")}])`;
+      case "and": case "or": {
+        const parts = (node.conditions || []).map(QueryLogic.filterSql).filter(Boolean);
+        if (!parts.length) return "";
+        return `(${parts.join(node.type === "and" ? " AND " : " OR ")})`;
+      }
+      case "not": {
+        const inner = QueryLogic.filterSql(node.condition);
+        return inner ? `NOT (${inner})` : "";
+      }
+    }
+    return "";
+  },
+
+  colExpr(model, name) {
+    const c = ModelInfo.column(model, name);
+    if (c && c.sql) return `${c.sql} AS ${name}`;
+    return name;
+  },
+
+  orderBySql(body) {
+    const obs = body.order_by || [];
+    if (!obs.length) return "";
+    return "ORDER BY " + obs.map((o) =>
+      `${o.field} ${(o.direction || "asc").toUpperCase()}${o.nulls ? ` NULLS ${o.nulls.toUpperCase()}` : ""}`
+    ).join(", ");
+  },
+
+  buildSql(model, body) {
+    const mode = QueryLogic.mode(body);
+    const tbl = `${model.schema_name}.${model.table_name}`;
+    const where = QueryLogic.filterSql(body.filters);
+    const lim = `LIMIT ${body.limit ?? 100}${body.offset ? ` OFFSET ${body.offset}` : ""}`;
+    const limitBy = body.limit_by ? `LIMIT ${body.limit_by.limit} BY ${body.limit_by.by.join(", ")}` : "";
+
+    if (mode === "history") {
+      const td = body.time_dimensions[0];
+      const gran = td.granularity || "day";
+      const fn = GRAN.sqlFn[gran] || "toDate";
+      const h = model.history;
+      const metricSel = body.metrics.map((m) => {
+        const mm = ModelInfo.metric(model, m);
+        return `    ${mm ? mm.sql : m + "()"} AS ${m}`;
+      });
+      const dims = (body.columns || []);
+      const dimSel = dims.map((c) => `    ${c}`);
+      const groupKeys = [td.name, ...dims].join(", ");
+      const interp = body.metrics.map((m) => `${m} AS ${m}`).join(", ");
+      return [
+        `SELECT`,
+        `    ${fn}(${td.name}) AS ${td.name},`,
+        ...dimSel.map((s) => s + ","),
+        metricSel.join(",\n"),
+        `FROM`,
+        `(`,
+        `    SELECT *, ${ModelInfo.column(model, td.name)?.sql || `toDate32(${h.valid_from})`} AS ${td.name}`,
+        `    FROM ${tbl}`,
+        `    WHERE ${h.valid_from} >= toDate('${td.range.from}') - INTERVAL ${Math.ceil(Dates.parseLookback(h.lookback_safety?.default_lookback || "5y"))} YEAR`,
+        `      AND ${h.valid_from} < toDate('${td.range.to}')`,
+        where ? `      AND ${where}` : null,
+        `    ORDER BY ${h.primary_key}, ${h.valid_from}`,
+        `)`,
+        `WHERE ${td.name} >= toDate('${td.range.from}') AND ${td.name} < toDate('${td.range.to}')`,
+        `GROUP BY ${groupKeys}`,
+        `ORDER BY ${td.name} ASC WITH FILL`,
+        `    FROM ${fn}(toDate('${td.range.from}'))`,
+        `    TO toDate('${td.range.to}')`,
+        `    STEP ${GRAN.stepExpr[gran] || "toIntervalDay(1)"}`,
+        (td.fill?.mode || h.fill?.mode) === "previous" ? `INTERPOLATE (${interp})` : null,
+        lim,
+        `SETTINGS enable_analyzer = 1`
+      ].filter((x) => x != null).join("\n");
+    }
+
+    if (mode === "aggregate") {
+      const dims = body.columns || [];
+      const sel = [
+        ...dims.map((c) => `    ${QueryLogic.colExpr(model, c)}`),
+        ...body.metrics.map((m) => {
+          const mm = ModelInfo.metric(model, m);
+          return `    ${mm ? mm.sql : m + "()"} AS ${m}`;
+        })
+      ];
+      return [
+        `SELECT`,
+        sel.join(",\n"),
+        `FROM ${tbl}`,
+        where ? `WHERE ${where}` : null,
+        dims.length ? `GROUP BY ${dims.join(", ")}` : null,
+        QueryLogic.orderBySql(body) || null,
+        limitBy || null,
+        lim,
+        `SETTINGS enable_analyzer = 1`
+      ].filter((x) => x != null).join("\n");
+    }
+
+    // rows
+    return [
+      `SELECT`,
+      (body.columns || []).map((c) => `    ${QueryLogic.colExpr(model, c)}`).join(",\n"),
+      `FROM ${tbl}`,
+      where ? `WHERE ${where}` : null,
+      QueryLogic.orderBySql(body) || null,
+      limitBy || null,
+      lim,
+      `SETTINGS enable_analyzer = 1`
+    ].filter((x) => x != null).join("\n");
+  },
+
+  curl(baseUrl, token, model, body) {
+    const url = `${(baseUrl || "http://localhost:8000").replace(/\/+$/, "")}/api/v1/${model.schema_name}/${model.logic_model}/`;
+    return [
+      `curl -X POST '${url}' \\`,
+      `  -H 'Content-Type: application/json' \\`,
+      token ? `  -H 'Authorization: Bearer ${token}' \\` : `  -H 'Authorization: Bearer <JWT>' \\`,
+      `  -d '${JSON.stringify(body)}'`
+    ].join("\n");
+  }
+};
+
+/* ============ HttpApiClient (live) ============ */
+class HttpApiClient {
+  constructor(baseUrl, token) {
+    this.kind = "live";
+    this.base = String(baseUrl || "").replace(/\/+$/, "");
+    this.token = token || "";
+  }
+  _headers(json) {
+    const h = {};
+    if (json) h["Content-Type"] = "application/json";
+    if (this.token) h["Authorization"] = `Bearer ${this.token}`;
+    return h;
+  }
+  async _fetch(url, opts) {
+    let resp;
+    try {
+      resp = await fetch(url, opts);
+    } catch (e) {
+      throw new ApiError(0, "network", ERROR_RU.network, { error: String(e) });
+    }
+    return resp;
+  }
+  async ping() {
+    const t0 = performance.now();
+    const r = await this._fetch(`${this.base}/ping`, { headers: this._headers(false) });
+    if (!r.ok) throw new ApiError(r.status, "ping-failed", `Сервер ответил ${r.status}`);
+    return { ok: true, latency: Math.round(performance.now() - t0) };
+  }
+  async _json(r) {
+    const text = await r.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch (e) { /* не JSON */ }
+    if (!r.ok) {
+      const code = data?.code || `http-${r.status}`;
+      throw new ApiError(r.status, code, data?.detail || text.slice(0, 500), data || { raw: text });
+    }
+    return data;
+  }
+  async listTables() {
+    const r = await this._fetch(`${this.base}/api/v1/tables/`, { headers: this._headers(false) });
+    return this._json(r);
+  }
+  async getTable(schema, name) {
+    const r = await this._fetch(`${this.base}/api/v1/tables/${schema}/${name}/`, { headers: this._headers(false) });
+    return this._json(r);
+  }
+  async query(schema, name, body, opts) {
+    const q = opts && opts.raw ? "?query_type=raw" : "";
+    const r = await this._fetch(`${this.base}/api/v1/${schema}/${name}/${q}`, {
+      method: "POST", headers: this._headers(true), body: JSON.stringify(body)
+    });
+    return this._json(r);
+  }
+  async sql(text) {
+    const r = await this._fetch(`${this.base}/`, {
+      method: "POST",
+      headers: { ...this._headers(false), "Content-Type": "text/plain" },
+      body: text
+    });
+    const out = await r.text();
+    if (!r.ok) return { ok: false, error: out };
+    return { ok: true, text: out };
+  }
+  async publishYaml(yamlText, schemaName) {
+    const fd = new FormData();
+    fd.append("yaml_file", new Blob([yamlText], { type: "application/yaml" }), "dataset.yaml");
+    const q = schemaName ? `?schema_name=${encodeURIComponent(schemaName)}` : "";
+    const r = await this._fetch(`${this.base}/api/v1/dev/add_yaml_for_debug/${q}`, {
+      method: "POST", headers: this._headers(false), body: fd
+    });
+    return this._json(r);
+  }
+}
+
+/* ============ Фасад: текущий клиент по настройкам ============ */
+const Api = {
+  client() {
+    const s = App.settings;
+    return new HttpApiClient(s.baseUrl, s.token);
+  }
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { ApiError, ModelInfo, QueryLogic, HttpApiClient, Api });
+
+</script>
+<script>
+/* ===== src/yamlcodec.js ===== */
+/* ============ Heimdall — YAML-кодек (генерация + упрощённый парсер) ============ */
+"use strict";
+
+const YamlCodec = {
+  /* ---------- генерация ---------- */
+  q(v) {
+    if (v == null) return "null";
+    if (typeof v === "number" || typeof v === "boolean") return String(v);
+    const s = String(v);
+    if (s === "") return '""';
+    const plain = /^[A-Za-z0-9_][A-Za-z0-9_.\-\/()]*$/.test(s);
+    if (plain) return s;
+    return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+  },
+  inlineList(arr) { return "[" + (arr || []).map((x) => YamlCodec.q(x)).join(", ") + "]"; },
+
+  generate(ds) {
+    const L = [];
+    const p2 = "  ", p4 = "    ", p6 = "      ", p8 = "        ";
+    L.push("datasets:");
+    L.push(`${p2}- logic_model: ${YamlCodec.q(ds.logic_model)}`);
+    L.push(`${p4}table_name: ${YamlCodec.q(ds.table_name)}`);
+    L.push(`${p4}schema_name: ${YamlCodec.q(ds.schema_name)}`);
+    if (ds.description) L.push(`${p4}description: ${YamlCodec.q(ds.description)}`);
+    if (ds.allowed_groups && ds.allowed_groups.length) L.push(`${p4}allowed_groups: ${YamlCodec.inlineList(ds.allowed_groups)}`);
+    if (ds.disallowed_groups && ds.disallowed_groups.length) L.push(`${p4}disallowed_groups: ${YamlCodec.inlineList(ds.disallowed_groups)}`);
+    if (ds.visible && ds.visible.length) L.push(`${p4}visible: ${YamlCodec.inlineList(ds.visible)}`);
+
+    if (ds.history) {
+      const h = ds.history;
+      L.push("");
+      L.push(`${p4}history:`);
+      L.push(`${p6}valid_from: ${YamlCodec.q(h.valid_from)}`);
+      L.push(`${p6}primary_key: ${YamlCodec.q(h.primary_key)}`);
+      L.push(`${p6}time_column: ${YamlCodec.q(h.time_column)}`);
+      L.push(`${p6}require_time_range: ${h.require_time_range ? "true" : "false"}`);
+      L.push(`${p6}fill: { mode: ${h.fill?.mode || "previous"} }`);
+      L.push(`${p6}lookback_safety: { default_lookback: ${h.lookback_safety?.default_lookback || "5y"} }`);
+    }
+
+    const colBlock = (name, cols, isMetric) => {
+      L.push("");
+      if (!cols || !cols.length) { L.push(`${p4}${name}: []`); return; }
+      L.push(`${p4}${name}:`);
+      for (const c of cols) {
+        if (isMetric) {
+          L.push(`${p6}- metric_name: ${YamlCodec.q(c.metric_name)}`);
+          if (c.type) L.push(`${p8}type: ${YamlCodec.q(c.type)}`);
+          L.push(`${p8}sql: ${YamlCodec.q(c.sql)}`);
+          if (c.verbose_name) L.push(`${p8}verbose_name: ${YamlCodec.q(c.verbose_name)}`);
+          if (c.description) L.push(`${p8}description: ${YamlCodec.q(c.description)}`);
+          if (c.parameters && c.parameters.length) {
+            L.push(`${p8}parameters:`);
+            for (const pp of c.parameters)
+              L.push(`${p8}  - { name: ${YamlCodec.q(pp.name)}, type: ${YamlCodec.q(pp.type)}${pp.description ? `, description: ${YamlCodec.q(pp.description)}` : ""} }`);
+          }
+        } else {
+          L.push(`${p6}- column_name: ${YamlCodec.q(c.column_name)}`);
+          L.push(`${p8}type: ${YamlCodec.q(c.type || "String")}`);
+          if (c.description) L.push(`${p8}description: ${YamlCodec.q(c.description)}`);
+          if (c.sql) L.push(`${p8}sql: ${YamlCodec.q(c.sql)}`);
+          if (c.granularities && c.granularities.length) {
+            L.push(`${p8}granularities: ${YamlCodec.inlineList(c.granularities)}`);
+            if (c.default_granularity) L.push(`${p8}default_granularity: ${YamlCodec.q(c.default_granularity)}`);
+          }
+          if (c.parameters && c.parameters.length) {
+            L.push(`${p8}parameters:`);
+            for (const pp of c.parameters)
+              L.push(`${p8}  - { name: ${YamlCodec.q(pp.name)}, type: ${YamlCodec.q(pp.type)} }`);
+          }
+        }
+      }
+    };
+    colBlock("columns", ds.columns, false);
+    colBlock("virtual_columns", ds.virtual_columns, false);
+    colBlock("param_virtual_columns", ds.param_virtual_columns, false);
+    colBlock("metrics", ds.metrics, true);
+    colBlock("param_metrics", ds.param_metrics, true);
+
+    L.push("");
+    L.push(`${p4}joins: ${(ds.joins && ds.joins.length) ? "" : "[]"}`);
+    if (ds.joins && ds.joins.length) {
+      for (const j of ds.joins)
+        L.push(`${p6}- { logic_model: ${YamlCodec.q(j.logic_model)}, schema_name: ${YamlCodec.q(j.schema_name)}, type: ${YamlCodec.q(j.type || "left")}, on: ${YamlCodec.q(j.on)} }`);
+    }
+    if (ds.array_join) {
+      L.push(`${p4}array_join:`);
+      L.push(`${p6}type: ${YamlCodec.q(ds.array_join.type || "left")}`);
+      if (ds.array_join.source_model)
+        L.push(`${p6}source_model: ${YamlCodec.q(ds.array_join.source_model)}`);
+      L.push(`${p6}arrays:`);
+      for (const a of ds.array_join.arrays || [])
+        L.push(`${p8}- { source: ${YamlCodec.q(a.source)}, as: ${YamlCodec.q(a.as)}, element_type: ${YamlCodec.q(a.element_type)} }`);
+    } else {
+      L.push(`${p4}array_join: null`);
+    }
+    return L.join("\n") + "\n";
+  },
+
+  /* ---------- упрощённый парсер нашего подмножества YAML ---------- */
+  parse(text) {
+    const rawLines = String(text || "").split("\n");
+    const lines = [];
+    for (const raw of rawLines) {
+      // срезаем комментарии вне кавычек (упрощённо)
+      let line = raw.replace(/\t/g, "  ");
+      let inS = false, inD = false, cut = -1;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === "'" && !inD) inS = !inS;
+        else if (ch === '"' && !inS && line[i - 1] !== "\\") inD = !inD;
+        else if (ch === "#" && !inS && !inD && (i === 0 || /\s/.test(line[i - 1]))) { cut = i; break; }
+      }
+      if (cut >= 0) line = line.slice(0, cut);
+      if (!line.trim()) continue;
+      const indent = line.match(/^ */)[0].length;
+      lines.push({ indent, text: line.trim() });
+    }
+    if (!lines.length) throw new Error("пустой документ");
+    const [val] = YamlCodec._block(lines, 0, lines[0].indent);
+    return val;
+  },
+
+  _block(lines, i, indent) {
+    if (i >= lines.length) return [null, i];
+    if (lines[i].text.startsWith("- ") || lines[i].text === "-") return YamlCodec._list(lines, i, indent);
+    return YamlCodec._map(lines, i, indent);
+  },
+
+  _list(lines, i, indent) {
+    const out = [];
+    while (i < lines.length && lines[i].indent === indent && (lines[i].text.startsWith("- ") || lines[i].text === "-")) {
+      const rest = lines[i].text === "-" ? "" : lines[i].text.slice(2);
+      if (!rest) {
+        // элемент на следующих строках
+        const [v, ni] = YamlCodec._block(lines, i + 1, lines[i + 1] ? lines[i + 1].indent : indent + 2);
+        out.push(v); i = ni;
+      } else if (/^[A-Za-z_][\w]*\s*:/.test(rest) && !rest.startsWith("{")) {
+        // элемент-словарь: первая пара на строке с "-"
+        const virtIndent = indent + 2;
+        const sub = [{ indent: virtIndent, text: rest }];
+        let j = i + 1;
+        while (j < lines.length && lines[j].indent > indent && !(lines[j].indent === indent && lines[j].text.startsWith("- "))) {
+          if (lines[j].indent <= indent) break;
+          sub.push(lines[j]); j++;
+        }
+        const [v] = YamlCodec._map(sub, 0, virtIndent);
+        out.push(v); i = j;
+      } else {
+        out.push(YamlCodec._scalar(rest)); i++;
+      }
+    }
+    return [out, i];
+  },
+
+  _map(lines, i, indent) {
+    const out = {};
+    while (i < lines.length && lines[i].indent === indent && !lines[i].text.startsWith("- ")) {
+      const m = /^([A-Za-z_][\w]*)\s*:\s*(.*)$/.exec(lines[i].text);
+      if (!m) throw new Error(`строка не похожа на key: value — «${lines[i].text}»`);
+      const key = m[1], rest = m[2];
+      if (rest === "") {
+        // вложенный блок
+        if (i + 1 < lines.length && lines[i + 1].indent > indent) {
+          const [v, ni] = YamlCodec._block(lines, i + 1, lines[i + 1].indent);
+          out[key] = v; i = ni;
+        } else { out[key] = null; i++; }
+      } else {
+        out[key] = YamlCodec._scalar(rest); i++;
+      }
+    }
+    return [out, i];
+  },
+
+  _scalar(s) {
+    s = s.trim();
+    if (s === "" || s === "null" || s === "~") return null;
+    if (s === "true") return true;
+    if (s === "false") return false;
+    if (s.startsWith("[")) return YamlCodec._inlineList(s);
+    if (s.startsWith("{")) return YamlCodec._inlineMap(s);
+    if (/^"(.*)"$/.test(s)) return s.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+    if (/^'(.*)'$/.test(s)) return s.slice(1, -1).replace(/''/g, "'");
+    if (/^-?\d+$/.test(s)) return parseInt(s, 10);
+    if (/^-?\d+\.\d+$/.test(s)) return parseFloat(s);
+    return s;
+  },
+
+  _splitTop(s) {
+    const out = []; let depth = 0, cur = "", inS = false, inD = false;
+    for (const ch of s) {
+      if (ch === "'" && !inD) inS = !inS;
+      if (ch === '"' && !inS) inD = !inD;
+      if (!inS && !inD) {
+        if (ch === "[" || ch === "{") depth++;
+        if (ch === "]" || ch === "}") depth--;
+        if (ch === "," && depth === 0) { out.push(cur); cur = ""; continue; }
+      }
+      cur += ch;
+    }
+    if (cur.trim()) out.push(cur);
+    return out.map((x) => x.trim());
+  },
+
+  _inlineList(s) {
+    const inner = s.replace(/^\[/, "").replace(/\]$/, "").trim();
+    if (!inner) return [];
+    return YamlCodec._splitTop(inner).map(YamlCodec._scalar);
+  },
+
+  _inlineMap(s) {
+    const inner = s.replace(/^\{/, "").replace(/\}$/, "").trim();
+    const out = {};
+    if (!inner) return out;
+    for (const pair of YamlCodec._splitTop(inner)) {
+      const m = /^([A-Za-z_][\w]*)\s*:\s*(.*)$/.exec(pair);
+      if (!m) throw new Error(`плохая пара в инлайн-словаре: «${pair}»`);
+      out[m[1]] = YamlCodec._scalar(m[2]);
+    }
+    return out;
+  }
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { YamlCodec });
+
+</script>
+<script>
+/* ===== src/results.js ===== */
+/* ============ Heimdall — нижняя панель: результаты, график, JSON, SQL, ошибки ============ */
+"use strict";
+
+const Bp = {
+  state: { result: null, ctx: null, json: null, sql: null, error: null, active: "result" },
+  TABS: [
+    ["result", "Результат"], ["chart", "График"], ["json", "JSON тела"], ["sql", "SQL"], ["error", "Ошибка"]
+  ],
+
+  init() {
+    const tabsEl = U.$("#bpTabs");
+    tabsEl.innerHTML = "";
+    for (const [id, label] of Bp.TABS) {
+      tabsEl.append(U.el("div", {
+        class: "bp-tab", dataset: { bptab: id },
+        onclick: () => Bp.show(id)
+      }, label, U.el("span", { class: "bp-dot", style: "display:none" })));
+    }
+    tabsEl.append(U.el("span", { style: "flex:1" }));
+    tabsEl.append(U.el("button", {
+      class: "ghost iconbtn", id: "bpCollapse", title: "Свернуть/развернуть панель",
+      onclick: () => U.$("#bottomPanel").classList.toggle("collapsed")
+    }, "▾"));
+    window.addEventListener("resize", U.debounce(() => { if (Bp.state.active === "chart") Bp.render(); }, 200));
+    Bp.show("result");
+  },
+
+  expand() { U.$("#bottomPanel").classList.remove("collapsed"); },
+
+  show(tab) {
+    Bp.state.active = tab;
+    U.$$("#bpTabs .bp-tab").forEach((t) => t.classList.toggle("active", t.dataset.bptab === tab));
+    Bp.render();
+  },
+
+  dot(tab, color) {
+    const t = U.$(`#bpTabs .bp-tab[data-bptab="${tab}"] .bp-dot`);
+    if (!t) return;
+    if (!color) { t.style.display = "none"; return; }
+    t.style.display = "inline-block";
+    t.style.background = `var(--${color})`;
+  },
+
+  loading() {
+    Bp.expand();
+    Bp.show("result");
+    const body = U.$("#bpBody");
+    body.innerHTML = "";
+    body.append(U.el("div", { class: "skeleton-rows" },
+      ...[95, 88, 92, 70, 85, 60].map((w) => { const d = U.el("div", { class: "sk-line" }); d.style.width = w + "%"; return d; })));
+  },
+
+  setResult(result, ctx) {
+    Bp.state.result = result; Bp.state.ctx = ctx || null;
+    Bp.state.error = null;
+    Bp.dot("error", null);
+    Bp.dot("result", "green");
+    Bp.dot("chart", ctx && ctx.mode === "history" ? "accent-text" : null);
+    Bp.expand();
+    Bp.show(ctx && ctx.preferChart ? "chart" : "result");
+  },
+
+  setJson(body) { Bp.state.json = body; if (Bp.state.active === "json") Bp.render(); },
+  setSql(sql) { Bp.state.sql = sql; Bp.dot("sql", "cyan"); Bp.expand(); Bp.show("sql"); },
+
+  setError(err) {
+    Bp.state.error = err;
+    Bp.dot("error", "red");
+    Bp.expand();
+    Bp.show("error");
+  },
+
+  render() {
+    const body = U.$("#bpBody");
+    body.innerHTML = "";
+    const t = Bp.state.active;
+    if (t === "result") Bp.renderResult(body);
+    else if (t === "chart") Bp.renderChart(body);
+    else if (t === "json") Bp.renderJson(body);
+    else if (t === "sql") Bp.renderSql(body);
+    else if (t === "error") Bp.renderError(body);
+  },
+
+  /* ---------- Результат: таблица ---------- */
+  renderResult(body) {
+    const res = Bp.state.result, ctx = Bp.state.ctx;
+    if (!res) { body.append(U.el("div", { class: "bp-empty" }, "Выполните запрос — результат появится здесь")); return; }
+    const rows = res.data || [];
+
+    const meta = U.el("div", { class: "bp-meta" });
+    if (ctx && ctx.mode) meta.append(U.el("span", { class: `mode-pill m-${ctx.mode}`, style: "font-size:10px;padding:1px 9px" }, ctx.mode.toUpperCase()));
+    meta.append(U.el("span", null, `строк: ${rows.length}`));
+    if (res.limit != null) meta.append(U.el("span", { class: "mono" }, `limit ${res.limit}, offset ${res.offset ?? 0}`));
+    if (ctx && ctx.onPage) {
+      meta.append(U.el("span", { style: "flex:1" }));
+      const page = Math.floor((res.offset || 0) / (res.limit || 100)) + 1;
+      meta.append(U.el("div", { class: "pager" },
+        U.el("button", { class: "small", disabled: !(res.offset > 0), onclick: () => ctx.onPage(-1) }, "← Назад"),
+        U.el("span", { class: "pg-info" }, `стр. ${page}`),
+        U.el("button", { class: "small", disabled: !res.has_next_page, onclick: () => ctx.onPage(1) }, "Вперёд →"),
+        res.has_next_page ? U.el("span", { class: "pg-info" }, "есть ещё") : null));
+    }
+    body.append(meta);
+
+    if (!rows.length) {
+      body.append(U.el("div", { class: "bp-empty" }, "Пустой результат: под условия не попало ни одной строки"));
+      return;
+    }
+    body.append(Bp.table(rows));
+  },
+
+  table(rows) {
+    const cols = Object.keys(rows[0]);
+    const isNum = {};
+    for (const c of cols) {
+      isNum[c] = rows.every((r) => r[c] == null || typeof r[c] === "number");
+    }
+    const fmtCell = (v, c) => {
+      if (v == null) return U.el("span", { class: "null" }, "null");
+      if (Array.isArray(v)) return U.el("span", { class: "mono", style: "color:var(--purple)" }, `['${v.join("', '")}']`);
+      if (typeof v === "number") return U.fmtNum(v);
+      if (typeof v === "boolean") return U.el("span", { class: "mono", style: "color:var(--green)" }, String(v));
+      return String(v);
+    };
+    return U.el("table", { class: "dt" },
+      U.el("thead", null, U.el("tr", null, ...cols.map((c) => U.el("th", { class: isNum[c] ? "num" : "" }, c)))),
+      U.el("tbody", null, ...rows.map((r) => U.el("tr", null,
+        ...cols.map((c) => U.el("td", { class: isNum[c] ? "num" : (typeof r[c] === "string" && r[c].length > 24 ? "" : "mono") }, fmtCell(r[c], c)))))));
+  },
+
+  /* ---------- График (SVG line chart) ---------- */
+  chartMetric: null,
+  renderChart(body) {
+    const res = Bp.state.result, ctx = Bp.state.ctx;
+    if (!res || !ctx || ctx.mode !== "history" || !(res.data || []).length) {
+      body.append(U.el("div", { class: "bp-empty" },
+        "График доступен для исторических запросов (time_dimensions + метрики)"));
+      return;
+    }
+    const tdName = ctx.tdName, metrics = ctx.metrics || [], dims = ctx.dims || [];
+    if (!Bp.chartMetric || !metrics.includes(Bp.chartMetric)) Bp.chartMetric = metrics[0];
+
+    const controls = U.el("div", { class: "chart-controls" },
+      U.el("span", { class: "field-label" }, "Метрика:"),
+      U.el("div", { class: "seg" }, ...metrics.map((m) => U.el("button", {
+        class: m === Bp.chartMetric ? "on seg-accent" : "",
+        onclick: () => { Bp.chartMetric = m; Bp.render(); }
+      }, m))));
+    body.append(controls);
+
+    // серии
+    const rows = res.data;
+    const xs = [...new Set(rows.map((r) => r[tdName]))].sort();
+    const seriesMap = new Map();
+    for (const r of rows) {
+      const key = dims.length ? dims.map((d) => r[d] ?? "null").join(" · ") : Bp.chartMetric;
+      if (!seriesMap.has(key)) seriesMap.set(key, new Map());
+      seriesMap.get(key).set(r[tdName], r[Bp.chartMetric]);
+    }
+    // Цвета берём из темы: при переключении светлая/тёмная график
+    // перерисовывается теми же переменными, что и остальной интерфейс.
+    const themed = getComputedStyle(document.documentElement);
+    const palette = [1, 2, 3, 4, 5, 6, 7, 8]
+      .map((i) => themed.getPropertyValue("--chart-" + i).trim())
+      .filter(Boolean);
+    const series = [...seriesMap.entries()].slice(0, 8).map(([name, map], i) => ({
+      name, color: palette[i % palette.length],
+      points: xs.map((x) => map.has(x) ? map.get(x) : null)
+    }));
+
+    const legend = U.el("div", { class: "chart-legend" },
+      ...series.map((s) => U.el("span", { class: "lg-item" },
+        U.el("span", { class: "lg-swatch", style: `background:${s.color}` }), s.name)));
+    body.append(legend);
+
+    const wrap = U.el("div", { class: "chart-wrap" });
+    body.append(wrap);
+    Bp.drawChart(wrap, xs, series);
+  },
+
+  drawChart(wrap, xs, series) {
+    const W = Math.max(420, wrap.clientWidth - 4);
+    const H = Math.max(160, (U.$("#bpBody").clientHeight || 260) - (series.length > 4 ? 110 : 92));
+    const M = { l: 58, r: 16, t: 12, b: 26 };
+    const vals = series.flatMap((s) => s.points).filter((v) => v != null);
+    if (!vals.length) { wrap.append(U.el("div", { class: "bp-empty" }, "Нет числовых значений")); return; }
+    let ymin = Math.min(...vals), ymax = Math.max(...vals);
+    if (ymin === ymax) { ymin -= 1; ymax += 1; }
+    const pad = (ymax - ymin) * 0.08;
+    ymin -= pad; ymax += pad;
+    if (ymin > 0 && ymin < (ymax - ymin)) ymin = 0;
+
+    const px = (i) => M.l + (xs.length === 1 ? 0.5 : i / (xs.length - 1)) * (W - M.l - M.r);
+    const py = (v) => M.t + (1 - (v - ymin) / (ymax - ymin)) * (H - M.t - M.b);
+
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("class", "linechart");
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    const add = (tag, attrs, text) => {
+      const n = document.createElementNS(ns, tag);
+      for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+      if (text != null) n.textContent = text;
+      svg.append(n); return n;
+    };
+
+    // сетка Y
+    const ticks = 4;
+    for (let i = 0; i <= ticks; i++) {
+      const v = ymin + (i / ticks) * (ymax - ymin);
+      const y = py(v);
+      add("line", { x1: M.l, x2: W - M.r, y1: y, y2: y, class: "gridline" });
+      add("text", { x: M.l - 8, y: y + 3, "text-anchor": "end" }, U.fmtNum(Math.round(v * 10) / 10));
+    }
+    // подписи X
+    const xstep = Math.max(1, Math.ceil(xs.length / Math.floor((W - M.l - M.r) / 86)));
+    xs.forEach((x, i) => {
+      if (i % xstep !== 0 && i !== xs.length - 1) return;
+      add("text", { x: px(i), y: H - 8, "text-anchor": "middle" }, x);
+    });
+    add("line", { x1: M.l, x2: W - M.r, y1: H - M.b, y2: H - M.b, class: "axis" });
+
+    // линии серий
+    for (const s of series) {
+      let d = "", started = false;
+      s.points.forEach((v, i) => {
+        if (v == null) { started = false; return; }
+        d += (started ? " L " : " M ") + px(i).toFixed(1) + " " + py(v).toFixed(1);
+        started = true;
+      });
+      if (d) add("path", { d, fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round" });
+      s.points.forEach((v, i) => {
+        if (v == null) return;
+        add("circle", { cx: px(i), cy: py(v), r: 2.5, fill: s.color });
+      });
+    }
+
+    // tooltip
+    const guide = add("line", { x1: 0, x2: 0, y1: M.t, y2: H - M.b, stroke: "var(--border-strong)", "stroke-dasharray": "3,3", visibility: "hidden" });
+    const tip = U.el("div", { class: "chart-tip" });
+    document.body.append(tip);
+    svg.addEventListener("mousemove", (e) => {
+      const rect = svg.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      let best = 0, bd = Infinity;
+      xs.forEach((x, i) => { const d = Math.abs(px(i) - mx); if (d < bd) { bd = d; best = i; } });
+      guide.setAttribute("x1", px(best)); guide.setAttribute("x2", px(best));
+      guide.setAttribute("visibility", "visible");
+      tip.innerHTML = `<div class="tip-date">${U.esc(xs[best])}</div>` +
+        series.map((s) => s.points[best] == null
+          ? `<div class="tip-val" style="color:var(--faint)">${U.esc(s.name)}: null</div>`
+          : `<div class="tip-val" style="color:${s.color}">${U.esc(s.name)}: <b>${U.fmtNum(s.points[best])}</b></div>`).join("");
+      tip.style.display = "block";
+      tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 280) + "px";
+      tip.style.top = Math.max(8, e.clientY - 20 - series.length * 16) + "px";
+    });
+    svg.addEventListener("mouseleave", () => { tip.style.display = "none"; guide.setAttribute("visibility", "hidden"); });
+    wrap.append(svg);
+  },
+
+  /* ---------- JSON тела ---------- */
+  renderJson(body) {
+    if (!Bp.state.json) { body.append(U.el("div", { class: "bp-empty" }, "Соберите запрос в конструкторе — JSON тела появится здесь")); return; }
+    const text = JSON.stringify(Bp.state.json, null, 2);
+    const meta = U.el("div", { class: "bp-meta" },
+      U.el("span", null, "Тело POST-запроса единой ручки"),
+      U.el("span", { style: "flex:1" }),
+      U.el("button", { class: "small", onclick: () => U.copy(text, "JSON скопирован") }, "Копировать"));
+    body.append(meta, U.el("pre", { class: "code", html: Hl.json(text) }));
+  },
+
+  /* ---------- SQL ---------- */
+  renderSql(body) {
+    if (!Bp.state.sql) { body.append(U.el("div", { class: "bp-empty" }, "Нажмите «Показать SQL» — итоговый SQL появится здесь")); return; }
+    const meta = U.el("div", { class: "bp-meta" },
+      U.el("span", null, "Итоговый SQL (query_type=raw — без выполнения)"),
+      U.el("span", { style: "flex:1" }),
+      U.el("button", { class: "small", onclick: () => U.copy(Bp.state.sql, "SQL скопирован") }, "Копировать"));
+    body.append(meta, U.el("pre", { class: "code", html: Hl.sql(Bp.state.sql) }));
+  },
+
+  /* ---------- Ошибка ---------- */
+  renderError(body) {
+    const err = Bp.state.error;
+    if (!err) { body.append(U.el("div", { class: "bp-empty" }, "Ошибок нет")); return; }
+    const block = U.el("div", { class: "error-block" });
+    if (err.chText) {
+      // нативная ошибка ClickHouse (SQL-канал)
+      block.append(
+        U.el("div", { class: "error-head" },
+          U.el("span", { class: "badge b-red mono" }, "SQL-канал"),
+          U.el("span", { class: "error-msg" }, "Сервер вернул ошибку в нативном формате ClickHouse")),
+        U.el("div", { class: "ch-error", html: Hl.chError(err.chText) }));
+    } else {
+      const human = ERROR_RU[err.code] || err.detail || "Неизвестная ошибка";
+      block.append(
+        U.el("div", { class: "error-head" },
+          U.el("span", { class: "badge b-red mono" }, err.code || "error"),
+          err.status ? U.el("span", { class: "badge mono" }, "HTTP " + err.status) : null,
+          U.el("span", { class: "error-msg" }, human)),
+        err.detail && err.detail !== human ? U.el("div", { style: "color:var(--muted);font-size:12px" }, err.detail) : null,
+        U.el("details", { class: "error-raw" },
+          U.el("summary", null, "Сырой ответ сервера"),
+          U.el("pre", { class: "code framed", style: "margin-top:8px", html: Hl.json(JSON.stringify(err.raw || { code: err.code, detail: err.detail }, null, 2)) })));
+    }
+    body.append(block);
+  }
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { Bp });
+
+</script>
+<script>
+/* ===== src/explorer.js ===== */
+/* ============ Heimdall — Обзорщик (карточка датасета) ============ */
+"use strict";
+
+const Explorer = {
+  render(model) {
+    const page = U.$("#page-explorer");
+    page.innerHTML = "";
+    if (!model) {
+      page.append(U.el("div", { class: "page-placeholder" },
+        U.el("div", { class: "ph-inner" },
+          U.el("div", { class: "ph-icon" }, "▦"),
+          U.el("div", { style: "font-size:14px;margin-bottom:4px" }, "Выберите модель в каталоге"),
+          U.el("div", { style: "font-size:12px" }, "Дерево слева: схема → логическая модель. Клик открывает карточку датасета."))));
+      return;
+    }
+
+    const scroll = U.el("div", { class: "page-scroll" });
+    page.append(scroll);
+
+    /* ---------- шапка ---------- */
+    const badges = ModelInfo.kindBadges(model).map(([name, icon, cls]) =>
+      U.el("span", { class: `badge ${cls}` }, `${icon} ${name}`));
+    scroll.append(U.el("div", { class: "exp-header" },
+      U.el("div", { class: "exp-title-row" },
+        U.el("h1", null, model.logic_model),
+        U.el("span", { class: "exp-schema" }, "схема: " + model.schema_name),
+        ...badges,
+        U.el("span", { style: "flex:1" }),
+        U.el("button", { class: "primary", onclick: () => App.selectModel(ModelInfo.key(model), "builder") }, "Запросить ▶"),
+        U.el("button", { onclick: () => YamlEditor.loadModel(model) }, "Открыть в редакторе")),
+      U.el("div", { class: "exp-desc" }, model.description || "—"),
+      U.el("div", { class: "exp-meta" },
+        U.el("span", null, "Физическая таблица: ", U.el("code", { style: "color:var(--cyan)" }, `${model.schema_name}.${model.table_name}`)),
+        U.el("span", { style: "display:flex;gap:5px;align-items:center" }, "Группы доступа:",
+          ...(model.allowed_groups || []).map((g) => U.el("span", { class: "badge mono" }, g))))));
+
+    const cards = U.el("div", { class: "exp-cards" });
+    scroll.append(cards);
+
+    /* ---------- блок history ---------- */
+    if (model.history) {
+      const h = model.history;
+      const timeCol = (model.columns || []).find((c) => c.column_name === h.time_column);
+      cards.append(U.el("div", { class: "card" },
+        U.el("div", { class: "card-head" },
+          U.el("span", { class: "card-title" }, "⏱ Историческая модель (SCD2)"),
+          U.el("span", { class: "card-sub" }, "состояние на дату или динамика за период")),
+        U.el("div", { class: "card-body padded" },
+          U.el("div", { class: "hist-diagram" },
+            U.el("div", { class: "hist-node" },
+              U.el("div", { class: "hn-label" }, "события (valid_from)"),
+              U.el("div", null, h.valid_from), U.el("div", { class: "hn-label" }, "клиенту не видна")),
+            U.el("span", { class: "hist-arrow" }, "→"),
+            U.el("div", { class: "hist-node" },
+              U.el("div", { class: "hn-label" }, "восстановление состояния"),
+              U.el("div", null, "argMax по " + h.primary_key)),
+            U.el("span", { class: "hist-arrow" }, "→"),
+            U.el("div", { class: "hist-node" },
+              U.el("div", { class: "hn-label" }, "публичные срезы (time_column)"),
+              U.el("div", { style: "color:var(--accent-text)" }, h.time_column))),
+          U.el("dl", { class: "kv", style: "margin-top:8px" },
+            U.el("dt", null, "Первичный ключ"), U.el("dd", null, U.el("code", null, h.primary_key)),
+            U.el("dt", null, "Шаги времени"), U.el("dd", { style: "display:flex;gap:4px;flex-wrap:wrap" },
+              ...((timeCol && timeCol.granularities) || []).map((g) =>
+                U.el("span", { class: "gran-chip" + (g === timeCol.default_granularity ? " on" : ""), title: GRAN.labels[g] || g }, g))),
+            U.el("dt", null, "Заполнение пропусков"), U.el("dd", null,
+              U.el("code", null, h.fill?.mode || "none"),
+              h.fill?.mode === "previous" ? " — последнее известное значение" : " — пропуски остаются пустыми"),
+            U.el("dt", null, "Глубина истории"), U.el("dd", null, U.el("code", null, h.lookback_safety?.default_lookback || "—")),
+            U.el("dt", null, "Период обязателен"), U.el("dd", null, h.require_time_range ? "да" : "нет")))));
+    }
+
+    /* ---------- блок array_join ---------- */
+    if (model.array_join) {
+      const aj = model.array_join;
+      cards.append(U.el("div", { class: "card" },
+        U.el("div", { class: "card-head" },
+          U.el("span", { class: "card-title" }, "⊞ Развёртка массивов (ARRAY JOIN)"),
+          U.el("span", { class: "badge mono" }, aj.type || "left")),
+        U.el("div", { class: "card-body" },
+          U.el("table", { class: "spec" },
+            U.el("thead", null, U.el("tr", null,
+              U.el("th", null, "source"), U.el("th", null, ""), U.el("th", null, "as"), U.el("th", null, "тип элемента"))),
+            U.el("tbody", null, ...(aj.arrays || []).map((a) => U.el("tr", null,
+              U.el("td", { class: "mono", style: "color:var(--purple)" }, a.source),
+              U.el("td", { style: "color:var(--faint)" }, "→"),
+              U.el("td", { class: "mono" }, a.as),
+              U.el("td", { class: "mono", style: "color:var(--muted)" }, a.element_type))))))));
+    }
+
+    /* ---------- блок joins ---------- */
+    if (model.joins && model.joins.length) {
+      cards.append(U.el("div", { class: "card" },
+        U.el("div", { class: "card-head" }, U.el("span", { class: "card-title" }, "⇄ Связи с другими моделями")),
+        U.el("div", { class: "card-body padded" },
+          U.el("div", { class: "join-diagram" },
+            ...model.joins.map((j) => U.el("div", { class: "join-row" },
+              U.el("span", { class: "hist-node" }, model.logic_model),
+              U.el("span", { class: "badge b-joins" }, (j.type || "left") + " join"),
+              U.el("span", { class: "hist-node", style: "color:var(--blue)" }, `${j.schema_name || model.schema_name}.${j.logic_model}`),
+              U.el("span", { class: "join-cond" }, "ON " + (j.on || "—"))))))));
+    }
+
+    /* ---------- колонки ---------- */
+    const allCols = ModelInfo.allColumns(model);
+    cards.append(U.el("div", { class: "card" },
+      U.el("div", { class: "card-head" },
+        U.el("span", { class: "card-title" }, "Колонки"),
+        U.el("span", { class: "card-sub" }, `${allCols.length} шт.`)),
+      U.el("div", { class: "card-body" },
+        U.el("table", { class: "spec" },
+          U.el("thead", null, U.el("tr", null,
+            U.el("th", null, "имя"), U.el("th", null, "тип CH"), U.el("th", null, "описание"), U.el("th", null, "пометки"))),
+          U.el("tbody", null, ...allCols.map((c) => Explorer.columnRow(c)))))));
+
+    /* ---------- метрики ---------- */
+    cards.append(U.el("div", { class: "card" },
+      U.el("div", { class: "card-head" },
+        U.el("span", { class: "card-title" }, "Метрики"),
+        U.el("span", { class: "card-sub" }, "вызываются в SQL как функции: name()")),
+      U.el("div", { class: "card-body" },
+        (model.metrics || []).length
+          ? U.el("table", { class: "spec" },
+            U.el("thead", null, U.el("tr", null,
+              U.el("th", null, "имя"), U.el("th", null, "verbose_name"), U.el("th", null, "SQL"), U.el("th", null, "описание"))),
+            U.el("tbody", null, ...(model.metrics || []).map((x) => U.el("tr", null,
+              U.el("td", { class: "mono", style: "color:var(--green)" }, x.metric_name),
+              U.el("td", null, x.verbose_name || ""),
+              U.el("td", { class: "mono", style: "color:var(--cyan)" }, x.sql),
+              U.el("td", { style: "color:var(--muted)" }, x.description || "")))))
+          : U.el("div", { class: "bp-empty" }, "Метрики не объявлены"))));
+
+    /* ---------- param-метрики ---------- */
+    if ((model.param_metrics || []).length) {
+      cards.append(U.el("div", { class: "card" },
+        U.el("div", { class: "card-head" },
+          U.el("span", { class: "card-title" }, "⚙ Параметризованные метрики"),
+          U.el("span", { class: "badge b-yellow" }, "недоступно в REST")),
+        U.el("div", { class: "card-body" },
+          U.el("table", { class: "spec" },
+            U.el("thead", null, U.el("tr", null,
+              U.el("th", null, "имя"), U.el("th", null, "verbose_name"), U.el("th", null, "SQL"), U.el("th", null, "параметры"))),
+            U.el("tbody", null, ...model.param_metrics.map((x) => U.el("tr", { class: "param-row" },
+              U.el("td", { class: "mono" }, x.metric_name),
+              U.el("td", null, x.verbose_name || ""),
+              U.el("td", { class: "mono", style: "color:var(--cyan)" }, x.sql),
+              U.el("td", null, ...(x.parameters || []).map((p) =>
+                U.el("span", { class: "badge mono", title: p.description || "" }, `${p.name}: ${p.type}`))))))))));
+    }
+  },
+
+  columnRow(c) {
+    const marks = [];
+    if (c._kind === "virtual")
+      marks.push(U.el("span", { class: "minibadge m-virtual", "data-tip": `виртуальная колонка<br><code>${U.esc(c.sql || "")}</code>` }, "ƒ virtual"));
+    if (c._kind === "column" && c.sql)
+      marks.push(U.el("span", { class: "minibadge m-virtual", "data-tip": `выражение<br><code>${U.esc(c.sql)}</code>` }, "ƒ sql"));
+    if (Array.isArray(c.granularities) && c.granularities.length) {
+      marks.push(U.el("span", { class: "minibadge m-time" }, "⏱ time"));
+    }
+    if (c._kind === "param")
+      marks.push(U.el("span", { class: "minibadge m-param", title: "параметризована — запрос вернёт 422" }, "⚙ param"));
+    if (c.security_level)
+      marks.push(U.el("span", { class: `minibadge m-${c.security_level.toLowerCase()}` }, c.security_level));
+
+    const granChips = Array.isArray(c.granularities) && c.granularities.length
+      ? U.el("div", { style: "display:flex;gap:3px;flex-wrap:wrap;margin-top:3px" },
+        ...c.granularities.map((g) => U.el("span", { class: "gran-chip" + (g === c.default_granularity ? " on" : ""), title: GRAN.labels[g] || g }, g)))
+      : null;
+
+    return U.el("tr", { class: c._kind === "param" ? "param-row" : "" },
+      U.el("td", { class: "mono", style: "white-space:nowrap" },
+        U.el("span", { html: CHTypes.icon(c.type), style: "margin-right:6px" }), c.column_name),
+      U.el("td", { class: "mono", style: "color:var(--muted)" }, c.type),
+      U.el("td", null, c.description || "", granChips),
+      U.el("td", { style: "white-space:nowrap" }, U.el("div", { style: "display:flex;gap:4px;flex-wrap:wrap" }, ...marks)));
+  }
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { Explorer });
+
+</script>
+<script>
+/* ===== src/builder.js ===== */
+/* ============ Heimdall — Конструктор запросов ============ */
+"use strict";
+
+const Builder = {
+  states: {}, // ключ модели → состояние конструктора
+
+  get(model) {
+    const key = ModelInfo.key(model);
+    if (!Builder.states[key]) {
+      const st = {
+        columns: [], metrics: [],
+        tdEnabled: !!model.history,
+        td: null,
+        filters: { type: "and", conditions: [] },
+        order_by: [],
+        limit: 100, offset: 0,
+        limitByEnabled: false, limitBy: { limit: 1, by: [] }
+      };
+      if (model.history) {
+        const tcol = (model.columns || []).find((c) => c.column_name === model.history.time_column) || ModelInfo.timeColumns(model)[0];
+        st.td = {
+          name: tcol ? tcol.column_name : model.history.time_column,
+          granularity: tcol ? (tcol.default_granularity || tcol.granularities[0]) : "day",
+          from: "2026-03-01", to: "2026-06-01",
+          fill: model.history.fill?.mode || "previous"
+        };
+      }
+      Builder.states[key] = st;
+    }
+    return Builder.states[key];
+  },
+
+  /* ---------- сборка тела запроса ---------- */
+  pruneFilters(node) {
+    if (!node) return null;
+    if (node.type === "and" || node.type === "or") {
+      const kids = (node.conditions || []).map(Builder.pruneFilters).filter(Boolean);
+      if (!kids.length) return null;
+      return { type: node.type, conditions: kids };
+    }
+    if (node.type === "not") {
+      const kid = Builder.pruneFilters(node.condition);
+      return kid ? { type: "not", condition: kid } : null;
+    }
+    if (!node.column) return null;
+    const out = { type: node.type, column: node.column, operator: node.operator };
+    if (node.type === "condition") out.value = node.value;
+    if (node.type === "condition_in") out.value = node.value || [];
+    if (node.type === "condition_like") { out.pattern = node.pattern || ""; out.case_sensitive = !/ILIKE/i.test(node.operator); }
+    if (node.type === "condition_array") out.value = node.operator === "has" ? node.value : (node.value || []);
+    return out;
+  },
+
+  buildBody(model, st) {
+    const body = {};
+    if (st.columns.length) body.columns = [...st.columns];
+    if (st.metrics.length) body.metrics = [...st.metrics];
+    if (model.history && st.tdEnabled && st.td) {
+      body.time_dimensions = [{
+        name: st.td.name, granularity: st.td.granularity,
+        range: { type: "absolute", from: st.td.from, to: st.td.to },
+        fill: { mode: st.td.fill }
+      }];
+    }
+    const f = Builder.pruneFilters(st.filters);
+    if (f) body.filters = f;
+    const obs = st.order_by.filter((o) => o.field);
+    if (obs.length) body.order_by = obs.map((o) => {
+      const kind = ModelInfo.metric(model, o.field) ? "metric"
+        : (st.td && o.field === st.td.name && st.tdEnabled ? "time_dimension" : "column");
+      const out = { field: o.field, kind, direction: o.direction || "asc" };
+      if (o.nulls) out.nulls = o.nulls;
+      return out;
+    });
+    body.limit = U.clamp(+st.limit || 100, 1, 1000);
+    if (+st.offset > 0) body.offset = +st.offset;
+    if (st.limitByEnabled && st.limitBy.by.length && !(model.history && st.tdEnabled)) {
+      body.limit_by = { limit: U.clamp(+st.limitBy.limit || 1, 1, 1000), by: [...st.limitBy.by] };
+    }
+    return body;
+  },
+
+  /* ---------- pre-flight подсказки ---------- */
+  preflight(model, st, body) {
+    const out = [];
+    const mode = QueryLogic.mode(body);
+    if (mode === "history" && !(body.metrics || []).length)
+      out.push(["err", "История требует метрики: выберите хотя бы одну метрику или отключите временное измерение."]);
+    if (mode === "rows" && !(body.columns || []).length)
+      out.push(["err", "Пустой запрос: выберите колонки (режим строк) или метрики (агрегация)."]);
+    if (mode === "rows")
+      for (const o of body.order_by || [])
+        if (o.kind === "metric") out.push(["err", `Сортировка по метрике «${o.field}» недоступна в режиме строк — сервер вернёт 422.`]);
+    for (const c of st.columns) {
+      const cc = ModelInfo.column(model, c);
+      if (cc && cc._kind === "param") out.push(["warn", `Колонка «${c}» параметризована — запрос вернёт 422 param-virtual-not-supported.`]);
+    }
+    for (const m of st.metrics) {
+      const mm = ModelInfo.metric(model, m);
+      if (mm && mm._kind === "param") out.push(["warn", `Метрика «${m}» параметризована — запрос вернёт 422 param-metric-not-supported.`]);
+    }
+    if (mode === "history" && st.td) {
+      if (!st.td.from || !st.td.to) out.push(["err", "Укажите период from/to — сервер вернёт 422 missing-time-range."]);
+      const lookback = Dates.parseLookback(model.history?.lookback_safety?.default_lookback || "100y");
+      if (st.td.from && st.td.to && Dates.spanYears(st.td.from, st.td.to) > lookback)
+        out.push(["warn", `Период шире глубины истории (${model.history.lookback_safety.default_lookback}) — сервер вернёт 422.`]);
+    }
+    return out;
+  },
+
+  /* ---------- рендер ---------- */
+  render(model) {
+    const page = U.$("#page-builder");
+    page.innerHTML = "";
+    if (!model) {
+      page.append(U.el("div", { class: "page-placeholder" },
+        U.el("div", { class: "ph-inner" },
+          U.el("div", { class: "ph-icon" }, "⚙"),
+          U.el("div", { style: "font-size:14px;margin-bottom:4px" }, "Выберите модель в каталоге"),
+          U.el("div", { style: "font-size:12px" }, "Конструктор собирает JSON-тело единой ручки POST /api/v1/{schema}/{model}/ без SQL."))));
+      return;
+    }
+    const st = Builder.get(model);
+    const scroll = U.el("div", { class: "page-scroll" });
+    const grid = U.el("div", { class: "builder-grid" });
+    scroll.append(grid);
+    page.append(scroll);
+
+    /* — индикатор режима — */
+    Builder.elBanner = U.el("div", { class: "mode-banner" });
+    Builder.elPreflight = U.el("div", { class: "preflight" });
+    grid.append(Builder.elBanner, Builder.elPreflight);
+
+    /* — выбор полей — */
+    const pickers = U.el("div", { class: "picker-cols" });
+    pickers.append(
+      Builder.picker(model, st, "columns", "Колонки",
+        ModelInfo.allColumns(model).map((c) => ({
+          name: c.column_name, desc: c.description || "", icon: CHTypes.icon(c.type),
+          param: c._kind === "param", virtual: c._kind === "virtual"
+        })), "колонки не выбраны"),
+      Builder.picker(model, st, "metrics", "Метрики",
+        ModelInfo.allMetrics(model).map((x) => ({
+          name: x.metric_name, desc: x.verbose_name || "", icon: '<span class="ticon t-metric">Σ</span>',
+          param: x._kind === "param"
+        })), "метрики не выбраны"));
+    grid.append(pickers);
+
+    /* — временное измерение — */
+    if (model.history) grid.append(Builder.timeDimension(model, st));
+
+    /* — фильтры — */
+    const fcard = U.el("div", { class: "card" },
+      U.el("div", { class: "card-head" },
+        U.el("span", { class: "card-title" }, "Фильтры"),
+        U.el("span", { class: "card-sub" }, "дерево условий: AND / OR / NOT с вложенностью")));
+    Builder.elFilters = U.el("div", { class: "card-body padded" });
+    fcard.append(Builder.elFilters);
+    grid.append(fcard);
+    Builder.renderFilters(model, st);
+
+    /* — сортировка и лимиты — */
+    grid.append(Builder.sortAndLimits(model, st));
+
+    /* — действия — */
+    grid.append(U.el("div", { class: "actions-bar" },
+      U.el("button", { class: "primary", onclick: () => Builder.run(model) }, "Выполнить ▶"),
+      U.el("button", { onclick: () => Builder.showSql(model) }, "Показать SQL"),
+      U.el("button", {
+        onclick: () => U.copy(QueryLogic.curl(App.settings.baseUrl, App.settings.token, model, Builder.buildBody(model, Builder.get(model))), "curl скопирован")
+      }, "Копировать curl"),
+      U.el("button", {
+        onclick: () => U.copy(JSON.stringify(Builder.buildBody(model, Builder.get(model)), null, 2), "JSON скопирован")
+      }, "Копировать JSON")));
+
+    Builder.sync(model);
+  },
+
+  /* живое обновление баннера режима + JSON-превью */
+  sync(model) {
+    const st = Builder.get(model);
+    const body = Builder.buildBody(model, st);
+    const mode = QueryLogic.mode(body);
+    const explain = {
+      rows: "плоские строки: проекция columns без агрегации; сортировка по метрикам запрещена",
+      aggregate: "metrics заданы → агрегация с GROUP BY по выбранным колонкам",
+      history: "time_dimensions задано → срезы состояния по шагу времени, обязательны метрики"
+    }[mode];
+    Builder.elBanner.innerHTML = "";
+    Builder.elBanner.append(
+      U.el("span", { class: "field-label", style: "font-size:11px" }, "РЕЖИМ"),
+      U.el("span", { class: `mode-pill m-${mode}` }, mode.toUpperCase()),
+      U.el("span", { class: "mode-explain" }, explain));
+    Builder.elPreflight.innerHTML = "";
+    for (const [kind, msg] of Builder.preflight(model, st, body)) {
+      Builder.elPreflight.append(U.el("div", { class: `preflight-item ${kind}` },
+        U.el("span", null, kind === "err" ? "✕" : "⚠"), U.el("span", null, msg)));
+    }
+    Bp.setJson(body);
+  },
+
+  /* ---------- мультиселект с чипсами ---------- */
+  picker(model, st, field, title, items, emptyText) {
+    const card = U.el("div", { class: "card picker" });
+    card.append(U.el("div", { class: "card-head" },
+      U.el("span", { class: "card-title" }, title),
+      U.el("span", { class: "card-sub" }, `${items.length} доступно`)));
+
+    const chips = U.el("div", { class: "chips", "data-empty": emptyText });
+    const warn = U.el("div", { class: "warn-inline", style: "display:none" });
+    const search = U.el("input", { type: "text", placeholder: "Поиск…" });
+    const list = U.el("div", { class: "picker-list" });
+
+    const refresh = () => {
+      // чипсы
+      chips.innerHTML = "";
+      for (const name of st[field]) {
+        const item = items.find((i) => i.name === name);
+        const cls = ["chip"];
+        if (field === "metrics") cls.push("c-metric");
+        if (item && item.param) cls.push("c-param", "c-warn");
+        chips.append(U.el("span", { class: cls.join(" ") }, name,
+          U.el("span", {
+            class: "chip-x", title: "убрать",
+            onclick: () => { st[field] = st[field].filter((x) => x !== name); refresh(); Builder.sync(model); }
+          }, "×")));
+      }
+      // предупреждение о param
+      const hasParam = st[field].some((n) => items.find((i) => i.name === n && i.param));
+      warn.style.display = hasParam ? "" : "none";
+      warn.textContent = "⚠ Выбраны параметризованные элементы — сервер вернёт 422 (не реализовано в REST). Оставлено для демонстрации ошибки.";
+      // список
+      const q = search.value.trim().toLowerCase();
+      list.innerHTML = "";
+      for (const it of items) {
+        if (q && !(it.name + " " + it.desc).toLowerCase().includes(q)) continue;
+        const on = st[field].includes(it.name);
+        list.append(U.el("div", {
+          class: "picker-item" + (on ? " selected" : "") + (it.param ? " param" : ""),
+          onclick: () => {
+            st[field] = on ? st[field].filter((x) => x !== it.name) : [...st[field], it.name];
+            refresh(); Builder.sync(model);
+          }
+        },
+          U.el("span", { class: "pi-check" }, on ? "✓" : ""),
+          U.el("span", { html: it.icon }),
+          U.el("span", { class: "pi-name" }, it.name),
+          it.param ? U.el("span", { class: "minibadge m-param" }, "⚙ 422") : null,
+          it.virtual ? U.el("span", { class: "minibadge m-virtual" }, "ƒ") : null,
+          U.el("span", { class: "pi-desc" }, it.desc)));
+      }
+      if (!list.children.length) list.append(U.el("div", { class: "bp-empty", style: "padding:12px" }, "ничего не найдено"));
+    };
+    search.addEventListener("input", refresh);
+    card.append(chips, warn, U.el("div", { class: "picker-search searchbox" }, search), list);
+    refresh();
+    return card;
+  },
+
+  /* ---------- временное измерение ---------- */
+  timeDimension(model, st) {
+    const card = U.el("div", { class: "card" });
+    const toggle = U.el("input", { type: "checkbox" });
+    toggle.checked = st.tdEnabled;
+    toggle.addEventListener("change", () => {
+      st.tdEnabled = toggle.checked;
+      body.style.display = st.tdEnabled ? "" : "none";
+      Builder.sync(model);
+    });
+    card.append(U.el("div", { class: "card-head" },
+      U.el("label", { class: "checkline" }, toggle, U.el("span", { class: "card-title" }, "⏱ Временное измерение")),
+      U.el("span", { class: "card-sub" }, "только для history-моделей; включает режим HISTORY")));
+
+    const tcols = ModelInfo.timeColumns(model);
+    const colSel = U.el("select", { class: "mono" }, ...tcols.map((c) =>
+      U.el("option", { value: c.column_name, selected: c.column_name === st.td.name }, c.column_name)));
+    const granSel = U.el("select", { class: "mono" });
+    const fillGran = () => {
+      const col = tcols.find((c) => c.column_name === colSel.value) || tcols[0];
+      granSel.innerHTML = "";
+      for (const g of col.granularities) {
+        granSel.append(U.el("option", { value: g, selected: g === st.td.granularity }, `${g} — ${GRAN.labels[g] || g}`));
+      }
+      if (![...granSel.options].some((o) => o.selected)) granSel.value = col.default_granularity || col.granularities[0];
+    };
+    fillGran();
+    colSel.addEventListener("change", () => {
+      st.td.name = colSel.value;
+      const col = tcols.find((c) => c.column_name === colSel.value);
+      st.td.granularity = col.default_granularity || col.granularities[0];
+      fillGran(); Builder.sync(model);
+    });
+    granSel.addEventListener("change", () => { st.td.granularity = granSel.value; Builder.sync(model); });
+
+    const fromIn = U.el("input", { type: "date", value: st.td.from });
+    const toIn = U.el("input", { type: "date", value: st.td.to });
+    fromIn.addEventListener("change", () => { st.td.from = fromIn.value; Builder.sync(model); });
+    toIn.addEventListener("change", () => { st.td.to = toIn.value; Builder.sync(model); });
+
+    const fillSegBtns = {};
+    const fillSeg = U.el("div", { class: "seg" }, ...["previous", "none"].map((mm) => {
+      const b = U.el("button", {
+        class: st.td.fill === mm ? "on seg-accent" : "",
+        onclick: () => { st.td.fill = mm; Object.entries(fillSegBtns).forEach(([k, bb]) => bb.className = k === st.td.fill ? "on seg-accent" : ""); Builder.sync(model); }
+      }, mm);
+      fillSegBtns[mm] = b; return b;
+    }));
+
+    const body = U.el("div", { class: "td-grid" },
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "Time-колонка"), colSel),
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "Шаг времени"), granSel),
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "From (включительно)"), fromIn),
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "To"), toIn,
+        U.el("span", { class: "field-hint" }, "to — не включительно")),
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "Fill (пропуски)"), fillSeg,
+        U.el("span", { class: "field-hint" }, "previous — последнее известное значение")));
+    body.style.display = st.tdEnabled ? "" : "none";
+    card.append(body);
+    return card;
+  },
+
+  /* ---------- дерево фильтров ---------- */
+  filterableColumns(model) {
+    return ModelInfo.allColumns(model).filter((c) => c._kind !== "param");
+  },
+
+  newCondition(model) {
+    const col = Builder.filterableColumns(model)[0];
+    return Builder.condFor(model, col ? col.column_name : "", "=");
+  },
+
+  condFor(model, column, operator) {
+    const node = { column, operator };
+    if (operator === "IN" || operator === "NOT IN") { node.type = "condition_in"; node.value = []; }
+    else if (/LIKE/i.test(operator)) { node.type = "condition_like"; node.pattern = ""; }
+    else if (/NULL/i.test(operator)) { node.type = "condition_null"; }
+    else if (operator === "has") { node.type = "condition_array"; node.value = ""; }
+    else if (operator === "hasAny" || operator === "hasAll") { node.type = "condition_array"; node.value = []; }
+    else { node.type = "condition"; node.value = ""; }
+    return node;
+  },
+
+  opsFor(model, colName) {
+    const col = ModelInfo.column(model, colName);
+    const t = CHTypes.parse(col ? col.type : "String");
+    if (t.base === "array") return ["has", "hasAny", "hasAll"];
+    if (t.base === "bool") return ["=", "!=", "IS NULL", "IS NOT NULL"];
+    const base = ["=", "!=", ">", "<", ">=", "<=", "IN", "NOT IN"];
+    if (t.base === "string" || t.base === "uuid") base.push("LIKE", "NOT LIKE", "ILIKE", "NOT ILIKE");
+    base.push("IS NULL", "IS NOT NULL");
+    return base;
+  },
+
+  renderFilters(model, st) {
+    Builder.elFilters.innerHTML = "";
+    Builder.elFilters.append(Builder.filterGroup(model, st, st.filters, null));
+  },
+
+  filterGroup(model, st, node, parentRemove) {
+    const isNot = node.type === "not";
+    const cls = node.type === "and" ? "f-and" : node.type === "or" ? "f-or" : "f-not";
+    const wrap = U.el("div", { class: `fgroup ${cls}` });
+
+    const head = U.el("div", { class: "fgroup-head" });
+    if (isNot) {
+      head.append(U.el("span", { class: "badge b-red mono" }, "NOT"));
+    } else {
+      const segBtns = {};
+      head.append(U.el("div", { class: "seg" }, ...["and", "or"].map((tt) => {
+        const b = U.el("button", {
+          class: node.type === tt ? "on seg-accent" : "",
+          onclick: () => { node.type = tt; Builder.renderFilters(model, st); Builder.sync(model); }
+        }, tt.toUpperCase());
+        segBtns[tt] = b; return b;
+      })));
+    }
+    head.append(U.el("span", { style: "flex:1" }));
+    if (!isNot) {
+      head.append(
+        U.el("button", { class: "ghost small", onclick: () => { node.conditions.push(Builder.newCondition(model)); Builder.renderFilters(model, st); Builder.sync(model); } }, "+ условие"),
+        U.el("button", { class: "ghost small", onclick: () => { node.conditions.push({ type: "and", conditions: [Builder.newCondition(model)] }); Builder.renderFilters(model, st); Builder.sync(model); } }, "+ группа"),
+        U.el("button", { class: "ghost small", onclick: () => { node.conditions.push({ type: "not", condition: Builder.newCondition(model) }); Builder.renderFilters(model, st); Builder.sync(model); } }, "+ NOT"));
+    }
+    if (parentRemove) head.append(U.el("button", { class: "danger-ghost small", title: "удалить", onclick: parentRemove }, "✕"));
+    wrap.append(head);
+
+    const bodyEl = U.el("div", { class: "fgroup-body" });
+    if (isNot) {
+      const kid = node.condition;
+      if (kid) bodyEl.append(Builder.filterChild(model, st, kid,
+        () => { node.condition = null; Builder.renderFilters(model, st); Builder.sync(model); }));
+      else bodyEl.append(U.el("div", { class: "filters-empty" },
+        U.el("button", { class: "ghost small", onclick: () => { node.condition = Builder.newCondition(model); Builder.renderFilters(model, st); Builder.sync(model); } }, "+ условие внутрь NOT")));
+    } else {
+      const kids = node.conditions || [];
+      if (!kids.length) bodyEl.append(U.el("div", { class: "filters-empty" }, "Условий нет — фильтр не отправляется. Добавьте «+ условие» или «+ группа»."));
+      kids.forEach((kid, i) => {
+        if (i > 0) bodyEl.append(U.el("div", { class: "fjoin-label" }, node.type.toUpperCase()));
+        bodyEl.append(Builder.filterChild(model, st, kid,
+          () => { node.conditions.splice(i, 1); Builder.renderFilters(model, st); Builder.sync(model); }));
+      });
+    }
+    wrap.append(bodyEl);
+    return wrap;
+  },
+
+  filterChild(model, st, node, remove) {
+    if (node.type === "and" || node.type === "or" || node.type === "not")
+      return Builder.filterGroup(model, st, node, remove);
+    return Builder.filterLeaf(model, st, node, remove);
+  },
+
+  filterLeaf(model, st, node, remove) {
+    const row = U.el("div", { class: "fcond" });
+    const cols = Builder.filterableColumns(model);
+    const colSel = U.el("select", { class: "f-col" }, ...cols.map((c) =>
+      U.el("option", { value: c.column_name, selected: c.column_name === node.column }, c.column_name)));
+    const opSel = U.el("select", { class: "f-op" });
+    const valWrap = U.el("span", { style: "display:inline-flex;gap:5px;align-items:center;flex-wrap:wrap" });
+
+    const fillOps = () => {
+      const ops = Builder.opsFor(model, colSel.value);
+      opSel.innerHTML = "";
+      for (const op of ops) opSel.append(U.el("option", { value: op, selected: op === node.operator }, op));
+      if (!ops.includes(node.operator)) {
+        const fresh = Builder.condFor(model, colSel.value, ops[0]);
+        Object.keys(node).forEach((k) => delete node[k]);
+        Object.assign(node, fresh);
+        opSel.value = node.operator;
+      }
+    };
+
+    const renderValue = () => {
+      valWrap.innerHTML = "";
+      const col = ModelInfo.column(model, node.column);
+      const t = CHTypes.parse(col ? col.type : "String");
+      if (node.type === "condition_null") return;
+      if (node.type === "condition_in" || (node.type === "condition_array" && node.operator !== "has")) {
+        valWrap.append(Builder.tagInput(node.value || [], (vals) => { node.value = vals; Builder.sync(model); },
+          t.base === "array" ? "элемент массива + Enter" : "значение + Enter"));
+        return;
+      }
+      if (node.type === "condition_like") {
+        const inp = U.el("input", { type: "text", class: "mono", placeholder: "шаблон, напр. %lead%", value: node.pattern || "" });
+        inp.addEventListener("input", () => { node.pattern = inp.value; Builder.sync(model); });
+        valWrap.append(inp);
+        return;
+      }
+      // скаляр
+      const base = node.type === "condition_array" ? (t.elem ? t.elem.base : "string") : t.base;
+      if (base === "bool") {
+        const sel = U.el("select", null,
+          U.el("option", { value: "true", selected: node.value === true }, "true"),
+          U.el("option", { value: "false", selected: node.value === false }, "false"));
+        sel.addEventListener("change", () => { node.value = sel.value === "true"; Builder.sync(model); });
+        if (node.value === "" || node.value == null) node.value = sel.value === "true";
+        valWrap.append(sel);
+      } else if (base === "number") {
+        const inp = U.el("input", { type: "number", class: "mono", style: "width:110px", value: node.value ?? "" });
+        inp.addEventListener("input", () => { node.value = inp.value === "" ? "" : +inp.value; Builder.sync(model); });
+        valWrap.append(inp);
+      } else if (base === "date" || base === "datetime") {
+        const inp = U.el("input", { type: "date", value: node.value || "" });
+        inp.addEventListener("change", () => { node.value = inp.value; Builder.sync(model); });
+        valWrap.append(inp);
+      } else {
+        const inp = U.el("input", { type: "text", class: "mono", placeholder: "значение", value: node.value ?? "" });
+        inp.addEventListener("input", () => { node.value = inp.value; Builder.sync(model); });
+        valWrap.append(inp);
+      }
+    };
+
+    colSel.addEventListener("change", () => {
+      const fresh = Builder.condFor(model, colSel.value, Builder.opsFor(model, colSel.value)[0]);
+      Object.keys(node).forEach((k) => delete node[k]);
+      Object.assign(node, fresh);
+      fillOps(); renderValue(); Builder.sync(model);
+    });
+    opSel.addEventListener("change", () => {
+      const keepCol = node.column;
+      const fresh = Builder.condFor(model, keepCol, opSel.value);
+      Object.keys(node).forEach((k) => delete node[k]);
+      Object.assign(node, fresh);
+      renderValue(); Builder.sync(model);
+    });
+
+    fillOps(); renderValue();
+    row.append(colSel, opSel, valWrap, U.el("span", { style: "flex:1" }),
+      U.el("button", { class: "danger-ghost small", title: "удалить условие", onclick: remove }, "✕"));
+    return row;
+  },
+
+  tagInput(values, onChange, placeholder) {
+    const wrap = U.el("span", { class: "taginput" });
+    const input = U.el("input", { type: "text", class: "mono", placeholder: placeholder || "значение + Enter" });
+    const refresh = () => {
+      U.$$(".chip", wrap).forEach((c) => c.remove());
+      values.slice().reverse().forEach((v) => {
+        wrap.prepend(U.el("span", { class: "chip" }, String(v),
+          U.el("span", {
+            class: "chip-x",
+            onclick: () => { const i = values.indexOf(v); if (i >= 0) values.splice(i, 1); refresh(); onChange(values); }
+          }, "×")));
+      });
+    };
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && input.value.trim()) {
+        e.preventDefault();
+        const v = input.value.trim();
+        values.push(/^-?\d+(\.\d+)?$/.test(v) ? +v : v);
+        input.value = "";
+        refresh(); onChange(values);
+      } else if (e.key === "Backspace" && !input.value && values.length) {
+        values.pop(); refresh(); onChange(values);
+      }
+    });
+    wrap.append(input);
+    refresh();
+    return wrap;
+  },
+
+  /* ---------- сортировка и лимиты ---------- */
+  sortAndLimits(model, st) {
+    const card = U.el("div", { class: "card" });
+    card.append(U.el("div", { class: "card-head" }, U.el("span", { class: "card-title" }, "Сортировка и лимиты")));
+
+    const sortWrap = U.el("div", { class: "sort-rows" });
+    const fields = () => {
+      const out = ModelInfo.allColumns(model).filter((c) => c._kind !== "param").map((c) => c.column_name);
+      for (const m of model.metrics || []) out.push(m.metric_name);
+      return out;
+    };
+    const renderSorts = () => {
+      sortWrap.innerHTML = "";
+      st.order_by.forEach((o, i) => {
+        const fieldSel = U.el("select", { class: "mono" }, ...fields().map((f) =>
+          U.el("option", { value: f, selected: f === o.field }, f)));
+        fieldSel.addEventListener("change", () => { o.field = fieldSel.value; Builder.sync(model); });
+        const dirSel = U.el("select", null,
+          U.el("option", { value: "asc", selected: o.direction !== "desc" }, "по возрастанию"),
+          U.el("option", { value: "desc", selected: o.direction === "desc" }, "по убыванию"));
+        dirSel.addEventListener("change", () => { o.direction = dirSel.value; Builder.sync(model); });
+        const nullsSel = U.el("select", null,
+          U.el("option", { value: "" }, "nulls: по умолчанию"),
+          U.el("option", { value: "first", selected: o.nulls === "first" }, "nulls first"),
+          U.el("option", { value: "last", selected: o.nulls === "last" }, "nulls last"));
+        nullsSel.addEventListener("change", () => { o.nulls = nullsSel.value || null; Builder.sync(model); });
+        sortWrap.append(U.el("div", { class: "sort-row" },
+          U.el("span", { class: "mono", style: "color:var(--faint);width:18px" }, String(i + 1) + "."),
+          fieldSel, dirSel, nullsSel,
+          U.el("button", { class: "danger-ghost small", onclick: () => { st.order_by.splice(i, 1); renderSorts(); Builder.sync(model); } }, "✕")));
+      });
+      sortWrap.append(U.el("div", null,
+        U.el("button", { class: "ghost small", onclick: () => { st.order_by.push({ field: fields()[0], direction: "asc", nulls: null }); renderSorts(); Builder.sync(model); } }, "+ сортировка")));
+    };
+    renderSorts();
+    card.append(sortWrap);
+
+    const limitIn = U.el("input", { type: "number", min: 1, max: 1000, value: st.limit, style: "width:90px", class: "mono" });
+    limitIn.addEventListener("change", () => { st.limit = U.clamp(+limitIn.value || 100, 1, 1000); limitIn.value = st.limit; Builder.sync(model); });
+    const offsetIn = U.el("input", { type: "number", min: 0, value: st.offset, style: "width:90px", class: "mono" });
+    offsetIn.addEventListener("change", () => { st.offset = Math.max(0, +offsetIn.value || 0); offsetIn.value = st.offset; Builder.sync(model); });
+    Builder.elOffsetInput = offsetIn;
+
+    const historyOn = () => model.history && st.tdEnabled;
+    const lbToggle = U.el("input", { type: "checkbox" });
+    lbToggle.checked = st.limitByEnabled;
+    const lbLimit = U.el("input", { type: "number", min: 1, value: st.limitBy.limit, style: "width:70px", class: "mono" });
+    lbLimit.addEventListener("change", () => { st.limitBy.limit = Math.max(1, +lbLimit.value || 1); Builder.sync(model); });
+    const lbChips = U.el("div", { style: "display:flex;gap:4px;flex-wrap:wrap" });
+    const renderLbChips = () => {
+      lbChips.innerHTML = "";
+      for (const c of (model.columns || [])) {
+        const on = st.limitBy.by.includes(c.column_name);
+        lbChips.append(U.el("span", {
+          class: "gran-chip" + (on ? " on" : ""), style: "cursor:pointer",
+          onclick: () => {
+            st.limitBy.by = on ? st.limitBy.by.filter((x) => x !== c.column_name) : [...st.limitBy.by, c.column_name];
+            renderLbChips(); Builder.sync(model);
+          }
+        }, c.column_name));
+      }
+    };
+    renderLbChips();
+    lbToggle.addEventListener("change", () => { st.limitByEnabled = lbToggle.checked; lbBody.style.display = lbToggle.checked ? "" : "none"; Builder.sync(model); });
+
+    const lbBody = U.el("div", { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap" + (st.limitByEnabled ? "" : ";display:none") },
+      U.el("span", { class: "field-label" }, "LIMIT"), lbLimit, U.el("span", { class: "field-label" }, "BY"), lbChips);
+    if (!st.limitByEnabled) lbBody.style.display = "none";
+
+    const lbDisabledNote = historyOn()
+      ? U.el("span", { class: "field-hint", "data-tip": "limit-by-not-supported-in-history: LIMIT BY не работает в исторических запросах" }, "⚠ недоступно в history-режиме")
+      : null;
+    if (historyOn()) { lbToggle.disabled = true; }
+
+    card.append(U.el("div", { class: "limits-grid" },
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "Limit (1..1000)"), limitIn),
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "Offset"), offsetIn),
+      U.el("div", { class: "field" },
+        U.el("label", { class: "checkline" }, lbToggle, U.el("span", { class: "field-label" }, "limit_by (LIMIT N BY …)"), lbDisabledNote),
+        lbBody)));
+    return card;
+  },
+
+  /* ---------- действия ---------- */
+  async run(model) {
+    const st = Builder.get(model);
+    const body = Builder.buildBody(model, st);
+    Bp.setJson(body);
+    Bp.loading();
+    try {
+      const res = await Api.client().query(model.schema_name, model.logic_model, body);
+      const mode = QueryLogic.mode(body);
+      Bp.setResult(res, {
+        mode,
+        tdName: body.time_dimensions ? body.time_dimensions[0].name : null,
+        metrics: body.metrics || [],
+        dims: body.columns || [],
+        onPage: (dir) => {
+          st.offset = Math.max(0, (st.offset || 0) + dir * (body.limit || 100));
+          if (Builder.elOffsetInput) Builder.elOffsetInput.value = st.offset;
+          Builder.run(model);
+        }
+      });
+    } catch (e) {
+      Bp.setError(e instanceof ApiError ? e : new ApiError(0, "network", ERROR_RU.network, { error: String(e) }));
+    }
+  },
+
+  async showSql(model) {
+    const st = Builder.get(model);
+    const body = Builder.buildBody(model, st);
+    Bp.setJson(body);
+    try {
+      const res = await Api.client().query(model.schema_name, model.logic_model, body, { raw: true });
+      Bp.setSql(res.raw_sql || "-- сервер не вернул raw_sql");
+    } catch (e) {
+      Bp.setError(e instanceof ApiError ? e : new ApiError(0, "network", ERROR_RU.network, { error: String(e) }));
+    }
+  }
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { Builder });
+
+</script>
+<script>
+/* ===== src/sqlconsole.js ===== */
+/* ============ Heimdall — SQL-консоль ============ */
+"use strict";
+
+const SqlConsole = {
+  /* примеры строятся по загруженному каталогу; пока каталога нет — нейтральные шаблоны */
+  examples() {
+    const key = (m) => `${m.schema_name}.${m.logic_model}`;
+    const firstMetric = (m) => ((m.metrics || [])[0] || {}).metric_name;
+    const firstDim = (m) => (((m.columns || []).find((c) => CHTypes.parse(c.type).base === "string")) || {}).column_name;
+    const hist = App.catalog.find((m) => m.history && (m.metrics || []).length);
+    const plain = App.catalog.find((m) => !m.history && (m.columns || []).length);
+    const now = new Date();
+    const monthEnd = Dates.iso(Dates.lastOfMonth(Dates.addMonths(now, -1)));
+    const yearStart = `${now.getFullYear()}-01-01`;
+    const today = Dates.iso(now);
+    const out = [];
+    if (hist) {
+      const tcol = (ModelInfo.timeColumns(hist)[0] || {}).column_name || "report_date";
+      const met = firstMetric(hist) || "count";
+      const dim = firstDim(hist);
+      const dimSel = dim ? `${dim}, ` : "";
+      out.push({
+        title: "Точечный срез истории",
+        desc: `состояние на дату: ${tcol} = …`,
+        sql: `SELECT ${dimSel}${met}()\nFROM ${key(hist)}\nWHERE ${tcol} = '${monthEnd}'${dim ? `\nGROUP BY ${dim}` : ""}`
+      });
+      out.push({
+        title: "Динамика по месяцам",
+        desc: "шаг задаётся функцией toLastDayOfMonth",
+        sql: `SELECT\n    toLastDayOfMonth(${tcol}) AS month_end,\n    ${dimSel}${met}()\nFROM ${key(hist)}\nWHERE ${tcol} >= '${yearStart}'\n  AND ${tcol} < '${today}'\nGROUP BY month_end${dim ? `, ${dim}` : ""}\nORDER BY month_end`
+      });
+    }
+    if (plain) {
+      const met = firstMetric(plain);
+      const dim = firstDim(plain);
+      if (met && dim) out.push({
+        title: "Агрегация",
+        desc: "метрики как функции на обычной модели",
+        sql: `SELECT ${dim}, ${met}()\nFROM ${key(plain)}\nGROUP BY ${dim}\nORDER BY ${dim}`
+      });
+      const cols = (plain.columns || []).slice(0, 3).map((c) => c.column_name);
+      if (cols.length) out.push({
+        title: "Плоские строки",
+        desc: "выборка колонок с лимитом",
+        sql: `SELECT ${cols.join(", ")}\nFROM ${key(plain)}\nLIMIT 20`
+      });
+      const arrCol = (plain.columns || []).find((c) => CHTypes.parse(c.type).base === "array");
+      if (arrCol) out.push({
+        title: "Фильтр по массиву",
+        desc: `notEmpty по ${arrCol.type}`,
+        sql: `SELECT ${dim || cols[0]}, ${arrCol.column_name}\nFROM ${key(plain)}\nWHERE notEmpty(${arrCol.column_name})\nLIMIT 20`
+      });
+    }
+    const anyM = hist || plain || App.catalog[0];
+    out.push({
+      title: "DESCRIBE модели",
+      desc: "колонки, типы, метрики",
+      sql: `DESCRIBE ${anyM ? key(anyM) : "schema.logic_model"}`
+    });
+    return out;
+  },
+
+  sideTab: "insert",
+
+  init() {
+    const page = U.$("#page-sql");
+    page.innerHTML = "";
+    const layout = U.el("div", { class: "sql-layout" });
+
+    /* — главная колонка — */
+    const main = U.el("div", { class: "sql-main" });
+    const toolbar = U.el("div", { class: "actions-bar" },
+      U.el("button", { class: "primary", onclick: () => SqlConsole.run(false) }, "Выполнить ▶"),
+      U.el("button", { onclick: () => SqlConsole.run(true), title: "добавляет /*raw*/ — сервер вернёт итоговый SQL без выполнения" }, "Превью SQL"),
+      U.el("span", { style: "flex:1" }),
+      U.el("span", { class: "field-hint" }, "POST / (text/plain) · таблицы по логическим именам · метрики как функции: headcount()"));
+
+    const editor = U.el("textarea", { class: "sql-editor", spellcheck: "false", placeholder: "SELECT column, metric()\nFROM schema.logic_model\nWHERE …\nGROUP BY column" });
+    editor.value = localStorage.getItem("heimdall.sql") || "";
+    editor.addEventListener("input", U.debounce(() => localStorage.setItem("heimdall.sql", editor.value), 300));
+    editor.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); SqlConsole.run(false); }
+    });
+    SqlConsole.editor = editor;
+
+    const hint = U.el("div", { class: "field-hint" },
+      "Ctrl/Cmd+Enter — выполнить. На history-моделях запрещены сырые агрегаты, JOIN и ручной WITH FILL — только объявленные метрики.");
+
+    main.append(toolbar, editor, hint);
+
+    /* — боковая панель — */
+    const side = U.el("div", { class: "sql-side" });
+    const tabs = U.el("div", { class: "sql-side-tabs" },
+      U.el("div", { class: "sql-side-tab" + (SqlConsole.sideTab === "insert" ? " active" : ""), dataset: { stab: "insert" }, onclick: () => SqlConsole.switchSide("insert") }, "Вставка"),
+      U.el("div", { class: "sql-side-tab" + (SqlConsole.sideTab === "examples" ? " active" : ""), dataset: { stab: "examples" }, onclick: () => SqlConsole.switchSide("examples") }, "Примеры"));
+    const sideBody = U.el("div", { class: "sql-side-body" });
+    SqlConsole.sideBody = sideBody;
+    side.append(tabs, sideBody);
+
+    layout.append(main, side);
+    page.append(layout);
+    SqlConsole.renderSide();
+  },
+
+  render() { /* страница статична; обновляем только панель вставки */ },
+
+  switchSide(tab) {
+    SqlConsole.sideTab = tab;
+    U.$$(".sql-side-tab").forEach((t) => t.classList.toggle("active", t.dataset.stab === tab));
+    SqlConsole.renderSide();
+  },
+
+  renderSide() {
+    if (SqlConsole.sideTab === "insert") SqlConsole.renderInsertPanel();
+    else SqlConsole.renderExamples();
+  },
+
+  renderInsertPanel() {
+    if (!SqlConsole.sideBody || SqlConsole.sideTab !== "insert") return;
+    const root = SqlConsole.sideBody;
+    root.innerHTML = "";
+    const schemas = [...new Set(App.catalog.map((m) => m.schema_name))];
+    if (!schemas.length) { root.append(U.el("div", { class: "bp-empty" }, "Каталог пуст")); return; }
+    for (const schema of schemas) {
+      root.append(U.el("div", { class: "ins-group-label" }, schema));
+      for (const m of App.catalog.filter((x) => x.schema_name === schema)) {
+        const key = `${m.schema_name}.${m.logic_model}`;
+        const det = U.el("details", null,
+          U.el("summary", {
+            class: "ins-item", style: "list-style:none",
+            ondblclick: (e) => { e.preventDefault(); }
+          },
+            U.el("span", { style: "color:var(--faint)" }, "▸"),
+            U.el("span", {
+              style: "color:var(--accent-text);cursor:pointer", title: "клик — вставить имя таблицы",
+              onclick: (e) => { e.preventDefault(); e.stopPropagation(); SqlConsole.insert(key); }
+            }, m.logic_model),
+            U.el("span", { class: "ins-dim" }, m.history ? "⏱" : m.array_join ? "⊞" : (m.joins || []).length ? "⇄" : "")));
+        const inner = U.el("div", { style: "padding-left:14px" });
+        for (const c of ModelInfo.allColumns(m)) {
+          inner.append(U.el("div", { class: "ins-item", title: c.description || "", onclick: () => SqlConsole.insert(c.column_name) },
+            U.el("span", { html: CHTypes.icon(c.type) }), c.column_name,
+            U.el("span", { class: "ins-dim" }, c._kind === "param" ? "⚙" : "")));
+        }
+        for (const x of ModelInfo.allMetrics(m)) {
+          inner.append(U.el("div", { class: "ins-item", title: x.verbose_name || "", onclick: () => SqlConsole.insert(x.metric_name + "()") },
+            U.el("span", { html: '<span class="ticon t-metric">Σ</span>' }), x.metric_name + "()",
+            U.el("span", { class: "ins-dim" }, x._kind === "param" ? "⚙" : "")));
+        }
+        det.append(inner);
+        root.append(det);
+      }
+    }
+  },
+
+  renderExamples() {
+    if (!SqlConsole.sideBody || SqlConsole.sideTab !== "examples") return;
+    const root = SqlConsole.sideBody;
+    root.innerHTML = "";
+    for (const ex of SqlConsole.examples()) {
+      root.append(U.el("div", {
+        class: "example-item",
+        onclick: () => {
+          SqlConsole.editor.value = ex.sql;
+          localStorage.setItem("heimdall.sql", ex.sql);
+          SqlConsole.editor.focus();
+        }
+      },
+        U.el("div", { class: "ex-title" }, ex.title),
+        U.el("div", { class: "ex-desc" }, ex.desc)));
+    }
+  },
+
+  insert(text) {
+    const ed = SqlConsole.editor;
+    const start = ed.selectionStart ?? ed.value.length;
+    const end = ed.selectionEnd ?? ed.value.length;
+    const before = ed.value.slice(0, start), after = ed.value.slice(end);
+    const sep = before && !/[\s(,.]$/.test(before) ? " " : "";
+    ed.value = before + sep + text + after;
+    const pos = (before + sep + text).length;
+    ed.focus();
+    ed.setSelectionRange(pos, pos);
+    localStorage.setItem("heimdall.sql", ed.value);
+  },
+
+  async run(rawPreview) {
+    let text = SqlConsole.editor.value.trim();
+    if (!text) { Toast.show("Введите SQL-запрос", "err"); return; }
+    /* все триггеры raw-превью канала (префикс RAW и оба коммент-триггера);
+       в raw-режиме сервер не исполняет запрос — ответ всегда итоговый SQL */
+    const rawTrigger = /^\s*(RAW\b|\/\*\s*raw\s*\*\/|--\s*raw)/i;
+    const isRaw = rawPreview || rawTrigger.test(text);
+    if (rawPreview && !rawTrigger.test(text)) text = "/*raw*/ " + text;
+    Bp.loading();
+    try {
+      const res = await Api.client().sql(text);
+      if (!res.ok) {
+        Bp.setError({ chText: res.error });
+        return;
+      }
+      if (isRaw) {
+        Bp.setSql(res.text);
+        return;
+      }
+      const rows = SqlConsole.parseTSV(res.text);
+      Bp.setResult({ data: rows, limit: null, offset: null, has_next_page: false }, { mode: null });
+    } catch (e) {
+      if (e instanceof ApiError) Bp.setError(e);
+      else Bp.setError(new ApiError(0, "network", ERROR_RU.network, { error: String(e) }));
+    }
+  },
+
+  parseTSV(text) {
+    const lines = String(text || "").split("\n").filter((l) => l.length);
+    if (!lines.length) return [];
+    const header = lines[0].split("\t");
+    return lines.slice(1).map((l) => {
+      const cells = l.split("\t");
+      const row = {};
+      header.forEach((h, i) => {
+        let v = cells[i];
+        if (v === "\\N" || v === undefined) v = null;
+        else if (/^-?\d+(\.\d+)?$/.test(v)) v = +v;
+        row[h] = v;
+      });
+      return row;
+    });
+  }
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { SqlConsole });
+
+</script>
+<script>
+/* ===== src/yamleditor.js ===== */
+/* ============ Heimdall — Редактор датасета (форма → YAML) ============ */
+"use strict";
+
+const YamlEditor = {
+  form: null,
+  fieldRefs: {},
+  previewEl: null,
+  summaryEl: null,
+
+  defaultForm() {
+    return {
+      logic_model: "", table_name: "", schema_name: "dm_core", description: "",
+      allowed_groups: [], disallowed_groups: [], visible: [], kind: "plain",
+      history: { valid_from: "_change_date", primary_key: "", time_column: "", require_time_range: true, fill_mode: "previous", lookback: "5y" },
+      array_join: { type: "left", source_model: "", arrays: [{ source: "", as: "", element_type: "String" }] },
+      columns: [{ column_name: "", type: "String", description: "", sql: "", granularities: "", default_granularity: "" }],
+      virtual_columns: [],
+      metrics: [],
+      param_virtual_columns: [], param_metrics: [], joins: []
+    };
+  },
+
+  modelToForm(m) {
+    const f = YamlEditor.defaultForm();
+    f.logic_model = m.logic_model || "";
+    f.table_name = m.table_name || "";
+    f.schema_name = m.schema_name || "dm_core";
+    f.description = m.description || "";
+    f.allowed_groups = [...(m.allowed_groups || [])];
+    f.disallowed_groups = [...(m.disallowed_groups || [])];
+    f.visible = [...(m.visible || [])];
+    f.kind = m.history ? "history" : m.array_join ? "array_join" : "plain";
+    if (m.history) {
+      f.history = {
+        valid_from: m.history.valid_from || "_change_date",
+        primary_key: m.history.primary_key || "",
+        time_column: m.history.time_column || "",
+        require_time_range: m.history.require_time_range !== false,
+        fill_mode: m.history.fill?.mode || "previous",
+        lookback: m.history.lookback_safety?.default_lookback || "5y"
+      };
+    }
+    if (m.array_join) {
+      f.array_join = {
+        type: m.array_join.type || "left",
+        source_model: m.array_join.source_model || "",
+        arrays: (m.array_join.arrays || []).map((a) => ({ source: a.source || "", as: a.as || "", element_type: a.element_type || "String" }))
+      };
+    }
+    f.columns = (m.columns || []).map((c) => ({
+      column_name: c.column_name || "", type: c.type || "String", description: c.description || "",
+      sql: c.sql || "", granularities: (c.granularities || []).join(", "), default_granularity: c.default_granularity || ""
+    }));
+    if (!f.columns.length) f.columns = YamlEditor.defaultForm().columns;
+    f.virtual_columns = (m.virtual_columns || []).map((c) => ({
+      column_name: c.column_name || "", type: c.type || "String", description: c.description || "", sql: c.sql || ""
+    }));
+    f.metrics = (m.metrics || []).map((x) => ({
+      metric_name: x.metric_name || "", sql: x.sql || "", verbose_name: x.verbose_name || "", description: x.description || ""
+    }));
+    f.param_virtual_columns = U.clone(m.param_virtual_columns || []);
+    f.param_metrics = U.clone(m.param_metrics || []);
+    f.joins = U.clone(m.joins || []);
+    return f;
+  },
+
+  formToDataset(f) {
+    const grans = (s) => String(s || "").split(",").map((x) => x.trim()).filter(Boolean);
+    const ds = {
+      logic_model: f.logic_model.trim(), table_name: f.table_name.trim(),
+      schema_name: f.schema_name.trim() || "dm_core",
+      description: f.description.trim(),
+      allowed_groups: [...f.allowed_groups],
+      disallowed_groups: [...(f.disallowed_groups || [])],
+      visible: [...(f.visible || [])],
+      history: null, array_join: null,
+      columns: f.columns.filter((c) => c.column_name.trim() || c.description || c.sql).map((c) => {
+        const out = { column_name: c.column_name.trim(), type: c.type.trim() || "String" };
+        if (c.description) out.description = c.description;
+        if (c.sql) out.sql = c.sql;
+        const g = grans(c.granularities);
+        if (g.length) { out.granularities = g; if (c.default_granularity) out.default_granularity = c.default_granularity.trim(); }
+        return out;
+      }),
+      virtual_columns: f.virtual_columns.filter((c) => c.column_name.trim() || c.sql).map((c) => ({
+        column_name: c.column_name.trim(), type: c.type.trim() || "String",
+        ...(c.description ? { description: c.description } : {}), sql: c.sql
+      })),
+      param_virtual_columns: U.clone(f.param_virtual_columns || []),
+      metrics: f.metrics.filter((x) => x.metric_name.trim() || x.sql).map((x) => ({
+        metric_name: x.metric_name.trim(), sql: x.sql, verbose_name: x.verbose_name,
+        ...(x.description ? { description: x.description } : {})
+      })),
+      param_metrics: U.clone(f.param_metrics || []),
+      joins: U.clone(f.joins || [])
+    };
+    if (f.kind === "history") {
+      ds.history = {
+        valid_from: f.history.valid_from.trim() || "_change_date",
+        primary_key: f.history.primary_key.trim(),
+        time_column: f.history.time_column.trim(),
+        require_time_range: !!f.history.require_time_range,
+        fill: { mode: f.history.fill_mode },
+        lookback_safety: { default_lookback: f.history.lookback.trim() || "5y" }
+      };
+    }
+    if (f.kind === "array_join") {
+      ds.array_join = {
+        type: f.array_join.type,
+        source_model: (f.array_join.source_model || "").trim(),
+        arrays: f.array_join.arrays.filter((a) => a.source.trim() || a.as.trim()).map((a) => ({
+          source: a.source.trim(), as: a.as.trim(), element_type: a.element_type.trim() || "String"
+        }))
+      };
+    }
+    return ds;
+  },
+
+  /* ---------- валидация ---------- */
+  validate(f) {
+    const errs = [];
+    const E = (key, msg) => errs.push({ key, msg });
+    if (!f.logic_model.trim()) E("logic_model", "logic_model обязателен");
+    else if (!/^[a-z_][a-z0-9_]*$/i.test(f.logic_model.trim())) E("logic_model", "logic_model: только буквы, цифры и _");
+    if (!f.table_name.trim()) E("table_name", "table_name обязателен");
+
+    const colNames = [];
+    f.columns.forEach((c, i) => {
+      const name = c.column_name.trim();
+      if (!name) { E(`col.${i}.column_name`, `колонка №${i + 1}: column_name обязателен`); return; }
+      if (colNames.includes(name)) E(`col.${i}.column_name`, `колонка «${name}» объявлена дважды`);
+      colNames.push(name);
+      const g = String(c.granularities || "").split(",").map((x) => x.trim()).filter(Boolean);
+      if (g.length) {
+        const t = CHTypes.parse(c.type);
+        if (t.base !== "date" && t.base !== "datetime")
+          E(`col.${i}.granularities`, `«${name}»: granularities допустимы только на Date/DateTime`);
+        const bad = g.filter((x) => !GRAN.all.includes(x));
+        if (bad.length) E(`col.${i}.granularities`, `«${name}»: неизвестные гранулярности: ${bad.join(", ")}`);
+        if (t.base === "date" && g.some((x) => x === "hour" || x === "minute"))
+          E(`col.${i}.granularities`, `«${name}»: hour/minute допустимы только на DateTime`);
+        if (c.default_granularity && !g.includes(c.default_granularity.trim()))
+          E(`col.${i}.default_granularity`, `«${name}»: default_granularity должна входить в granularities`);
+      } else if (c.default_granularity) {
+        E(`col.${i}.default_granularity`, `«${name}»: default_granularity без granularities`);
+      }
+    });
+    f.virtual_columns.forEach((c, i) => {
+      const name = c.column_name.trim();
+      if (!name) { E(`vcol.${i}.column_name`, `вирт. колонка №${i + 1}: column_name обязателен`); return; }
+      if (!c.sql.trim()) E(`vcol.${i}.sql`, `вирт. колонка «${name}»: поле sql обязательно`);
+      if (colNames.includes(name)) E(`vcol.${i}.column_name`, `имя «${name}» уже занято колонкой`);
+      colNames.push(name);
+    });
+
+    const metNames = [];
+    f.metrics.forEach((x, i) => {
+      const name = x.metric_name.trim();
+      if (!name) { E(`met.${i}.metric_name`, `метрика №${i + 1}: metric_name обязателен`); return; }
+      if (!x.sql.trim()) E(`met.${i}.sql`, `метрика «${name}»: sql обязателен`);
+      if (!x.verbose_name.trim()) E(`met.${i}.verbose_name`, `метрика «${name}»: verbose_name обязателен`);
+      if (metNames.includes(name)) E(`met.${i}.metric_name`, `метрика «${name}» объявлена дважды`);
+      if (colNames.includes(name)) E(`met.${i}.metric_name`, `метрика «${name}» не может называться как колонка`);
+      metNames.push(name);
+    });
+
+    if (f.kind === "history") {
+      const h = f.history;
+      if (!h.primary_key.trim()) E("history.primary_key", "history: primary_key обязателен");
+      else if (!colNames.includes(h.primary_key.trim())) E("history.primary_key", `history: primary_key «${h.primary_key}» отсутствует в columns`);
+      if (!h.time_column.trim()) E("history.time_column", "history: time_column обязателен");
+      else {
+        const tc = f.columns.find((c) => c.column_name.trim() === h.time_column.trim());
+        if (!tc) E("history.time_column", `history: time_column «${h.time_column}» отсутствует в columns`);
+        else if (!String(tc.granularities || "").trim()) E("history.time_column", `history: у «${h.time_column}» нет granularities`);
+      }
+      if (!/^\d+\s*[ymd]$/.test(h.lookback.trim())) E("history.lookback", "lookback: формат N y/m/d, напр. 5y");
+    }
+    if (f.kind === "array_join") {
+      const aliases = [];
+      f.array_join.arrays.forEach((a, i) => {
+        const al = a.as.trim();
+        if (!a.source.trim()) E(`aj.${i}.source`, `array_join №${i + 1}: source обязателен`);
+        if (!al) { E(`aj.${i}.as`, `array_join №${i + 1}: алиас as обязателен`); return; }
+        if (aliases.includes(al)) E(`aj.${i}.as`, `алиас «${al}» повторяется`);
+        if (colNames.includes(al)) {
+          // алиас может совпадать с объявленной колонкой-развёрткой — но не более одного объявления
+          const colDup = f.columns.filter((c) => c.column_name.trim() === al).length > 1;
+          if (colDup) E(`aj.${i}.as`, `алиас «${al}» конфликтует с колонками`);
+        }
+        aliases.push(al);
+      });
+    }
+    return errs;
+  },
+
+  /* ---------- каркас страницы ---------- */
+  init() {
+    const page = U.$("#page-yaml");
+    page.innerHTML = "";
+    const layout = U.el("div", { class: "yaml-layout" });
+    YamlEditor.formRoot = U.el("div", { class: "yaml-form" });
+    const preview = U.el("div", { class: "yaml-preview" });
+    YamlEditor.previewEl = U.el("pre", { class: "code" });
+    preview.append(
+      U.el("div", { class: "yaml-preview-head" },
+        U.el("span", { class: "card-title" }, "YAML-превью (read-only, генерируется из формы)"),
+        U.el("button", { class: "small", onclick: () => U.copy(YamlEditor.currentYaml(), "YAML скопирован") }, "Копировать"),
+        U.el("button", { class: "small", onclick: () => U.download((YamlEditor.form.logic_model || "dataset") + ".yaml", YamlEditor.currentYaml(), "application/yaml") }, "Скачать")),
+      YamlEditor.previewEl);
+    layout.append(YamlEditor.formRoot, preview);
+    page.append(layout);
+    YamlEditor.form = YamlEditor.defaultForm();
+    YamlEditor.renderForm();
+  },
+
+  render() { /* содержимое уже построено; форма живёт своим состоянием */ },
+
+  loadModel(model) {
+    YamlEditor.form = YamlEditor.modelToForm(model);
+    YamlEditor.renderForm();
+    App.openTab("yaml");
+    Toast.show(`Модель ${model.logic_model} загружена в редактор`);
+  },
+
+  currentYaml() {
+    return YamlCodec.generate(YamlEditor.formToDataset(YamlEditor.form));
+  },
+
+  ref(key, fieldEl) {
+    YamlEditor.fieldRefs[key] = fieldEl;
+    return fieldEl;
+  },
+
+  updatePreview() {
+    const f = YamlEditor.form;
+    YamlEditor.previewEl.innerHTML = Hl.yaml(YamlCodec.generate(YamlEditor.formToDataset(f)));
+    const errs = YamlEditor.validate(f);
+    // сводка
+    YamlEditor.summaryEl.innerHTML = "";
+    if (errs.length) {
+      YamlEditor.summaryEl.append(U.el("div", { class: "validation-summary" },
+        U.el("strong", { style: "color:var(--red);font-size:12px" }, `Ошибок: ${errs.length}`),
+        U.el("ul", null, ...errs.map((e) => U.el("li", null, e.msg)))));
+    } else {
+      YamlEditor.summaryEl.append(U.el("div", { class: "validation-ok" }, "✓ Валидация пройдена — датасет можно публиковать"));
+    }
+    // пометки на полях
+    const errKeys = new Set(errs.map((e) => e.key));
+    for (const [key, fieldEl] of Object.entries(YamlEditor.fieldRefs)) {
+      if (!fieldEl.isConnected) { delete YamlEditor.fieldRefs[key]; continue; }
+      fieldEl.classList.toggle("invalid", errKeys.has(key));
+      const errEl = fieldEl.querySelector(".field-error");
+      if (errEl) errEl.textContent = errKeys.has(key) ? (errs.find((e) => e.key === key) || {}).msg || "" : "";
+    }
+    YamlEditor.publishBtn.disabled = errs.length > 0;
+  },
+
+  /* ---------- мелкие фабрики полей ---------- */
+  input(key, label, value, onInput, opts) {
+    const inp = U.el("input", Object.assign({ type: "text", value: value ?? "" }, (opts && opts.attrs) || {}));
+    if (opts && opts.mono) inp.classList.add("mono");
+    inp.addEventListener("input", () => { onInput(inp.value); YamlEditor.schedule(); });
+    const field = U.el("div", { class: "field" + ((opts && opts.span2) ? " span2" : "") },
+      U.el("span", { class: "field-label" }, label), inp,
+      (opts && opts.hint) ? U.el("span", { class: "field-hint" }, opts.hint) : null,
+      U.el("span", { class: "field-error" }));
+    return key ? YamlEditor.ref(key, field) : field;
+  },
+
+  schedule: null, // debounce назначается в renderForm
+
+  /* ---------- рендер формы ---------- */
+  renderForm() {
+    YamlEditor.fieldRefs = {};
+    YamlEditor.schedule = U.debounce(() => YamlEditor.updatePreview(), 160);
+    const f = YamlEditor.form;
+    const root = YamlEditor.formRoot;
+    root.innerHTML = "";
+
+    /* — панель действий — */
+    YamlEditor.publishBtn = U.el("button", { class: "primary", onclick: () => YamlEditor.publish() }, "Опубликовать на стенд");
+    root.append(U.el("div", { class: "actions-bar", style: "margin-bottom:14px" },
+      YamlEditor.publishBtn,
+      U.el("button", { onclick: () => U.download((f.logic_model || "dataset") + ".yaml", YamlEditor.currentYaml(), "application/yaml") }, "Скачать YAML"),
+      U.el("button", { onclick: () => YamlEditor.importDialog() }, "Импорт YAML"),
+      U.el("button", { class: "ghost", onclick: () => { YamlEditor.form = YamlEditor.defaultForm(); YamlEditor.renderForm(); } }, "Очистить")));
+
+    YamlEditor.summaryEl = U.el("div");
+    root.append(YamlEditor.summaryEl);
+
+    /* — основные поля — */
+    const groupsInput = Builder.tagInput(f.allowed_groups, () => YamlEditor.schedule(), "service_id + Enter");
+    const groupsField = YamlEditor.ref("allowed_groups", U.el("div", { class: "field span2" },
+      U.el("span", { class: "field-label" }, "allowed_groups (пусто — доступ всем)"), groupsInput, U.el("span", { class: "field-error" })));
+
+    const denyInput = Builder.tagInput(f.disallowed_groups, () => YamlEditor.schedule(), "service_id + Enter");
+    const denyField = YamlEditor.ref("disallowed_groups", U.el("div", { class: "field span2" },
+      U.el("span", { class: "field-label" }, "disallowed_groups (запрет сильнее)"), denyInput, U.el("span", { class: "field-error" })));
+
+    const visibleInput = Builder.tagInput(f.visible, () => YamlEditor.schedule(), "rest/sql/mcp/join_only + Enter");
+    const visibleField = YamlEditor.ref("visible", U.el("div", { class: "field span2" },
+      U.el("span", { class: "field-label" }, "visible (пусто — во всех каналах)"), visibleInput, U.el("span", { class: "field-error" })));
+
+    root.append(U.el("div", { class: "form-section" },
+      U.el("div", { class: "form-section-head" }, U.el("h3", null, "Основное")),
+      U.el("div", { class: "form-grid" },
+        YamlEditor.input("logic_model", "logic_model (имя модели для клиента)", f.logic_model, (v) => f.logic_model = v, { mono: true }),
+        YamlEditor.input("table_name", "table_name (физическая таблица CH)", f.table_name, (v) => f.table_name = v, { mono: true }),
+        YamlEditor.input("schema_name", "schema_name", f.schema_name, (v) => f.schema_name = v, { mono: true }),
+        YamlEditor.input(null, "description", f.description, (v) => f.description = v, {}),
+        groupsField, denyField, visibleField)));
+
+    /* — переключатель типа — */
+    const kindSeg = U.el("div", { class: "seg" }, ...[["plain", "обычный"], ["history", "history"], ["array_join", "array_join"]].map(([k, label]) =>
+      U.el("button", {
+        class: f.kind === k ? "on seg-accent" : "",
+        onclick: () => { f.kind = k; YamlEditor.renderForm(); }
+      }, label)));
+    root.append(U.el("div", { class: "form-section" },
+      U.el("div", { class: "form-section-head" }, U.el("h3", null, "Тип модели"), kindSeg,
+        U.el("span", { class: "field-hint" }, "history и array_join несовместимы — переключатель выбирает одно")),
+      f.kind === "history" ? YamlEditor.historySection(f) : null,
+      f.kind === "array_join" ? YamlEditor.arrayJoinSection(f) : null));
+
+    /* — колонки — */
+    root.append(YamlEditor.repeatSection("Колонки", f.columns,
+      () => ({ column_name: "", type: "String", description: "", sql: "", granularities: "", default_granularity: "" }),
+      (c, i) => [
+        YamlEditor.input(`col.${i}.column_name`, "column_name", c.column_name, (v) => c.column_name = v, { mono: true }),
+        YamlEditor.input(null, "type (CH)", c.type, (v) => c.type = v, { mono: true, hint: "напр. Date, UUID, Nullable(String), Array(String)" }),
+        YamlEditor.input(null, "description", c.description, (v) => c.description = v, { span2: true }),
+        YamlEditor.input(null, "sql (выражение, опц.)", c.sql, (v) => c.sql = v, { mono: true, span2: true }),
+        YamlEditor.input(`col.${i}.granularities`, "granularities (через запятую)", c.granularities, (v) => c.granularities = v, { mono: true, hint: GRAN.all.join(", ") }),
+        YamlEditor.input(`col.${i}.default_granularity`, "default_granularity", c.default_granularity, (v) => c.default_granularity = v, { mono: true })
+      ]));
+
+    /* — виртуальные колонки — */
+    root.append(YamlEditor.repeatSection("Виртуальные колонки", f.virtual_columns,
+      () => ({ column_name: "", type: "String", description: "", sql: "" }),
+      (c, i) => [
+        YamlEditor.input(`vcol.${i}.column_name`, "column_name", c.column_name, (v) => c.column_name = v, { mono: true }),
+        YamlEditor.input(null, "type (CH)", c.type, (v) => c.type = v, { mono: true }),
+        YamlEditor.input(`vcol.${i}.sql`, "sql (обязательное)", c.sql, (v) => c.sql = v, { mono: true, span2: true }),
+        YamlEditor.input(null, "description", c.description, (v) => c.description = v, { span2: true })
+      ]));
+
+    /* — метрики — */
+    root.append(YamlEditor.repeatSection("Метрики", f.metrics,
+      () => ({ metric_name: "", sql: "", verbose_name: "", description: "" }),
+      (x, i) => [
+        YamlEditor.input(`met.${i}.metric_name`, "metric_name", x.metric_name, (v) => x.metric_name = v, { mono: true }),
+        YamlEditor.input(`met.${i}.verbose_name`, "verbose_name", x.verbose_name, (v) => x.verbose_name = v),
+        YamlEditor.input(`met.${i}.sql`, "sql (обязательное)", x.sql, (v) => x.sql = v, { mono: true, span2: true, hint: "напр. uniqExact(person_id)" }),
+        YamlEditor.input(null, "description", x.description, (v) => x.description = v, { span2: true })
+      ]));
+
+    if ((f.param_metrics || []).length || (f.param_virtual_columns || []).length || (f.joins || []).length) {
+      root.append(U.el("div", { class: "form-section" },
+        U.el("div", { class: "form-section-head" }, U.el("h3", null, "Прочее (переносится как есть)")),
+        U.el("div", { class: "field-hint" },
+          `параметризованных метрик: ${(f.param_metrics || []).length}, параметризованных колонок: ${(f.param_virtual_columns || []).length}, joins: ${(f.joins || []).length} — редактирование этих секций выполняется через импорт YAML`)));
+    }
+
+    YamlEditor.updatePreview();
+  },
+
+  repeatSection(title, list, makeNew, renderFields) {
+    const sec = U.el("div", { class: "form-section" });
+    sec.append(U.el("div", { class: "form-section-head" },
+      U.el("h3", null, title),
+      U.el("button", { class: "ghost small", onclick: () => { list.push(makeNew()); YamlEditor.renderForm(); } }, "+ добавить"),
+      U.el("span", { class: "field-hint" }, `${list.length} шт.`)));
+    list.forEach((item, i) => {
+      const card = U.el("div", { class: "repeat-item" },
+        U.el("button", { class: "danger-ghost small repeat-remove", title: "удалить", onclick: () => { list.splice(i, 1); YamlEditor.renderForm(); } }, "✕"),
+        U.el("div", { class: "repeat-grid" }, ...renderFields(item, i)));
+      sec.append(card);
+    });
+    if (!list.length) sec.append(U.el("div", { class: "field-hint", style: "padding:2px 2px 6px" }, "пока пусто"));
+    return sec;
+  },
+
+  historySection(f) {
+    const h = f.history;
+    const reqToggle = U.el("input", { type: "checkbox" });
+    reqToggle.checked = h.require_time_range;
+    reqToggle.addEventListener("change", () => { h.require_time_range = reqToggle.checked; YamlEditor.schedule(); });
+    const fillSel = U.el("select", null,
+      U.el("option", { value: "previous", selected: h.fill_mode === "previous" }, "previous"),
+      U.el("option", { value: "none", selected: h.fill_mode === "none" }, "none"));
+    fillSel.addEventListener("change", () => { h.fill_mode = fillSel.value; YamlEditor.schedule(); });
+    return U.el("div", { class: "repeat-item", style: "margin-top:8px" },
+      U.el("div", { class: "repeat-grid" },
+        YamlEditor.input(null, "valid_from (внутр. колонка события)", h.valid_from, (v) => h.valid_from = v, { mono: true }),
+        YamlEditor.input("history.primary_key", "primary_key", h.primary_key, (v) => h.primary_key = v, { mono: true, hint: "должна существовать в columns" }),
+        YamlEditor.input("history.time_column", "time_column (публичный срез)", h.time_column, (v) => h.time_column = v, { mono: true, hint: "колонка с granularities" }),
+        YamlEditor.input("history.lookback", "lookback (default_lookback)", h.lookback, (v) => h.lookback = v, { mono: true, hint: "напр. 5y, 18m, 90d" }),
+        U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "fill.mode"), fillSel),
+        U.el("div", { class: "field" },
+          U.el("label", { class: "checkline", style: "margin-top:18px" }, reqToggle, "require_time_range"))));
+  },
+
+  arrayJoinSection(f) {
+    const aj = f.array_join;
+    const typeSel = U.el("select", null,
+      U.el("option", { value: "left", selected: aj.type === "left" }, "left"),
+      U.el("option", { value: "inner", selected: aj.type === "inner" }, "inner"));
+    typeSel.addEventListener("change", () => { aj.type = typeSel.value; YamlEditor.schedule(); });
+    const wrap = U.el("div", { class: "repeat-item", style: "margin-top:8px" });
+    wrap.append(U.el("div", { style: "display:flex;gap:10px;align-items:center;margin-bottom:8px" },
+      U.el("span", { class: "field-label" }, "type"), typeSel,
+      YamlEditor.input(null, "source_model (откуда описания колонок)", aj.source_model || "",
+        (v) => aj.source_model = v, { mono: true }),
+      U.el("button", { class: "ghost small", onclick: () => { aj.arrays.push({ source: "", as: "", element_type: "String" }); YamlEditor.renderForm(); } }, "+ массив")));
+    aj.arrays.forEach((a, i) => {
+      wrap.append(U.el("div", { style: "display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap" },
+        YamlEditor.input(`aj.${i}.source`, "source", a.source, (v) => a.source = v, { mono: true }),
+        YamlEditor.input(`aj.${i}.as`, "as (алиас)", a.as, (v) => a.as = v, { mono: true }),
+        YamlEditor.input(null, "element_type", a.element_type, (v) => a.element_type = v, { mono: true }),
+        U.el("button", { class: "danger-ghost small", style: "margin-top:18px", onclick: () => { aj.arrays.splice(i, 1); YamlEditor.renderForm(); } }, "✕")));
+    });
+    return wrap;
+  },
+
+  /* ---------- импорт YAML ---------- */
+  importDialog() {
+    const ta = U.el("textarea", { class: "mono", rows: 14, style: "width:100%;resize:vertical", placeholder: "datasets:\n  - logic_model: my_model\n    table_name: my_table_dm\n    ..." });
+    const errEl = U.el("div", { class: "field-error" });
+    Modal.open("Импорт YAML",
+      U.el("div", { style: "display:flex;flex-direction:column;gap:8px" },
+        U.el("span", { class: "field-hint" }, "Поддерживается подмножество YAML каталога: отступы, списки «- », инлайн-списки [a, b] и инлайн-словари { a: b }. Берётся первый датасет."),
+        ta, errEl),
+      U.el("div", { style: "display:flex;gap:8px" },
+        U.el("button", { onclick: Modal.close }, "Отмена"),
+        U.el("button", {
+          class: "primary",
+          onclick: () => {
+            try {
+              const parsed = YamlCodec.parse(ta.value);
+              const ds = (parsed.datasets && parsed.datasets[0]) || (parsed.logic_model ? parsed : null);
+              if (!ds) throw new Error("не найдена секция datasets");
+              if (ds.history && ds.array_join) throw new Error("history и array_join несовместимы в одном датасете");
+              YamlEditor.form = YamlEditor.modelToForm(ds);
+              YamlEditor.renderForm();
+              Modal.close();
+              Toast.show("YAML импортирован в форму");
+            } catch (e) {
+              errEl.textContent = "Ошибка разбора: " + e.message;
+            }
+          }
+        }, "Импортировать")),
+      { wide: true });
+  },
+
+  /* ---------- публикация ---------- */
+  async publish() {
+    const f = YamlEditor.form;
+    const errs = YamlEditor.validate(f);
+    if (errs.length) { Toast.show("Исправьте ошибки валидации", "err"); return; }
+    const yaml = YamlEditor.currentYaml();
+    YamlEditor.publishBtn.disabled = true;
+    YamlEditor.publishBtn.textContent = "Публикация…";
+    try {
+      const report = await Api.client().publishYaml(yaml, f.schema_name.trim() || undefined);
+      YamlEditor.reportModal(report);
+      document.dispatchEvent(new CustomEvent("catalog-changed"));
+    } catch (e) {
+      const err = e instanceof ApiError ? e : new ApiError(0, "network", ERROR_RU.network, { error: String(e) });
+      Modal.open("Ошибка публикации",
+        U.el("div", { class: "error-block", style: "padding:0" },
+          U.el("div", { class: "error-head" },
+            U.el("span", { class: "badge b-red mono" }, err.code || "error"),
+            err.status ? U.el("span", { class: "badge mono" }, "HTTP " + err.status) : null),
+          U.el("div", { class: "error-msg" }, ERROR_RU[err.code] || err.detail || "Неизвестная ошибка"),
+          U.el("pre", { class: "code framed", html: Hl.json(JSON.stringify(err.raw || {}, null, 2)) })),
+        U.el("button", { onclick: Modal.close }, "Закрыть"));
+    } finally {
+      YamlEditor.publishBtn.disabled = false;
+      YamlEditor.publishBtn.textContent = "Опубликовать на стенд";
+    }
+  },
+
+  reportModal(report) {
+    const ACTION_BADGE = { created: "b-green", updated: "b-yellow", unchanged: "b-dim" };
+    const ACTION_RU = { created: "создан", updated: "обновлён", unchanged: "без изменений" };
+    const wrap = U.el("div", { class: "pub-report" });
+    wrap.append(U.el("div", { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap" },
+      U.el("span", { class: "badge " + (report.status === "SUCCESS" ? "b-green" : "b-red") }, report.status),
+      U.el("span", { class: "mono", style: "color:var(--muted)" }, "схема: " + (report.schema || "—")),
+      U.el("span", { style: "color:var(--muted)" }, `датасетов: ${report.total_datasets}, изменений: ${report.total_changes}`)));
+    for (const ds of report.datasets || []) {
+      const body = U.el("div", { class: "pub-ds-body" });
+      const changes = ds.changes || {};
+      const SEC_RU = { columns: "колонки", virtual_columns: "вирт. колонки", param_virtual_columns: "парам. колонки", metrics: "метрики", param_metrics: "парам. метрики", model: "модель" };
+      let any = false;
+      for (const [sec, d] of Object.entries(changes)) {
+        const parts = [];
+        for (const n of d.added || []) parts.push(U.el("span", { class: "diff-added" }, "+ " + n));
+        for (const n of d.removed || []) parts.push(U.el("span", { class: "diff-removed" }, "− " + n));
+        for (const n of d.changed || []) parts.push(U.el("span", { class: "diff-changed" }, "~ " + n));
+        if (!parts.length) continue;
+        any = true;
+        body.append(U.el("div", { class: "diff-line" },
+          U.el("span", { class: "diff-section" }, SEC_RU[sec] || sec), ...parts));
+      }
+      if (!any) body.append(U.el("div", { class: "field-hint" }, "изменений нет"));
+      body.append(U.el("div", { class: "routes-line" }, "→ " + (ds.routes || []).join("  ·  ")));
+      const det = U.el("details", { open: ds.action !== "unchanged" },
+        U.el("summary", { class: "pub-ds-head", style: "cursor:pointer;list-style:none" },
+          U.el("span", { class: "mono", style: "font-weight:600" }, ds.logic_model),
+          U.el("span", { class: "badge " + (ACTION_BADGE[ds.action] || "") }, ACTION_RU[ds.action] || ds.action),
+          U.el("span", { class: "field-hint" }, `${ds.change_count} изм.`)),
+        body);
+      wrap.append(U.el("div", { class: "pub-ds" }, det));
+    }
+    Modal.open("Отчёт публикации", wrap,
+      U.el("button", { class: "primary", onclick: Modal.close }, "Готово"), { wide: true });
+  }
+};
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { YamlEditor });
+
+</script>
+<script>
+/* ===== src/factory-loader.js ===== */
+/* ============ Подключение вкладки «Завод скиллов» ============
+   Код вкладки живёт в пакете app/skill_factory/static/ и подгружается ручкой
+   Завода. Здесь только загрузчик: он ставит скрипт и передаёт ему контейнер.
+   Если Завод на стенде не поднята (не dev и не ift), вкладка честно говорит
+   об этом и остальной интерфейс не ломается. */
+"use strict";
+
+const Skills = {
+  URL: "/skill-factory/api/v1/ui/factory.js",
+  _loading: null,
+
+  /* Сообщение вместо вкладки: пока скрипт едет и когда он не доехал. */
+  say(page, text) {
+    page.innerHTML = "";
+    page.append(U.el("div", { style: "padding:22px 14px;color:var(--muted);font-size:12.5px" }, text));
+  },
+
+  /* Неудачная попытка забывается: следующий заход на вкладку загрузит скрипт
+     заново. Иначе разовый сбой стенда оставляет вкладку мёртвой до перезагрузки
+     всей страницы. */
+  forget(page, text) {
+    Skills._loading = null;
+    Skills.say(page, text);
+  },
+
+  init() {
+    const page = document.getElementById("page-skills");
+    if (!page || Skills._loading) return;
+    Skills.say(page, "Загружаю Завод скиллов…");
+    Skills._loading = new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = Skills.URL;
+      script.onload = () => {
+        if (window.SkillFactory) { window.SkillFactory.init(page); resolve(true); return; }
+        // Скрипт доехал, но вкладку не собрал: без этой ветки человек смотрит
+        // на «загружаю» до перезагрузки страницы.
+        Skills.forget(page, "Завод скиллов не собрался: скрипт вкладки загрузился, "
+          + "но не заработал. Зайдите на вкладку ещё раз или перезагрузите страницу.");
+        resolve(false);
+      };
+      script.onerror = () => {
+        Skills.forget(page, "Завод скиллов на этом стенде не поднята: "
+          + "она доступна только на dev и ift.");
+        resolve(false);
+      };
+      document.head.append(script);
+    });
+  },
+
+  render() { if (window.SkillFactory) window.SkillFactory.render(); },
+};
+</script>
+<script>
+/* ===== src/app.js ===== */
+/* ============ Heimdall — каркас приложения ============ */
+"use strict";
+
+const App = {
+  settings: { baseUrl: (typeof location !== "undefined" && location.origin && location.origin !== "null") ? location.origin : "http://localhost:8000", token: "" },
+  catalog: [],          // полные описания моделей
+  catalogError: null,
+  catalogLoading: false,
+  selected: null,       // "schema.logic_model"
+  activeTab: "explorer",
+  ui: { treeOpen: new Set(), schemaOpen: new Set(), search: "", bpWas: undefined },
+
+  /* ---------- настройки ---------- */
+  loadSettings() {
+    try {
+      const raw = localStorage.getItem("heimdall.settings");
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (typeof saved.baseUrl === "string") App.settings.baseUrl = saved.baseUrl;
+      if (typeof saved.token === "string") App.settings.token = saved.token;
+    } catch (e) { /* повреждённые настройки игнорируем */ }
+  },
+  saveSettings() {
+    localStorage.setItem("heimdall.settings", JSON.stringify(App.settings));
+    App.renderStatusbar();
+  },
+
+  /* ---------- тема (светлая/тёмная) ---------- */
+  applyTheme(theme) {
+    // светлая — без атрибута (работает через :root), тёмная — data-theme="dark"
+    if (theme === "dark") document.documentElement.dataset.theme = "dark";
+    else delete document.documentElement.dataset.theme;
+    const btn = U.$("#themeToggle");
+    if (btn) btn.textContent = theme === "dark" ? "◑" : "◐";
+  },
+  currentTheme() {
+    return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+  },
+  initTheme() {
+    let theme = localStorage.getItem("heimdall.theme");
+    if (theme !== "light" && theme !== "dark") {
+      theme = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    }
+    App.applyTheme(theme);
+  },
+  toggleTheme() {
+    const next = App.currentTheme() === "dark" ? "light" : "dark";
+    localStorage.setItem("heimdall.theme", next);
+    App.applyTheme(next);
+  },
+
+  selectedModel() {
+    if (!App.selected) return null;
+    return App.catalog.find((m) => ModelInfo.key(m) === App.selected) || null;
+  },
+
+  /* ---------- загрузка каталога ---------- */
+  async loadCatalog() {
+    App.catalogLoading = true; App.catalogError = null;
+    App.renderTree();
+    try {
+      const client = Api.client();
+      const list = await client.listTables();
+      const settled = await Promise.allSettled(
+        list.map((t) => client.getTable(t.schema_name, t.logic_model)));
+      // недоступные модели пропускаем
+      App.catalog = settled.filter((s) => s.status === "fulfilled").map((s) => s.value);
+      App.catalogLoading = false;
+      if (App.selected && !App.selectedModel()) App.selected = null;
+    } catch (e) {
+      App.catalogLoading = false;
+      App.catalogError = e instanceof ApiError ? e : new ApiError(0, "network", ERROR_RU.network);
+    }
+    App.renderTree();
+    App.renderStatusbar();
+    App.renderActivePage();
+    if (window.SqlConsole) SqlConsole.renderSide();
+  },
+
+  /* ---------- навигация ---------- */
+  openTab(name) {
+    App.activeTab = name;
+    U.$$(".ws-tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
+    U.$$(".ws-page").forEach((p) => p.classList.toggle("active", p.dataset.page === name));
+    localStorage.setItem("heimdall.tab", name);
+    App.fitPanels(name);
+    App.renderActivePage();
+  },
+
+  /* Нижняя панель показывает результат запроса и сырой SQL — Заводу скиллов она
+     не нужна вовсе, а место занимает. Уходя со вкладки, возвращаем как было:
+     панель могла быть открыта не просто так. */
+  fitPanels(name) {
+    const panel = U.$("#bottomPanel");
+    if (!panel) return;
+    if (name === "skills") {
+      if (App.ui.bpWas === undefined) App.ui.bpWas = panel.classList.contains("collapsed");
+      panel.classList.add("collapsed");
+      return;
+    }
+    if (App.ui.bpWas !== undefined) {
+      panel.classList.toggle("collapsed", App.ui.bpWas);
+      App.ui.bpWas = undefined;
+    }
+  },
+
+  selectModel(key, tab) {
+    App.selected = key;
+    localStorage.setItem("heimdall.selected", key);
+    App.ui.treeOpen.add(key);
+    App.renderTree();
+    App.renderStatusbar();
+    if (tab) App.openTab(tab); else App.renderActivePage();
+  },
+
+  renderActivePage() {
+    const m = App.selectedModel();
+    if (App.activeTab === "explorer" && window.Explorer) Explorer.render(m);
+    if (App.activeTab === "builder" && window.Builder) Builder.render(m);
+    if (App.activeTab === "sql" && window.SqlConsole) SqlConsole.render();
+    if (App.activeTab === "yaml" && window.YamlEditor) YamlEditor.render();
+    if (App.activeTab === "skills" && window.Skills) Skills.render();
+  },
+
+  /* ---------- дерево каталога ---------- */
+  renderTree() {
+    const root = U.$("#treeRoot");
+    root.innerHTML = "";
+    if (App.catalogLoading) {
+      root.append(U.el("div", { class: "skeleton-rows" },
+        ...[90, 70, 80, 60, 75, 85].map((w) => { const d = U.el("div", { class: "sk-line" }); d.style.width = w + "%"; return d; })));
+      return;
+    }
+    if (App.catalogError) {
+      root.append(U.el("div", { class: "tree-empty" },
+        U.el("div", null, "Каталог недоступен"),
+        U.el("div", { class: "mono", style: "color:var(--red);font-size:11px;margin:6px 0;" }, App.catalogError.detail || App.catalogError.code),
+        U.el("button", { class: "small", onclick: () => App.loadCatalog() }, "Повторить")));
+      return;
+    }
+    const q = App.ui.search.trim().toLowerCase();
+    const match = (m) => {
+      if (!q) return true;
+      const hay = [
+        m.logic_model, m.description, m.table_name,
+        ...ModelInfo.allColumns(m).flatMap((c) => [c.column_name, c.description]),
+        ...ModelInfo.allMetrics(m).flatMap((x) => [x.metric_name, x.verbose_name])
+      ].join(" ").toLowerCase();
+      return hay.includes(q);
+    };
+    const schemas = [...new Set(App.catalog.map((m) => m.schema_name))];
+    let shown = 0;
+    for (const schema of schemas) {
+      const models = App.catalog.filter((m) => m.schema_name === schema && match(m));
+      if (!models.length) continue;
+      const open = q ? true : !App.ui.schemaOpen.has("closed:" + schema);
+      const caret = U.el("span", { class: "tree-caret" + (open ? " open" : "") }, "▶");
+      const label = U.el("div", {
+        class: "tree-schema-label",
+        onclick: () => {
+          const k = "closed:" + schema;
+          App.ui.schemaOpen.has(k) ? App.ui.schemaOpen.delete(k) : App.ui.schemaOpen.add(k);
+          App.renderTree();
+        }
+      }, caret, schema, U.el("span", { style: "color:var(--faint)" }, String(models.length)));
+      root.append(label);
+      if (!open) continue;
+      for (const m of models) { root.append(App.renderTreeModel(m, q)); shown++; }
+    }
+    if (!shown && q) root.append(U.el("div", { class: "tree-empty" }, "Ничего не найдено"));
+  },
+
+  renderTreeModel(m, q) {
+    const key = ModelInfo.key(m);
+    const open = q ? false : App.ui.treeOpen.has(key);
+    const wrap = U.el("div", { class: "tree-model" + (App.selected === key ? " selected" : "") });
+    const caret = U.el("span", {
+      class: "tree-caret" + (open ? " open" : ""),
+      onclick: (e) => {
+        e.stopPropagation();
+        open ? App.ui.treeOpen.delete(key) : App.ui.treeOpen.add(key);
+        App.renderTree();
+      }
+    }, "▶");
+    const badges = ModelInfo.kindBadges(m)
+      .filter((b) => b[0] !== "обычный")
+      .map(([name, icon, cls]) => U.el("span", { class: `badge ${cls}`, title: name, style: "padding:0 5px" }, icon));
+    const queryBtn = U.el("button", {
+      class: "ghost small", title: "Открыть в конструкторе запросов",
+      style: "padding:0 5px;font-size:11px;",
+      onclick: (e) => { e.stopPropagation(); App.selectModel(key, "builder"); }
+    }, "▶");
+    const row = U.el("div", { class: "tree-model-row", onclick: () => App.selectModel(key, "explorer") },
+      caret,
+      U.el("span", { class: "tree-model-name", title: m.description || "" }, m.logic_model),
+      ...badges,
+      U.el("span", { style: "flex:1" }),
+      queryBtn);
+    wrap.append(row);
+    if (open) {
+      const kids = U.el("div", { class: "tree-children" });
+      kids.append(U.el("div", { class: "tree-section-label" }, "колонки"));
+      for (const c of ModelInfo.allColumns(m)) {
+        const marks = [];
+        if (c._kind === "virtual") marks.push(U.el("span", { class: "minibadge m-virtual", title: "виртуальная: " + (c.sql || "") }, "ƒ"));
+        if (Array.isArray(c.granularities) && c.granularities.length) marks.push(U.el("span", { class: "minibadge m-time", title: "временное измерение" }, "⏱"));
+        if (c._kind === "param") marks.push(U.el("span", { class: "minibadge m-param", title: "параметризована — не реализовано в REST" }, "⚙"));
+        kids.append(U.el("div", { class: "tree-leaf" + (c._kind === "param" ? " param" : ""), title: c.description || "" },
+          U.el("span", { html: CHTypes.icon(c.type) }),
+          U.el("span", { class: "leaf-name" }, c.column_name),
+          ...marks,
+          U.el("span", { class: "leaf-extra" }, c.type)));
+      }
+      const mets = ModelInfo.allMetrics(m);
+      if (mets.length) kids.append(U.el("div", { class: "tree-section-label" }, "метрики"));
+      for (const x of mets) {
+        const marks = x._kind === "param"
+          ? [U.el("span", { class: "minibadge m-param", title: "параметризована — не реализовано в REST" }, "⚙")] : [];
+        kids.append(U.el("div", { class: "tree-leaf" + (x._kind === "param" ? " param" : ""), title: x.description || x.verbose_name || "" },
+          U.el("span", { html: '<span class="ticon t-metric">Σ</span>' }),
+          U.el("span", { class: "leaf-name" }, x.metric_name),
+          ...marks,
+          U.el("span", { class: "leaf-extra" }, x.verbose_name || "")));
+      }
+      wrap.append(kids);
+    }
+    return wrap;
+  },
+
+  /* ---------- статус-бар ---------- */
+  ping: { state: "wait", latency: null },
+  async doPing() {
+    App.ping = { state: "wait", latency: null };
+    App.renderStatusbar();
+    try {
+      const r = await Api.client().ping();
+      App.ping = { state: "ok", latency: r.latency };
+    } catch (e) {
+      App.ping = { state: "bad", latency: null };
+    }
+    App.renderStatusbar();
+    return App.ping;
+  },
+
+  renderStatusbar() {
+    const sb = U.$("#statusbar");
+    const s = App.settings;
+    sb.innerHTML = "";
+    const modeBadge = U.el("span", { class: "badge b-green" }, "LIVE");
+    const pingTitle = { ok: `сервер доступен${App.ping.latency ? `, ${App.ping.latency} мс` : ""}`, bad: "сервер недоступен", wait: "проверка…" }[App.ping.state];
+    sb.append(
+      U.el("span", { class: "sb-item", style: "cursor:pointer", onclick: () => SettingsModal.open() }, modeBadge),
+      U.el("span", { class: "sb-item mono", style: "cursor:pointer", onclick: () => SettingsModal.open(), title: "Настройки подключения" },
+        s.baseUrl || "base URL не задан"),
+      U.el("span", { class: "sb-item", title: pingTitle },
+        U.el("span", { class: `sb-dot ${App.ping.state}` }),
+        App.ping.state === "ok" ? `ping ${App.ping.latency ?? "—"} мс` : App.ping.state === "bad" ? "нет связи" : "ping…"),
+      U.el("span", { class: "sb-spacer" }),
+      App.selected ? U.el("span", { class: "sb-item mono" }, "модель: " + App.selected) : null,
+      U.el("span", { class: "sb-item" }, `${App.catalog.length} моделей`)
+    );
+  },
+
+  /* ---------- ресайзеры и сворачивание ---------- */
+  initResizers() {
+    const sidebar = U.$("#sidebar");
+    const vr = U.$("#vResizer");
+    vr.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      vr.classList.add("dragging");
+      const startX = e.clientX, startW = sidebar.getBoundingClientRect().width;
+      const move = (ev) => {
+        const w = U.clamp(startW + ev.clientX - startX, 180, 520);
+        document.documentElement.style.setProperty("--sidebar-w", w + "px");
+      };
+      const up = () => {
+        vr.classList.remove("dragging");
+        window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up);
+        /* Размер запоминаем: раскладку под свой монитор человек подгонял в
+           каждой сессии заново, хотя свёрнутое состояние уже переживало
+           перезагрузку. */
+        App.rememberSize("sidebar", document.documentElement.style.getPropertyValue("--sidebar-w"));
+      };
+      window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+    });
+
+    const bp = U.$("#bottomPanel");
+    const hr = U.$("#hResizer");
+    hr.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      if (bp.classList.contains("collapsed")) return;
+      hr.classList.add("dragging");
+      const startY = e.clientY, startH = bp.getBoundingClientRect().height;
+      const move = (ev) => {
+        const h = U.clamp(startH - (ev.clientY - startY), 100, window.innerHeight - 220);
+        document.documentElement.style.setProperty("--bottom-h", h + "px");
+      };
+      const up = () => {
+        hr.classList.remove("dragging");
+        window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up);
+        App.rememberSize("bottom", document.documentElement.style.getPropertyValue("--bottom-h"));
+      };
+      window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+    });
+    App.restoreSizes();
+  },
+
+  /* Размеры панелей живут в одном ключе: их два, и заводить по ключу на каждую
+     значит потом искать их по всему хранилищу. */
+  rememberSize(name, value) {
+    if (!value) return;
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem("heimdall.sizes") || "{}"); } catch (e) { saved = {}; }
+    saved[name] = value;
+    try { localStorage.setItem("heimdall.sizes", JSON.stringify(saved)); } catch (e) { /* приватный режим */ }
+  },
+
+  restoreSizes() {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem("heimdall.sizes") || "{}"); } catch (e) { return; }
+    const root = document.documentElement.style;
+    if (saved.sidebar) root.setProperty("--sidebar-w", saved.sidebar);
+    if (saved.bottom) root.setProperty("--bottom-h", saved.bottom);
+  },
+
+  /* ---------- запуск ---------- */
+  async boot() {
+    App.loadSettings();
+    App.initTheme();
+    Tip.init();
+    App.initResizers();
+
+    U.$("#sidebarToggle").addEventListener("click", () => {
+      const hidden = U.$("#sidebar").classList.toggle("collapsed");
+      localStorage.setItem("heimdall.sidebar", hidden ? "collapsed" : "open");
+    });
+    if (localStorage.getItem("heimdall.sidebar") === "collapsed") {
+      U.$("#sidebar").classList.add("collapsed");
+    }
+    U.$("#themeToggle").addEventListener("click", () => App.toggleTheme());
+    U.$("#settingsBtn").addEventListener("click", () => SettingsModal.open());
+    U.$("#treeSearch").addEventListener("input", U.debounce((e) => {
+      App.ui.search = e.target.value;
+      App.renderTree();
+    }, 120));
+    U.$$(".ws-tab").forEach((t) => t.addEventListener("click", () => App.openTab(t.dataset.tab)));
+
+    document.addEventListener("catalog-changed", () => App.loadCatalog());
+
+    Bp.init();
+    SqlConsole.init();
+    YamlEditor.init();
+    Skills.init();
+
+    const savedTab = localStorage.getItem("heimdall.tab");
+    const savedSel = localStorage.getItem("heimdall.selected");
+    if (savedSel) App.selected = savedSel;
+
+    App.renderStatusbar();
+    await App.loadCatalog();
+    App.doPing();
+    App.openTab(savedTab && ["explorer", "builder", "sql", "yaml", "skills"].includes(savedTab) ? savedTab : "explorer");
+  }
+};
+
+/* ============ Модалки ============ */
+const Modal = {
+  open(title, bodyEl, footEl, opts) {
+    Modal.close();
+    const backdrop = U.el("div", { class: "modal-backdrop", onclick: (e) => { if (e.target === backdrop) Modal.close(); } });
+    const modal = U.el("div", { class: "modal" + (opts && opts.wide ? " wide" : "") },
+      U.el("div", { class: "modal-head" }, U.el("h2", null, title),
+        U.el("button", { class: "ghost iconbtn", onclick: Modal.close }, "✕")),
+      U.el("div", { class: "modal-body" }, bodyEl),
+      footEl ? U.el("div", { class: "modal-foot" }, footEl) : null);
+    backdrop.append(modal);
+    U.$("#modalRoot").append(backdrop);
+  },
+  close() { U.$("#modalRoot").innerHTML = ""; }
+};
+
+/* ============ Настройки ============ */
+const SettingsModal = {
+  open() {
+    const s = App.settings;
+    const urlInput = U.el("input", { type: "text", class: "mono", value: s.baseUrl, placeholder: "http://localhost:8000" });
+    const tokenInput = U.el("input", { type: "password", class: "mono", value: s.token, placeholder: "JWT-токен", autocomplete: "off" });
+    const eyeBtn = U.el("button", { class: "small", onclick: () => { tokenInput.type = tokenInput.type === "password" ? "text" : "password"; } }, "👁");
+    const pingResult = U.el("span", { class: "field-hint" }, "");
+
+    const checkBtn = U.el("button", {
+      onclick: async () => {
+        pingResult.textContent = "проверка…"; pingResult.style.color = "var(--yellow)";
+        const tmp = new HttpApiClient(urlInput.value, tokenInput.value);
+        try {
+          const r = await tmp.ping();
+          pingResult.textContent = `✓ доступен, ${r.latency} мс`; pingResult.style.color = "var(--green)";
+        } catch (e) {
+          pingResult.textContent = `✗ ${e.detail || e.code || "недоступен"}`; pingResult.style.color = "var(--red)";
+        }
+      }
+    }, "Проверить соединение");
+
+    const body = U.el("div", { style: "display:flex;flex-direction:column;gap:12px" },
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "Base URL сервиса"), urlInput,
+        U.el("span", { class: "field-hint" }, "Адрес сервиса; он же подставляется при копировании curl")),
+      U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "JWT-токен"),
+        U.el("div", { style: "display:flex;gap:6px" }, tokenInput, eyeBtn),
+        U.el("span", { class: "field-hint" }, "Передаётся заголовком Authorization: Bearer …")),
+      U.el("div", { style: "display:flex;align-items:center;gap:10px" }, checkBtn, pingResult));
+
+    const foot = U.el("div", { style: "display:flex;gap:8px" },
+      U.el("button", { onclick: Modal.close }, "Отмена"),
+      U.el("button", {
+        class: "primary",
+        onclick: () => {
+          const reload = App.settings.baseUrl !== urlInput.value.trim() || App.settings.token !== tokenInput.value;
+          App.settings.baseUrl = urlInput.value.trim();
+          App.settings.token = tokenInput.value;
+          App.saveSettings();
+          Modal.close();
+          Toast.show("Настройки сохранены");
+          App.doPing();
+          if (reload) App.loadCatalog();
+        }
+      }, "Сохранить"));
+
+    Modal.open("Настройки подключения", body, foot);
+  }
+};
+
+window.addEventListener("DOMContentLoaded", () => App.boot());
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { App, Modal, SettingsModal });
+
+</script>
+</body>
+</html>
