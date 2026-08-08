@@ -137,7 +137,9 @@
   content: "разговор"; writing-mode: vertical-rl; padding: 10px 0;
   color: var(--muted); font-size: 11.5px; white-space: nowrap;
 }
-#page-skills .sf-split.chat-collapsed .sf-chat { display: none; }
+/* Прячется разговор в свёрнутой колонке, а не всё подряд внутри раскладки:
+   правило пошире цепляло и содержимое редактора. */
+#page-skills .sf-split.chat-collapsed .sf-chat-col .sf-chat { display: none; }
 #page-skills .sf-split.chat-collapsed .sf-resizer { display: none; }
 #page-skills .sf-chat-toggle { margin-left: auto; }
 #page-skills .sf-split.chat-collapsed ~ * .sf-chat-toggle, /* запас на будущее */
@@ -223,6 +225,9 @@
 }
 #page-skills .sf-role.working { border-left-color: var(--accent); }
 #page-skills .sf-role.done { border-left-color: var(--green); }
+/* Отказ роли отличается от завершения и цветом: зелёная карточка с пометкой
+   «не ответил» читается как успех. */
+#page-skills .sf-role.failed { border-left-color: var(--red); }
 #page-skills .sf-role.stopped { border-left-color: var(--muted); opacity: 0.75; }
 #page-skills .sf-role-head {
   display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 12.5px;
@@ -238,6 +243,7 @@
 #page-skills .sf-role-status { font-size: 11.5px; color: var(--muted); }
 #page-skills .sf-role.working .sf-role-status { color: var(--accent-text); }
 #page-skills .sf-role.done .sf-role-status { color: var(--green); }
+#page-skills .sf-role.failed .sf-role-status { color: var(--red); }
 #page-skills .sf-role.stopped .sf-role-status { color: var(--red); }
 /* Единственный след сырого потока в шапке: сколько символов уже написано. */
 #page-skills .sf-role-live {
@@ -302,7 +308,11 @@
 }
 
 /* ---------- чат ---------- */
-#page-skills .sf-chat { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+/* Раскладка «во всю высоту» нужна и разговору, и диффу, но класс у них разный:
+   пока дифф носил класс разговора, правило свёрнутой колонки прятало и его. */
+#page-skills .sf-chat, #page-skills .sf-fill {
+  flex: 1; display: flex; flex-direction: column; min-height: 0;
+}
 /* Шапка разговора: чему верить прямо сейчас и работают ли роли. */
 #page-skills .sf-chat-head {
   display: flex; align-items: center; gap: 7px; padding: 7px 10px;
