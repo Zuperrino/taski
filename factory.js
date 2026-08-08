@@ -97,6 +97,9 @@ const SkillFactory = {
   /* Общий блок совета в ленте: пока он есть, карточки и реплики участников идут
      в него, а не вразнобой в ленту. Заводится на каждый прогон свой. */
   _councilBox: null,
+  /* Сводка критиков, уже сказанная в этом прогоне: отчёт пересобирается после
+     каждой оценки и приносит её с собой снова. */
+  _saidReview: "",
 
   /* Подсказка у кнопки публикации. Про Ctrl+S тут не сказано намеренно: клавиша
      сохраняет черновик, а запись в каталог стенда идёт только кнопкой. */
@@ -307,16 +310,16 @@ const SkillFactory = {
       oninput: (e) => { this.state.text = e.target.value; this.markDirty(); },
     });
     const text = this.el("div", { class: "sf-pane" }, editor);
-    const chat = this.el("div", { class: "sf-pane" }, this.buildChat());
     const report = this.el("div", { class: "sf-pane" }, this.el("div", { class: "sf-report" }));
     const diff = this.el("div", { class: "sf-pane" }, this.buildDiff());
 
     /* Разговор с агентами — не режим наравне с текстом, а вторая половина
        работы: человек правит скилл и одновременно видит, что говорят роли.
        Поэтому чат вынесен в постоянную колонку справа, а переключаются только
-       представления самого скилла. */
+       представления самого скилла. Обёртки sf-pane у него нет намеренно: эта
+       обёртка прячется, пока ей не включат режим, а разговор виден всегда. */
     const resizer = this.el("div", { class: "sf-resizer", title: "Потянуть; двойной клик — свернуть" });
-    const chatCol = this.el("div", { class: "sf-chat-col" }, chat);
+    const chatCol = this.el("div", { class: "sf-chat-col" }, this.buildChat());
     const split = this.el("div", { class: "sf-split" },
       this.el("div", { class: "sf-body" }, form, text, report, diff), resizer, chatCol);
 
@@ -532,7 +535,7 @@ const SkillFactory = {
       this.el("span", { text: "весь файл" }));
     this.els.diff = body;
     this.els.diffCount = count;
-    return this.el("div", { class: "sf-chat" },
+    return this.el("div", { class: "sf-fill" },
       this.el("div", { class: "sf-diffbar" },
         this.el("span", { text: "Правка агента: красным убрано, зелёным добавлено." }),
         count,
@@ -1527,6 +1530,7 @@ const SkillFactory = {
       this.state.councilReport = data;
       this.state.stale = { ...this.state.stale, council: false };
       this.renderReport();
+      this.sayCouncil(data);
       (this._councilBox ? this._councilBox.digest : this.els.log).append(this.councilCard(data));
     } else {
       return;
@@ -1676,7 +1680,9 @@ const SkillFactory = {
   },
 
   councilViews(data) {
-    const rows = (data && data.opinions) || [];
+    /* Список мнений приходит от сценария, но разбор кадра прячет исключения:
+       поле чужого вида уносило бы и отчёт, и реплики без всякого следа. */
+    const rows = Array.isArray(data && data.opinions) ? data.opinions : [];
     return rows.filter((row) => row && typeof row === "object").map((row) => ({
       model: String(row.model || row.llm_model || "модель не названа"),
       verdict: this.COUNCIL_VERDICT_WORDS[String(row.verdict || "")] || String(row.verdict || ""),
@@ -1836,6 +1842,7 @@ const SkillFactory = {
     this._gatePending = false;
     this._gateBox = null;
     this._councilBox = null;
+    this._saidReview = "";
     this.els.log.innerHTML = "";
   },
 
@@ -2030,6 +2037,13 @@ const SkillFactory = {
      разбирать его обратно на части — гадание по знакам препинания. */
   sayReview(review) {
     if (!review) return;
+    /* Отчёт пересобирается после каждой оценки и приносит с собой прежнюю
+       сводку критиков. Второй раз её не проговариваем: те же реплики посреди
+       результатов совета читаются как новый круг критиков. */
+    const said = JSON.stringify([review.llm_model || "", review.summary || "",
+      (review.views || []).map((v) => [v.title || "", v.model || "", v.summary || ""])]);
+    if (this._saidReview === said) return;
+    this._saidReview = said;
     const views = Array.isArray(review.views) ? review.views : [];
     if (views.length) {
       for (const view of views) {
@@ -2040,6 +2054,20 @@ const SkillFactory = {
     /* Отчёт мог прийти от прошлой версии проверки или пролежать в черновике:
        списка линз в нём нет, и сводка показывается целиком одной репликой. */
     this.pushSay("critic", "Критик", review.summary || "", review.llm_model || "");
+  },
+
+  /* Мнение каждого участника совета — отдельной репликой на его месте в блоке:
+     ради нескольких независимых взглядов совет и собирают, а видеть их только в
+     отчёте значит не видеть их в разговоре вовсе. Молчавших пропускаем: у них
+     нет текста, а о самом молчании говорит их карточка и строка кворума. */
+  sayCouncil(data) {
+    if (!this._councilBox) return;
+    for (const view of this.councilViews(data)) {
+      if (view.silent) continue;
+      const text = [view.summary, view.first ? "Первым делом: " + view.first : ""]
+        .filter(Boolean).join("\n");
+      this.pushSay("council", "Участник совета", text, view.model);
+    }
   },
 
   /* Шаг пишем в карточку роли, если она известна, иначе прямо в ленту: шаги
@@ -2053,11 +2081,13 @@ const SkillFactory = {
   },
 
   /* Предупреждение конвейера: человек должен видеть, что агент работает вслепую
-     (например, живой каталог моделей недоступен). */
-  pushNotice(event) {
+     (например, живой каталог моделей недоступен). Предупреждение, пришедшее от
+     роли, встаёт в её карточку — в общей ленте оно уезжало от своего участника
+     и читалось как замечание обо всём прогоне. */
+  pushNotice(event, card) {
     const warn = event.level !== "info";
     const text = String(event.text || "");
-    this.els.log.append(this.el("div", {
+    (card ? card.steps : this.els.log).append(this.el("div", {
       class: "sf-notice " + (warn ? "warn" : "info"), title: event.code || "",
     },
       this.el("span", { class: "sf-notice-icon", text: warn ? "⚠" : "ℹ" }),
@@ -2217,6 +2247,11 @@ const SkillFactory = {
     if (this._stopped) {
       card.box.classList.add("stopped");
       card.status.textContent = "прервано";
+    } else if (event && event.failed) {
+      /* Отказ роли — не завершение: зелёная карточка с пометкой «не ответил»
+         читается как успех тем, кто цвет видит раньше текста. */
+      card.box.classList.add("failed");
+      card.status.textContent = event.note || "не ответил";
     } else {
       card.box.classList.add("done");
       card.status.textContent = (event && event.note) ? event.note : "готово";
@@ -2498,8 +2533,10 @@ const SkillFactory = {
     this._textTouched = false;
     this.state.gap = null;
     /* Совет собирается заново каждым прогоном: карточки прошлого совета остаются
-       в ленте историей, а новые мнения в них попасть не должны. */
+       в ленте историей, а новые мнения в них попасть не должны. Сводку критиков
+       забываем по той же причине: новая проверка проговаривает свою. */
     this._councilBox = null;
+    this._saidReview = "";
     this.busy(true);
     this.clearBanner();
     const controller = new AbortController();
@@ -2568,8 +2605,13 @@ const SkillFactory = {
         this.state.stage = event.name;
         this._stageTitle = event.title;
         this.state.stageStartedAt = Date.now();
-        this.els.log.append(this.el("div", { class: "sf-stagebar" },
-          this.el("span", { text: (this.STAGE_ICONS[event.name] || "•") + " " + event.title })));
+        /* Полоса «Свод мнений» открывает свод, а он живёт внутри блока совета:
+           в общей ленте она вставала ниже всего блока — под тем, что должна
+           была объявить. */
+        (this.isCouncilSum(event.name) && this._councilBox
+          ? this._councilBox.digest : this.els.log)
+          .append(this.el("div", { class: "sf-stagebar" },
+            this.el("span", { text: (this.STAGE_ICONS[event.name] || "•") + " " + event.title })));
         this.scroll();
         // Новый этап — прежняя подробность к нему уже не относится.
         this.renderProgress("");
@@ -2621,7 +2663,7 @@ const SkillFactory = {
         this.pushStep(`${event.name}: ${event.summary}`, "tool" + (event.ok ? " ok" : " bad"), card);
         break;
       case "notice":
-        this.pushNotice(event);
+        this.pushNotice(event, card);
         break;
       case "message":
         /* Страховка от дубля: тот же текст мог уже прийти как preface вопроса. */
