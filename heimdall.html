@@ -243,6 +243,10 @@ code, .mono { font-family: var(--mono); font-size: 12px; }
 }
 .bottom-panel.collapsed { height: 33px !important; }
 .bottom-panel.collapsed .bp-body { display: none; }
+/* На вкладке Завода нижняя панель убирается совсем: там нет запроса, чей
+   результат она показывает, а свёрнутая полоса вкладок всё равно занимает
+   место и сбивает с толку. */
+.bottom-panel.gone, .resizer-h.gone { display: none; }
 .bp-tabs {
   display: flex; align-items: center; gap: 2px; flex: none;
   padding: 0 8px; height: 33px; border-bottom: 1px solid var(--border);
@@ -3652,7 +3656,11 @@ const App = {
   catalogLoading: false,
   selected: null,       // "schema.logic_model"
   activeTab: "explorer",
-  ui: { treeOpen: new Set(), schemaOpen: new Set(), search: "", bpWas: undefined },
+  ui: {
+    treeOpen: new Set(), schemaOpen: new Set(), search: "",
+    // Под какую вкладку уже подогнаны панели и что было до неё.
+    fitted: "", bpWas: undefined, sideWas: undefined,
+  },
 
   /* ---------- настройки ---------- */
   loadSettings() {
@@ -3731,20 +3739,42 @@ const App = {
     App.renderActivePage();
   },
 
-  /* Нижняя панель показывает результат запроса и сырой SQL — Заводу скиллов она
-     не нужна вовсе, а место занимает. Уходя со вкладки, возвращаем как было:
-     панель могла быть открыта не просто так. */
+  /* Заводу скиллов экран нужен целиком: у него свой список скиллов слева и
+     разговор с агентами справа. Каталог датасетов и нижняя панель с
+     результатом запроса на этой вкладке не участвуют ни в чём и только
+     отнимают место, поэтому убираются при входе. Уходя со вкладки, возвращаем
+     как было: и каталог, и панель могли быть открыты не просто так.
+
+     Каталог прячется без записи в localStorage — человек его не сворачивал,
+     и после Завода он должен вернуться на других вкладках сам. */
   fitPanels(name) {
     const panel = U.$("#bottomPanel");
+    const resizer = U.$("#hResizer");
+    const sidebar = U.$("#sidebar");
     if (!panel) return;
+    /* Подгоняем только при СМЕНЕ вкладки. Повторный клик по уже открытой вкладке
+       иначе сворачивал каталог, который человек только что вернул кнопкой. */
+    if (App.ui.fitted === name) return;
+    App.ui.fitted = name;
     if (name === "skills") {
       if (App.ui.bpWas === undefined) App.ui.bpWas = panel.classList.contains("collapsed");
-      panel.classList.add("collapsed");
+      if (App.ui.sideWas === undefined && sidebar) {
+        App.ui.sideWas = sidebar.classList.contains("collapsed");
+      }
+      panel.classList.add("collapsed", "gone");
+      if (resizer) resizer.classList.add("gone");
+      if (sidebar) sidebar.classList.add("collapsed");
       return;
     }
+    panel.classList.remove("gone");
+    if (resizer) resizer.classList.remove("gone");
     if (App.ui.bpWas !== undefined) {
       panel.classList.toggle("collapsed", App.ui.bpWas);
       App.ui.bpWas = undefined;
+    }
+    if (App.ui.sideWas !== undefined) {
+      if (sidebar) sidebar.classList.toggle("collapsed", App.ui.sideWas);
+      App.ui.sideWas = undefined;
     }
   },
 
@@ -3977,6 +4007,9 @@ const App = {
     U.$("#sidebarToggle").addEventListener("click", () => {
       const hidden = U.$("#sidebar").classList.toggle("collapsed");
       localStorage.setItem("heimdall.sidebar", hidden ? "collapsed" : "open");
+      /* Человек распорядился каталогом сам — восстанавливать при уходе с вкладки
+         больше нечего, иначе его выбор молча отменится. */
+      App.ui.sideWas = undefined;
     });
     if (localStorage.getItem("heimdall.sidebar") === "collapsed") {
       U.$("#sidebar").classList.add("collapsed");
