@@ -1,9 +1,9 @@
-/* ============ Фабрика скиллов: вкладка админки ============
+/* ============ Завод скиллов: вкладка админки ============
    Все правила под #page-skills с префиксом sf-, поэтому вкладка не задевает
    остальной интерфейс. Цвета берутся из переменных темы Heimdall, светлая и
    тёмная работают без отдельных правил.
    Файл отдаётся ручкой /skill-factory/api/v1/ui/factory.css и живёт в пакете
-   Фабрики, чтобы её можно было унести вместе с интерфейсом. */
+   Завода, чтобы его можно было унести вместе с интерфейсом. */
 
 /* ---------- левая колонка: каталог и черновики ---------- */
 #page-skills .sf-side {
@@ -61,6 +61,9 @@
 }
 #page-skills .sf-dot { color: var(--accent-text); font-weight: 700; width: 8px; opacity: 0; }
 #page-skills .sf-main.dirty .sf-dot { opacity: 1; }
+/* Время последней записи: тихая строка, которая не мигает и не спорит с точкой. */
+#page-skills .sf-saved { color: var(--faint); font-size: 11.5px; white-space: nowrap; }
+#page-skills .sf-main.dirty .sf-saved { opacity: 0.5; }
 #page-skills .sf-del { color: var(--red); border-color: var(--red); background: transparent; }
 #page-skills .sf-del:hover:not(:disabled) { color: #fff; background: var(--red); border-color: var(--red); }
 /* Пока идёт прогон, действия недоступны: правка и публикация во время работы
@@ -74,11 +77,26 @@
 /* Причина читается целиком: обрезанная строка не объясняет ничего, а тулбар и
    так переносит содержимое. Та же причина стоит под наведением на кнопку и
    первой строкой в отчёте. */
+/* Причина закрытой публикации читается целиком: обрезка многоточием оставляла
+   человека с началом фразы и без ответа, что делать. Место под неё в тулбаре
+   освободилось за счёт редких действий, уехавших под «⋯». */
 #page-skills .sf-gate {
   font-size: 11.5px; color: var(--yellow); max-width: 320px; line-height: 1.35;
   white-space: normal; overflow-wrap: anywhere;
 }
 #page-skills .sf-gate:empty { display: none; }
+
+/* Редкие действия под «⋯»: всплывающий список у правого края тулбара. */
+#page-skills .sf-more-wrap { position: relative; display: flex; }
+#page-skills .sf-more-btn { padding: 3px 9px; }
+#page-skills .sf-more {
+  display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 20;
+  flex-direction: column; gap: 6px; padding: 8px; min-width: 200px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--bg-panel); box-shadow: 0 8px 24px var(--shadow);
+}
+#page-skills .sf-more.on { display: flex; }
+#page-skills .sf-more button, #page-skills .sf-more select { width: 100%; }
 #page-skills .sf-rawtoggle {
   display: flex; align-items: center; gap: 5px; flex: none; cursor: pointer;
   font-size: 11.5px; color: var(--muted); user-select: none;
@@ -91,9 +109,54 @@
   color: var(--accent-text); border-color: var(--accent); background: var(--accent-bg);
 }
 
-#page-skills .sf-body { flex: 1; display: flex; min-height: 0; min-width: 0; }
+/* ---------- редактор слева, разговор справа ----------
+   Разговор виден всегда: человек правит скилл и одновременно следит, что
+   говорят роли. Переключаются только представления самого скилла. */
+#page-skills .sf-split { flex: 1; display: flex; min-height: 0; min-width: 0; --sf-chat-w: 380px; }
+#page-skills .sf-body { flex: 1; display: flex; min-height: 0; min-width: 360px; }
 #page-skills .sf-pane { flex: 1; display: none; min-width: 0; min-height: 0; overflow: auto; }
 #page-skills .sf-pane.on { display: flex; flex-direction: column; }
+
+#page-skills .sf-chat-col {
+  flex: none; width: var(--sf-chat-w); min-width: 0; display: flex; flex-direction: column;
+  border-left: 1px solid var(--border); background: var(--bg-panel);
+}
+/* Ручка тонкая, а хват шире: попасть в пять пикселей мышью неудобно. */
+#page-skills .sf-resizer {
+  flex: none; width: 5px; cursor: col-resize; position: relative;
+  background: transparent; transition: background 0.1s;
+}
+#page-skills .sf-resizer::after { content: ""; position: absolute; inset: 0 -3px; }
+#page-skills .sf-resizer:hover, #page-skills .sf-resizer.dragging { background: var(--accent-drag); }
+
+/* Свёрнутая колонка остаётся корешком: видно, что разговор есть и где он. */
+#page-skills .sf-split.chat-collapsed .sf-chat-col {
+  width: 34px; cursor: pointer; align-items: center; overflow: hidden;
+}
+#page-skills .sf-split.chat-collapsed .sf-chat-col::before {
+  content: "разговор"; writing-mode: vertical-rl; padding: 10px 0;
+  color: var(--muted); font-size: 11.5px; white-space: nowrap;
+}
+#page-skills .sf-split.chat-collapsed .sf-chat { display: none; }
+#page-skills .sf-split.chat-collapsed .sf-resizer { display: none; }
+#page-skills .sf-chat-toggle { margin-left: auto; }
+#page-skills .sf-split.chat-collapsed ~ * .sf-chat-toggle, /* запас на будущее */
+#page-skills .sf-main:has(.chat-collapsed) .sf-chat-toggle { color: var(--muted); }
+
+/* Узкий экран: колонка сворачивается сама, а разворачивается поверх редактора —
+   один механизм на оба размера, без отдельной раскладки. */
+@media (max-width: 900px) {
+  #page-skills .sf-chat-col {
+    position: absolute; right: 0; top: 0; bottom: 0; z-index: 5;
+    width: min(420px, 85vw); box-shadow: -8px 0 24px color-mix(in srgb, var(--text) 18%, transparent);
+  }
+  #page-skills .sf-split { position: relative; }
+  #page-skills .sf-resizer { display: none; }
+  /* Свёрнутая колонка на узком экране остаётся корешком у правого края. */
+  #page-skills .sf-split.chat-collapsed .sf-chat-col { width: 34px; box-shadow: none; }
+  /* Список скиллов уступает место редактору: открыть его можно кнопкой. */
+  #page-skills .sf-side { width: 200px; }
+}
 
 #page-skills .sf-banner {
   display: none; padding: 6px 12px; font-size: 12px; gap: 8px; align-items: center;
@@ -126,8 +189,14 @@
 #page-skills .sf-field textarea { min-height: 64px; resize: vertical; font-family: var(--mono); font-size: 12px; }
 #page-skills .sf-field textarea.json { min-height: 130px; }
 #page-skills .sf-rows { display: flex; flex-direction: column; gap: 5px; }
-#page-skills .sf-row { display: flex; gap: 5px; align-items: center; }
+#page-skills .sf-row { display: flex; gap: 5px; align-items: flex-start; }
 #page-skills .sf-row input { flex: 1; min-width: 0; }
+/* Тело запроса занимает несколько строк, поэтому оно шире соседей и тянется. */
+#page-skills .sf-row textarea.json {
+  flex: 3; min-width: 0; min-height: 66px; resize: vertical; font-family: var(--mono);
+  font-size: 12px; padding: 6px 8px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius); background: var(--bg); color: var(--text);
+}
 #page-skills .sf-row button { flex: none; }
 
 /* ---------- полоса прогресса под тулбаром ---------- */
@@ -234,6 +303,17 @@
 
 /* ---------- чат ---------- */
 #page-skills .sf-chat { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+/* Шапка разговора: чему верить прямо сейчас и работают ли роли. */
+#page-skills .sf-chat-head {
+  display: flex; align-items: center; gap: 7px; padding: 7px 10px;
+  border-bottom: 1px solid var(--border); font-size: 11.5px; color: var(--muted);
+}
+#page-skills .sf-trust-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
+#page-skills .sf-trust-dot.ok { background: var(--green); }
+#page-skills .sf-trust-dot.bad { background: var(--red); }
+#page-skills .sf-trust-dot.stale, #page-skills .sf-trust-dot.unchecked { background: var(--yellow); }
+#page-skills .sf-chat-busy { color: var(--accent-text); }
+#page-skills .sf-chat-busy:not(.on) { display: none; }
 #page-skills .sf-log { flex: 1; overflow: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
 #page-skills .sf-msg { max-width: 90%; padding: 7px 10px; border-radius: var(--radius); font-size: 12.5px; line-height: 1.5; }
 #page-skills .sf-msg.user { align-self: flex-end; background: var(--accent-bg); color: var(--accent-text); }
@@ -282,6 +362,52 @@
 }
 #page-skills .sf-reuse-desc { color: var(--muted); font-size: 12px; line-height: 1.45; }
 #page-skills .sf-reuse .act { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Ворота подтверждения находок разведки: что нашли и чем это грозит. Блок во всю
+   ширину ленты — мимо него сборка файла не идёт. */
+#page-skills .sf-scoutgate {
+  align-self: stretch; display: flex; flex-direction: column; gap: 8px; padding: 10px;
+  border: 1px solid var(--accent); border-radius: var(--radius); background: var(--bg-elev);
+}
+#page-skills .sf-scoutgate-head { font-weight: 600; font-size: 13px; }
+#page-skills .sf-scoutgate-hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
+#page-skills .sf-scoutgate-facts {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 8px;
+  padding: 8px 9px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-panel); font-size: 12px; line-height: 1.45;
+}
+#page-skills .sf-scoutgate-key { color: var(--muted); white-space: nowrap; }
+#page-skills .sf-scoutgate-val { min-width: 0; overflow-wrap: anywhere; }
+#page-skills .sf-scoutgate-val.mono { font-family: var(--mono); font-size: 11.5px; }
+#page-skills .sf-scoutgate-val.empty { color: var(--yellow); }
+#page-skills .sf-scoutgate-review { display: flex; flex-direction: column; gap: 5px; }
+/* Строка разбора. Вид у строки задан двумя признаками: уровнем и тем, кто за неё
+   отвечает. Проверенное кодом стоит на сплошной черте, наблюдение человека — на
+   пунктирной и бледнее: одинаковый вид давал бы ложное чувство проверенности. */
+#page-skills .sf-scoutgate-line {
+  padding: 6px 8px; border-left: 3px solid var(--border-strong);
+  border-radius: 0 var(--radius) var(--radius) 0; background: var(--bg-panel);
+  font-size: 12px; line-height: 1.45;
+}
+#page-skills .sf-scoutgate-line.warn {
+  border-left-color: var(--red); background: var(--red-bg); color: var(--red);
+}
+#page-skills .sf-scoutgate-line.ok { border-left-color: var(--green); }
+#page-skills .sf-scoutgate-line.human {
+  border-left-style: dashed; border-left-color: var(--faint);
+  background: transparent; color: var(--muted);
+}
+#page-skills .sf-scoutgate-line-head { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+#page-skills .sf-scoutgate-mark { flex: none; }
+#page-skills .sf-scoutgate-who {
+  margin-left: auto; flex: none; padding: 1px 5px; border-radius: 3px;
+  background: var(--bg-hover); color: var(--muted); font-size: 10.5px; text-transform: lowercase;
+}
+#page-skills .sf-scoutgate-line.human .sf-scoutgate-who {
+  background: transparent; border: 1px dashed var(--faint);
+}
+#page-skills .sf-scoutgate-detail { margin-top: 3px; color: var(--muted); }
+#page-skills .sf-scoutgate-line.warn .sf-scoutgate-detail { color: inherit; }
+#page-skills .sf-scoutgate .act { display: flex; gap: 6px; flex-wrap: wrap; }
 /* Предупреждение конвейера: видно и в ленте, и баннером над ней. */
 #page-skills .sf-notice {
   align-self: stretch; display: flex; gap: 8px; align-items: flex-start; padding: 7px 10px;
@@ -290,13 +416,100 @@
 }
 #page-skills .sf-notice.info { border-color: var(--blue); background: var(--bg-hover); color: var(--text); }
 #page-skills .sf-notice-icon { flex: none; }
-#page-skills .sf-composer { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--border); }
+
+/* ---------- участники разговора ----------
+   Роль говорит как собеседник: свой кружок с иконкой, своё имя, своя краска и
+   модель, на которой она думала. Пока все реплики были одинаково серыми,
+   обсуждение читалось как сплошной журнал. */
+#page-skills .sf-say {
+  align-self: stretch; display: flex; gap: 8px; align-items: flex-start; padding: 7px 10px;
+  border: 1px solid var(--border); border-left: 3px solid var(--role-color, var(--border-strong));
+  border-radius: var(--radius); background: var(--bg-hover); font-size: 12.5px; line-height: 1.5;
+}
+#page-skills .sf-say-icon {
+  flex: none; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
+  background: color-mix(in srgb, var(--role-color, var(--faint)) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--role-color, var(--faint)) 45%, transparent);
+  font-size: 12px;
+}
+#page-skills .sf-say-body { min-width: 0; }
+#page-skills .sf-say-who {
+  display: flex; gap: 6px; align-items: baseline;
+  color: var(--role-color, var(--muted)); font-size: 11.5px; margin-bottom: 2px; font-weight: 600;
+}
+#page-skills .sf-say-model { color: var(--faint); font-weight: 400; font-family: var(--mono); font-size: 10.5px; }
+#page-skills .sf-say-text { white-space: pre-wrap; word-break: break-word; color: var(--text); }
+
+/* Краска участника. Одна на роль, чтобы взгляд узнавал говорящего, не читая имя. */
+#page-skills .role-interviewer { --role-color: var(--blue); }
+#page-skills .role-scout { --role-color: var(--cyan); }
+#page-skills .role-author, #page-skills .role-fixer { --role-color: var(--accent-text); }
+#page-skills .role-critic { --role-color: var(--purple); }
+/* Карточка работающей роли красится тем же цветом: реплика и работа одного
+   участника видны как одно целое. */
+#page-skills .sf-role.role-interviewer, #page-skills .sf-role.role-scout,
+#page-skills .sf-role.role-author, #page-skills .sf-role.role-fixer,
+#page-skills .sf-role.role-critic { border-left: 3px solid var(--role-color); }
+#page-skills .sf-role .sf-role-icon {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: color-mix(in srgb, var(--role-color, var(--faint)) 18%, transparent);
+}
+
+/* ---------- путь сценария ---------- */
+#page-skills .sf-plan { display: none; }
+#page-skills .sf-plan.show {
+  display: block; padding: 6px 10px; border-bottom: 1px solid var(--border);
+  background: var(--bg-elev); font-size: 11.5px;
+}
+#page-skills .sf-plan-head { display: flex; gap: 6px; align-items: center; cursor: pointer; color: var(--muted); }
+#page-skills .sf-plan-head:hover { color: var(--text); }
+#page-skills .sf-plan-list { display: none; margin-top: 6px; }
+#page-skills .sf-plan.open .sf-plan-list { display: block; }
+#page-skills .sf-plan-step { display: flex; gap: 6px; align-items: baseline; padding: 2px 0; color: var(--muted); }
+#page-skills .sf-plan-step .mk { width: 12px; flex: none; text-align: center; }
+#page-skills .sf-plan-step.now { color: var(--accent-text); font-weight: 600; }
+#page-skills .sf-plan-step.done { color: var(--green); }
+#page-skills .sf-plan-step.optional .mk { opacity: 0.6; }
+#page-skills .sf-plan-note { color: var(--faint); font-size: 10.5px; }
+
+/* ---------- что нашла проверка, прямо в разговоре ---------- */
+#page-skills .sf-found {
+  align-self: stretch; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg-panel);
+}
+#page-skills .sf-found-head { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; font-size: 12px; }
+#page-skills .sf-found-count { font-size: 11px; color: var(--muted); }
+#page-skills .sf-found-count.error { color: var(--red); }
+#page-skills .sf-found-count.warning { color: var(--yellow); }
+#page-skills .sf-found-item {
+  display: flex; flex-direction: column; gap: 3px; padding: 6px 8px;
+  border-left: 3px solid var(--border-strong); border-radius: var(--radius); background: var(--bg-hover);
+}
+#page-skills .sf-found-item.error { border-left-color: var(--red); }
+#page-skills .sf-found-item.warning { border-left-color: var(--yellow); }
+#page-skills .sf-found-item .line { display: flex; gap: 7px; align-items: baseline; font-size: 12px; }
+#page-skills .sf-found-item .where {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  padding: 1px 6px; border: 1px solid var(--border); border-radius: 999px;
+}
+#page-skills .sf-found-item .where.go { cursor: pointer; color: var(--accent-text); }
+#page-skills .sf-found-item .where.go:hover { background: var(--accent-bg); }
+#page-skills .sf-found-item .text { font-size: 12.5px; line-height: 1.45; }
+#page-skills .sf-found-item .act { display: flex; gap: 6px; }
+#page-skills .sf-found-all { align-self: flex-start; }
+/* Кнопки под полем, а не сбоку: в узкой колонке колонка кнопок съедала треть
+   ширины ввода. */
+#page-skills .sf-composer {
+  display: flex; flex-direction: column; gap: 6px; padding: 8px 10px;
+  border-top: 1px solid var(--border);
+}
 #page-skills .sf-composer textarea {
-  flex: 1; min-height: 38px; max-height: 140px; resize: vertical; padding: 7px 9px;
+  width: 100%; min-height: 44px; max-height: 140px; resize: vertical; padding: 7px 9px;
   border: 1px solid var(--border-strong); border-radius: var(--radius);
   background: var(--bg); color: var(--text); font-size: 12.5px; font-family: var(--sans);
 }
-#page-skills .sf-composer-btns { display: flex; flex-direction: column; gap: 5px; }
+#page-skills .sf-composer-btns { display: flex; gap: 5px; align-items: center; justify-content: flex-end; }
+#page-skills .sf-composer-btns .sf-flow { margin-right: auto; }
 #page-skills .sf-flow {
   max-width: 150px; font-size: 11.5px; padding: 3px 6px;
   border: 1px solid var(--border-strong); border-radius: var(--radius);
@@ -340,9 +553,35 @@
 #page-skills .sf-issue.advice { border-left-color: var(--border-strong); }
 #page-skills .sf-issue .head { display: flex; align-items: center; gap: 7px; font-size: 12.5px; }
 #page-skills .sf-issue .head .code { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-#page-skills .sf-issue .head .src { margin-left: auto; font-size: 11px; color: var(--faint); }
+/* Источник замечания прижат к правому краю; как он выглядит — в общем правиле
+   .src ниже: покраска по признаку «проверено кодом» или «мнение модели». */
+#page-skills .sf-issue .head .src { margin-left: auto; }
+/* Место замечания: подпись, а у тех мест, куда можно попасть, — ещё и ссылка. */
+#page-skills .sf-issue .head .where {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  padding: 1px 6px; border: 1px solid var(--border); border-radius: var(--radius-pill, 999px);
+}
+#page-skills .sf-issue .head .where.go { cursor: pointer; color: var(--accent-text); border-color: var(--border-strong); }
+#page-skills .sf-issue .head .where.go:hover { background: var(--accent-bg); }
+/* Короткая подсветка того места, куда человека привели из отчёта. */
+#page-skills .sf-flash { background: color-mix(in srgb, var(--accent) 14%, transparent) !important; }
+#page-skills .sf-field.sf-flash, #page-skills textarea.sf-flash { transition: background 400ms ease-out; }
 #page-skills .sf-issue .hint { font-size: 11.5px; color: var(--muted); }
 #page-skills .sf-issue .act { display: flex; gap: 6px; }
+/* Правка файла карточкой прямо в реплике: свёрнутая строка «+N −M строк», по
+   щелчку — тот же построчный дифф, что и на вкладке. Тело ограничено по высоте:
+   переписанный целиком файл иначе занимает ленту разговора до конца. */
+#page-skills .sf-edit {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-panel); overflow: hidden;
+}
+#page-skills .sf-edit-head {
+  width: 100%; text-align: left; border: 0; background: none; cursor: pointer;
+  padding: 6px 9px; font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+}
+#page-skills .sf-edit-head:hover { background: var(--accent-bg); color: var(--accent-text); }
+#page-skills .sf-edit-body { padding: 0; max-height: 260px; }
+#page-skills .sf-edit-body:empty { display: none; }
 #page-skills .sf-runs { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
 #page-skills .sf-run { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 11.5px; }
 #page-skills .sf-run .ok { color: var(--green); }
@@ -350,8 +589,189 @@
 #page-skills .sf-empty { padding: 22px 14px; color: var(--muted); font-size: 12.5px; }
 
 /* ---------- дифф ---------- */
-#page-skills .sf-diff { flex: 1; overflow: auto; padding: 10px 14px 40px; font-family: var(--mono); font-size: 12px; }
-#page-skills .sf-diff .ln { display: block; padding: 0 6px; white-space: pre-wrap; border-radius: 3px; }
+#page-skills .sf-diff { flex: 1; overflow: auto; padding: 10px 0 40px; font-family: var(--mono); font-size: 12px; }
+#page-skills .sf-diff .ln { display: flex; gap: 6px; padding: 0 10px; white-space: pre-wrap; }
+/* Номера строк: слева прежний файл, справа нынешний — видно, куда смотреть в тексте. */
+#page-skills .sf-diff .ln .no {
+  flex: none; width: 34px; text-align: right; color: var(--faint);
+  user-select: none; font-variant-numeric: tabular-nums;
+}
+#page-skills .sf-diff .ln .mk { flex: none; width: 10px; text-align: center; user-select: none; }
+#page-skills .sf-diff .ln .tx { flex: 1; min-width: 0; }
 #page-skills .sf-diff .ln.add { background: var(--green-bg); color: var(--green); }
 #page-skills .sf-diff .ln.del { background: var(--red-bg); color: var(--red); }
+#page-skills .sf-diff .sf-fold {
+  display: block; width: calc(100% - 20px); margin: 3px 10px; padding: 2px 8px; text-align: left;
+  border: 1px dashed var(--border-strong); border-radius: var(--radius); background: transparent;
+  color: var(--muted); font-family: var(--mono); font-size: 11.5px; cursor: pointer;
+}
+#page-skills .sf-diff .sf-fold:hover { background: var(--bg-hover); color: var(--text); }
 #page-skills .sf-diffbar { display: flex; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border); align-items: center; }
+#page-skills .sf-diff-count { color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
+#page-skills .sf-diff-all { display: flex; gap: 4px; align-items: center; color: var(--muted); font-size: 11.5px; cursor: pointer; }
+
+/* ---------- оценка готового скилла ----------
+   Вид оценки и состав совета выбираются в одном поповере: это одно решение, и
+   разводить его по экранам дороже самой оценки. Поповер держится у своей кнопки
+   в тулбаре, как и список редких действий под «⋯». */
+#page-skills .sf-eval-wrap { position: relative; display: flex; }
+#page-skills .sf-eval {
+  display: none; position: absolute; left: 0; top: calc(100% + 6px); z-index: 20;
+  flex-direction: column; gap: 8px; padding: 10px; width: 330px; max-width: 80vw;
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--bg-panel); box-shadow: 0 8px 24px var(--shadow);
+}
+#page-skills .sf-eval.on { display: flex; }
+#page-skills .sf-eval-head { font-weight: 600; font-size: 12.5px; }
+#page-skills .sf-eval-modes { padding: 0; border: 0; }
+#page-skills .sf-eval-hint { color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+/* Состав нужен только совету: у сверки с постановкой участник один. */
+#page-skills .sf-eval:not(.council) .sf-eval-roster,
+#page-skills .sf-eval:not(.council) .sf-eval-picked { display: none; }
+#page-skills .sf-eval-roster {
+  display: flex; flex-direction: column; gap: 2px; max-height: 230px; overflow: auto;
+  padding: 6px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
+}
+#page-skills .sf-eval-model {
+  display: flex; align-items: center; gap: 6px; padding: 3px 4px; border-radius: 4px;
+  font-size: 11.5px; cursor: pointer; user-select: none;
+}
+#page-skills .sf-eval-model:hover { background: var(--bg-hover); }
+#page-skills .sf-eval-model input { accent-color: var(--accent); margin: 0; cursor: pointer; }
+#page-skills .sf-eval-name { font-family: var(--mono); flex: 1; min-width: 0; overflow-wrap: anywhere; }
+/* Квота шлюза и карантин — то, что процессу известно и без опроса моделей. */
+#page-skills .sf-eval-quota {
+  flex: none; padding: 1px 5px; border-radius: 3px; background: var(--bg-hover);
+  color: var(--muted); font-size: 10.5px;
+}
+#page-skills .sf-eval-jail {
+  flex: none; padding: 1px 5px; border-radius: 3px; background: var(--yellow-bg);
+  color: var(--yellow); font-size: 10.5px;
+}
+/* Модель в карантине не участвует: её видно, но отметить нельзя. */
+#page-skills .sf-eval-model.off { opacity: 0.55; cursor: default; }
+#page-skills .sf-eval-model.off:hover { background: transparent; }
+#page-skills .sf-eval-empty { color: var(--yellow); font-size: 11.5px; line-height: 1.45; }
+#page-skills .sf-eval-picked { color: var(--muted); font-size: 11px; line-height: 1.4; }
+#page-skills .sf-eval-picked.warn { color: var(--yellow); }
+#page-skills .sf-eval-note { color: var(--faint); font-size: 11px; line-height: 1.4; }
+#page-skills .sf-eval .act { display: flex; justify-content: flex-end; }
+#page-skills .sf-eval-go:disabled { opacity: 0.5; cursor: default; }
+
+/* ---------- совет моделей в ленте ----------
+   Общий блок: мнения участников собраны в одном месте, свод стоит последним и
+   выделен — он единственный, кто видел чужие мнения. */
+#page-skills .sf-council {
+  align-self: stretch; display: flex; flex-direction: column; gap: 6px; padding: 8px 9px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg-elev);
+}
+#page-skills .sf-council-head {
+  display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 12.5px; font-weight: 600;
+}
+#page-skills .sf-council-note { font-weight: 400; color: var(--muted); font-size: 11px; }
+#page-skills .sf-council-list { display: flex; flex-direction: column; gap: 5px; }
+#page-skills .sf-council-slot { display: flex; flex-direction: column; gap: 5px; }
+#page-skills .sf-council-slot:empty { display: none; }
+#page-skills .sf-council-slot .sf-role, #page-skills .sf-council-slot .sf-evalcard {
+  border-color: var(--accent); background: var(--accent-bg);
+}
+/* Краска участника по месту в совете: пять моделей пишут одновременно, и
+   различать их надо не читая имён. */
+#page-skills .sf-council .seat-1 { --role-color: var(--blue); }
+#page-skills .sf-council .seat-2 { --role-color: var(--cyan); }
+#page-skills .sf-council .seat-3 { --role-color: var(--purple); }
+#page-skills .sf-council .seat-4 { --role-color: var(--green); }
+#page-skills .sf-council .seat-5 { --role-color: var(--yellow); }
+#page-skills .sf-council .seat-6 { --role-color: var(--accent-text); }
+#page-skills .sf-council .sf-role.working { border-left-color: var(--role-color, var(--accent)); }
+
+/* ---------- вердикт судьи и свод совета ----------
+   Карточка в ленте отвечает коротко, разбор целиком остаётся в отчёте. */
+#page-skills .sf-evalcard {
+  align-self: stretch; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px;
+  border: 1px solid var(--border-strong); border-left-width: 3px; border-radius: var(--radius);
+  background: var(--bg-panel);
+}
+#page-skills .sf-evalcard.judge { border-left-color: var(--accent); }
+#page-skills .sf-evalcard.council { border-left-color: var(--purple); }
+#page-skills .sf-evalcard-head {
+  display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 12.5px; font-weight: 600;
+}
+#page-skills .sf-evalcard-line { font-size: 12px; color: var(--muted); }
+#page-skills .sf-evalcard-go { align-self: flex-start; }
+
+/* Сверка с постановкой — таблица «требование → исход»: пересказом абзацем
+   потерянное требование остаётся незаметным. */
+#page-skills .sf-judge { display: flex; flex-direction: column; gap: 6px; }
+#page-skills .sf-judge-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 12px; }
+#page-skills .sf-judge-counts { font-weight: 600; }
+#page-skills .sf-judge-origin { color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+#page-skills .sf-judge-origin.weak { color: var(--yellow); }
+#page-skills .sf-judge-summary { font-size: 12.5px; line-height: 1.5; }
+#page-skills .sf-judge-table {
+  width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;
+}
+#page-skills .sf-judge-table th {
+  text-align: left; padding: 4px 8px; font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--faint); font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+#page-skills .sf-judge-table th:nth-child(2) { width: 110px; }
+#page-skills .sf-judge-table td {
+  padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--border);
+  line-height: 1.45; overflow-wrap: anywhere;
+}
+#page-skills .sf-judge-table tr.v-missed td { background: var(--red-bg); }
+#page-skills .sf-judge-table tr.v-twisted td { background: var(--yellow-bg); }
+#page-skills .sf-judge-title { font-weight: 600; }
+#page-skills .sf-judge-text { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+#page-skills .sf-judge-detail { color: var(--muted); }
+/* Утверждение судьи, не подтверждённое цитатой из скилла: остаётся в таблице, но
+   доказательством не считается. */
+#page-skills .sf-judge-unverified { margin-top: 3px; color: var(--yellow); font-size: 11px; }
+#page-skills .sf-judge-mark {
+  display: inline-block; padding: 1px 6px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; background: var(--bg-hover); color: var(--muted);
+}
+#page-skills .sf-judge-mark.done { color: var(--green); background: var(--green-bg); }
+#page-skills .sf-judge-mark.twisted { color: var(--yellow); background: var(--yellow-bg); }
+#page-skills .sf-judge-mark.missed { color: var(--red); background: var(--red-bg); }
+
+/* Свод совета в отчёте стоит первым: это вывод, за которым сюда и приходят. */
+#page-skills .sf-council-block { display: flex; flex-direction: column; gap: 6px; }
+#page-skills .sf-council-sum {
+  padding: 8px 10px; border: 1px solid var(--accent); border-left-width: 3px;
+  border-radius: var(--radius); background: var(--accent-bg);
+}
+#page-skills .sf-council-sum-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-weight: 600; font-size: 12.5px; }
+#page-skills .sf-council-sum-text { margin-top: 4px; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; }
+#page-skills .sf-council-verdict {
+  padding: 1px 6px; border-radius: 999px; background: var(--bg-hover);
+  color: var(--muted); font-size: 11px; font-weight: 600;
+}
+#page-skills .sf-council-quorum { color: var(--muted); font-size: 11.5px; }
+#page-skills .sf-council-quorum.warn { color: var(--yellow); }
+#page-skills .sf-council-op {
+  padding: 6px 9px; border: 1px solid var(--border); border-left: 3px solid var(--purple);
+  border-radius: var(--radius); background: var(--bg-panel);
+}
+#page-skills .sf-council-op-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+#page-skills .sf-council-op-text { margin-top: 3px; font-size: 12.5px; line-height: 1.5; }
+/* Участник промолчал: его место в совете видно, но за мнение это не выдаётся. */
+#page-skills .sf-council-op.silent { border-left-color: var(--faint); opacity: 0.7; }
+#page-skills .sf-council-action { margin-top: 3px; font-size: 12.5px; line-height: 1.5; }
+
+/* Откуда пришло замечание: проверенное кодом и мнение модели должны различаться
+   на вид — человеку надо понимать, чему верить. */
+#page-skills .src { font-size: 11px; color: var(--faint); }
+#page-skills .src.code { padding: 1px 6px; border-radius: 999px; background: var(--bg-hover); color: var(--muted); }
+#page-skills .src.model {
+  padding: 1px 6px; border-radius: 999px; border: 1px dashed var(--faint); color: var(--muted);
+}
+#page-skills .sf-found-item .line .src { margin-left: auto; }
+/* Таблица сверки внутри узкой колонки разговора: та же, но потеснее. */
+#page-skills .sf-evalcard .sf-judge-table { font-size: 11.5px; }
+#page-skills .sf-evalcard .sf-judge-table th:nth-child(2) { width: 82px; }
+/* Кого спросили: состав объявляется в начале этапа, до первого ответа. */
+#page-skills .sf-council-names { color: var(--muted); font-size: 11.5px; }
+#page-skills .sf-council-names:empty { display: none; }
