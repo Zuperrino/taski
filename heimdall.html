@@ -5,105 +5,123 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heimdall</title>
 <style>
-/* ============ Heimdall — светлая тема по умолчанию + тёмная по data-theme ============ */
+/* ============ Heimdall — дизайн-токены платформы «Пульс» ============
+   Светлая тема по умолчанию, тёмная по data-theme. Имена переменных общие
+   с factory.css Завода скиллов — менять значения можно, имена нельзя. */
 :root {
-  --bg: #f6f7f9;
+  --bg: #f5f6f8;
   --bg-panel: #ffffff;
-  --bg-elev: #fbfcfd;
-  --bg-hover: #eef1f5;
-  --bg-active: #e7edf5;
-  --border: #e3e7ec;
-  --border-strong: #cbd2da;
-  --text: #1c2430;
-  --muted: #6b7683;
-  --faint: #9aa4b0;
-  --accent: #e2a33b;
-  --accent-text: #9a5f06;
-  --accent-hover: #cf9029;
-  --accent-bg: rgba(226, 163, 59, 0.14);
-  --on-accent: #3a2708;
-  --green: #1f9d55;
-  --green-bg: rgba(31, 157, 85, 0.12);
-  --yellow: #b7791f;
-  --yellow-bg: rgba(183, 121, 31, 0.12);
-  --red: #c0392b;
-  --red-bg: rgba(192, 57, 43, 0.10);
-  --cyan: #0e7490;
-  --blue: #2f6feb;
-  --purple: #7c3aed;
-  --shadow: rgba(20, 30, 50, 0.14);
-  --scrollbar-thumb: #cbd2da;
-  --row-hover: rgba(20, 30, 50, 0.05);
-  --accent-drag: rgba(226, 163, 59, 0.30);
+  --bg-elev: #fafbfd;
+  --bg-hover: #f2f4f8;
+  --bg-active: #e9f0fe;
+  --border: #e4e6eb;
+  --border-strong: #cdd2d9;
+  --text: #292929;
+  --muted: #82878e;
+  --faint: #a9aaac;
+  --accent: #0066ff;
+  --accent-text: #0053e8;
+  --accent-hover: #005de8;
+  --accent-bg: rgba(0, 102, 255, 0.10);
+  --on-accent: #ffffff;
+  --green: #2f9e44;
+  --green-bg: rgba(87, 193, 69, 0.14);
+  --yellow: #c98a0e;
+  --yellow-bg: rgba(244, 187, 54, 0.16);
+  --red: #e03131;
+  --red-bg: rgba(255, 63, 63, 0.10);
+  --cyan: #0c8599;
+  --blue: #3385ff;
+  --purple: #7a39ff;
+  --shadow: rgba(61, 61, 61, 0.20);
+  --scrollbar-thumb: #cdd2d9;
+  --row-hover: rgba(0, 102, 255, 0.04);
+  --accent-drag: rgba(0, 102, 255, 0.30);
   --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, Menlo, monospace;
-  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
-  --radius: 6px;
-  --accent-deep: #b97a1e;
-  --chart-1: #b5791f;
-  --chart-2: #0e7490;
-  --chart-3: #2f6feb;
-  --chart-4: #7c3aed;
-  --chart-5: #1f9d55;
-  --chart-6: #a3860f;
-  --chart-7: #c0392b;
-  --chart-8: #6b7683;
+  --sans: "SB Sans Display", "SBSansUI", "Segoe UI", -apple-system, system-ui, Roboto, Arial, sans-serif;
+  --radius: 9px;
+  --radius-lg: 14px;
+  --accent-deep: #0048b5;
+  --grad: linear-gradient(100deg, #3385ff 0%, #0066ff 55%, #0053d9 100%);
+  --grad-brand: linear-gradient(100deg, #b823ff 0%, #7a39ff 25%, #3652ff 50%, #0d61ff 75%, #06f 100%);
+  --overlay: rgba(27, 27, 27, 0.50);
+  --shadow-sm: 0px 2px 8px 0px rgba(55, 55, 55, 0.16);
+  --shadow-md: 0px 6px 20px -2px rgba(61, 61, 61, 0.20);
+  --shadow-lg: 0px 8px 24px 0px rgba(67, 67, 67, 0.22);
+  --chart-1: #0066ff;
+  --chart-2: #7a39ff;
+  --chart-3: #0c8599;
+  --chart-4: #b823ff;
+  --chart-5: #2f9e44;
+  --chart-6: #e8a13c;
+  --chart-7: #e03131;
+  --chart-8: #82878e;
   --sidebar-w: 300px;
   --bottom-h: 300px;
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #22262c;
-  --bg-panel: #282d34;
-  --bg-elev: #2e343c;
-  --bg-hover: #333a43;
-  --bg-active: #3a424c;
-  --border: #363d47;
-  --border-strong: #454e5a;
-  --text: #d6dde6;
-  --muted: #93a0b0;
-  --faint: #6b7686;
-  --accent: #e2a33b;
-  --accent-text: #f0bb5e;
-  --accent-hover: #eeb452;
-  --accent-bg: rgba(226, 163, 59, 0.14);
-  --on-accent: #14181e;
-  --green: #4fc08a;
-  --green-bg: rgba(79, 192, 138, 0.13);
-  --yellow: #e0c45c;
-  --yellow-bg: rgba(224, 196, 92, 0.12);
-  --red: #e26a5a;
-  --red-bg: rgba(226, 106, 90, 0.12);
-  --cyan: #56b6c2;
-  --blue: #6f9ee8;
-  --purple: #b08ae0;
-  --shadow: rgba(0, 0, 0, 0.4);
-  --scrollbar-thumb: #454e5a;
+  --bg: #1b1b1b;
+  --bg-panel: #232323;
+  --bg-elev: #2a2a2a;
+  --bg-hover: #303030;
+  --bg-active: #263450;
+  --border: #353535;
+  --border-strong: #444444;
+  --text: #d6d6d6;
+  --muted: #a6a6a6;
+  --faint: #8b8b8b;
+  --accent: #3385ff;
+  --accent-text: #85b6ff;
+  --accent-hover: #5c9dff;
+  --accent-bg: rgba(51, 133, 255, 0.18);
+  --on-accent: #ffffff;
+  --green: #57c145;
+  --green-bg: rgba(87, 193, 69, 0.18);
+  --yellow: #f4bb36;
+  --yellow-bg: rgba(244, 187, 54, 0.18);
+  --red: #ff5c5c;
+  --red-bg: rgba(255, 63, 63, 0.18);
+  --cyan: #4cc3de;
+  --blue: #5c9dff;
+  --purple: #a685ff;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --scrollbar-thumb: #444444;
   --row-hover: rgba(255, 255, 255, 0.05);
-  --accent-drag: rgba(226, 163, 59, 0.30);
-  --accent-deep: #b97a1e;
-  --chart-1: #e2a33b;
-  --chart-2: #56b6c2;
-  --chart-3: #6f9ee8;
-  --chart-4: #b08ae0;
-  --chart-5: #4fc08a;
-  --chart-6: #e0c45c;
-  --chart-7: #e26a5a;
-  --chart-8: #8a94a3;
+  --accent-drag: rgba(51, 133, 255, 0.30);
+  --accent-deep: #0d61ff;
+  --grad: linear-gradient(100deg, #5c9dff 0%, #3385ff 55%, #0066ff 100%);
+  --overlay: rgba(0, 0, 0, 0.60);
+  --shadow-sm: 0px 2px 8px 0px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0px 6px 20px -2px rgba(0, 0, 0, 0.50);
+  --shadow-lg: 0px 8px 24px 0px rgba(0, 0, 0, 0.55);
+  --chart-1: #3385ff;
+  --chart-2: #9b7bff;
+  --chart-3: #4cc3de;
+  --chart-4: #cf5bff;
+  --chart-5: #57c145;
+  --chart-6: #f4bb36;
+  --chart-7: #ff6b5c;
+  --chart-8: #93a0b0;
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1000px 380px at 90% -10%, rgba(0, 102, 255, 0.05), transparent 60%),
+    radial-gradient(820px 340px at 5% -8%, rgba(51, 133, 255, 0.05), transparent 60%);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--sans);
   font-size: 13px;
   line-height: 1.45;
   overflow: hidden;
 }
-::selection { background: rgba(226, 163, 59, 0.3); }
+::selection { background: var(--accent-bg); }
 
 /* scrollbars */
 * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
@@ -117,21 +135,52 @@ code, .mono { font-family: var(--mono); font-size: 12px; }
 .app { height: 100vh; display: flex; flex-direction: column; }
 
 .titlebar {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 12px; height: 38px; flex: none;
-  background: var(--bg-panel); border-bottom: 1px solid var(--border);
-}
-.titlebar .logo {
   display: flex; align-items: center; gap: 8px;
-  font-weight: 650; font-size: 13px; letter-spacing: 0.2px;
+  padding: 0 14px; height: 58px; flex: none;
+  background: var(--bg-panel); border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: relative; z-index: 30;
 }
-.logo-mark {
-  width: 18px; height: 18px; border-radius: 4px; flex: none;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+
+/* Кнопка-бургер: открывает боковое меню */
+.burger {
+  width: 40px; height: 40px; flex: none; padding: 0;
   display: grid; place-items: center;
-  color: var(--on-accent); font-family: var(--mono); font-size: 11px; font-weight: 700;
+  border: none; border-radius: 11px;
+  background: var(--bg-hover); color: var(--text);
+  cursor: pointer;
 }
-.titlebar .spacer { flex: 1; }
+.burger:hover { background: var(--bg-active); }
+.burger svg { width: 21px; height: 21px; display: block; }
+.burger line { stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+/* Лок-ап «ПУЛЬС | Heimdall» */
+.lockup { display: flex; align-items: center; gap: 10px; margin: 0 4px; }
+.pulse-ico { width: 27px; height: 27px; flex: none; display: block; }
+.lockup .brand { display: inline-flex; align-items: center; }
+.lockup .brand svg { height: 21px; width: auto; display: block; }
+.lockup .brand svg path { fill: var(--accent); }
+.lockup .sep { width: 1px; height: 24px; background: var(--border-strong); }
+/* Имя приложения — тоже путями, как «Пульс»; на Заводе скиллов надпись меняется */
+.lockup .app-name { display: inline-flex; align-items: center; color: var(--accent); }
+.lockup .app-name svg { height: 21px; width: auto; display: block; }
+.lockup .app-name .wm-skills { display: none; }
+:root.tab-skills .lockup .app-name .wm-heimdall { display: none; }
+:root.tab-skills .lockup .app-name .wm-skills { display: block; }
+.spacer { flex: 1; }
+
+/* Иконки-кнопки шапки */
+.titlebar .iconbtn {
+  width: 38px; height: 38px; padding: 0; display: grid; place-items: center;
+  border: none; border-radius: 11px; background: transparent; color: var(--muted);
+}
+.titlebar .iconbtn:hover { background: var(--bg-hover); color: var(--accent-text); }
+.titlebar .iconbtn svg { width: 20px; height: 20px; display: block; }
+.titlebar .iconbtn.on { color: var(--accent-text); background: var(--accent-bg); }
+/* селектор с svg — иначе «.titlebar .iconbtn svg { display: block }» сильнее */
+.titlebar .iconbtn svg.ico-moon { display: none; }
+:root[data-theme="dark"] .titlebar .iconbtn svg.ico-sun { display: none; }
+:root[data-theme="dark"] .titlebar .iconbtn svg.ico-moon { display: block; }
 
 .main { flex: 1; display: flex; min-height: 0; }
 
@@ -182,7 +231,7 @@ code, .mono { font-family: var(--mono); font-size: 12px; }
 .tree-leaf:hover { background: var(--bg-hover); }
 .tree-leaf .leaf-name { font-family: var(--mono); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tree-leaf .leaf-extra { color: var(--faint); font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: right; }
-.tree-leaf.param { opacity: 0.5; }
+.tree-leaf.param { opacity: 0.85; }
 .tree-section-label { padding: 4px 6px 1px; color: var(--faint); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; }
 .tree-empty { padding: 20px 10px; color: var(--faint); text-align: center; }
 
@@ -209,19 +258,22 @@ code, .mono { font-family: var(--mono); font-size: 12px; }
 
 /* ============ Центр ============ */
 .center { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+/* Табы живут в шапке (как в Пульсе): активная подчёркнута градиентной чертой */
 .ws-tabs {
-  display: flex; align-items: stretch; gap: 2px; flex: none;
-  background: var(--bg-panel); border-bottom: 1px solid var(--border);
-  padding: 0 8px;
+  display: flex; align-items: stretch; gap: 2px;
+  height: 100%; min-width: 0; overflow-x: auto; scrollbar-width: none;
 }
 .ws-tab {
   display: flex; align-items: center; gap: 7px;
-  padding: 0 14px; height: 36px; cursor: pointer; user-select: none;
-  color: var(--muted); font-size: 12.5px; font-weight: 500;
-  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  padding: 0 13px; cursor: pointer; user-select: none; position: relative;
+  color: var(--muted); font-size: 13px; font-weight: 500; white-space: nowrap;
 }
-.ws-tab:hover { color: var(--text); }
-.ws-tab.active { color: var(--accent-text); border-bottom-color: var(--accent); }
+.ws-tab:hover { color: var(--text); background: var(--bg-hover); }
+.ws-tab.active { color: var(--accent-text); font-weight: 600; }
+.ws-tab.active::after {
+  content: ""; position: absolute; left: 11px; right: 11px; bottom: 0; height: 3px;
+  border-radius: 3px 3px 0 0; background: var(--grad);
+}
 .ws-tab .ws-tab-icon { font-size: 13px; opacity: 0.8; }
 
 .workspace { flex: 1; min-height: 0; position: relative; display: flex; }
@@ -243,6 +295,9 @@ code, .mono { font-family: var(--mono); font-size: 12px; }
 }
 .bottom-panel.collapsed { height: 33px !important; }
 .bottom-panel.collapsed .bp-body { display: none; }
+/* стрелка кнопки сворачивания следует за состоянием панели */
+#bpCollapse::before { content: "▾"; }
+.bottom-panel.collapsed #bpCollapse::before { content: "▴"; }
 /* На вкладке Завода нижняя панель убирается совсем: там нет запроса, чей
    результат она показывает, а свёрнутая полоса вкладок всё равно занимает
    место и сбивает с толку. */
@@ -309,7 +364,7 @@ input[type="text"], input[type="number"], input[type="date"], input[type="passwo
   border-radius: var(--radius); padding: 5px 8px; outline: none;
   min-width: 0;
 }
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
 input::placeholder, textarea::placeholder { color: var(--faint); }
 input.mono, textarea.mono, select.mono { font-family: var(--mono); font-size: 12px; }
 input[type="date"] { color-scheme: inherit; }
@@ -347,13 +402,13 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); curso
 }
 .badge.mono { font-family: var(--mono); }
 .badge.b-history { color: var(--accent-text); background: var(--accent-bg); border-color: transparent; }
-.badge.b-array { color: var(--purple); background: rgba(176,138,224,0.12); border-color: transparent; }
-.badge.b-joins { color: var(--blue); background: rgba(111,158,232,0.12); border-color: transparent; }
+.badge.b-array { color: var(--purple); background: rgba(122,57,255,0.10); border-color: transparent; }
+.badge.b-joins { color: var(--blue); background: rgba(51,133,255,0.12); border-color: transparent; }
 .badge.b-plain { color: var(--muted); }
 .badge.b-green { color: var(--green); background: var(--green-bg); border-color: transparent; }
 .badge.b-yellow { color: var(--yellow); background: var(--yellow-bg); border-color: transparent; }
 .badge.b-red { color: var(--red); background: var(--red-bg); border-color: transparent; }
-.badge.b-cyan { color: var(--cyan); background: rgba(86,182,194,0.12); border-color: transparent; }
+.badge.b-cyan { color: var(--cyan); background: rgba(12,133,153,0.10); border-color: transparent; }
 .badge.b-dim { opacity: 0.55; }
 
 .minibadge {
@@ -362,8 +417,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); curso
   background: var(--bg-elev); color: var(--muted); border: 1px solid var(--border);
   font-family: var(--mono); letter-spacing: 0.3px;
 }
-.minibadge.m-virtual { color: var(--purple); border-color: rgba(176,138,224,0.4); }
-.minibadge.m-time { color: var(--accent-text); border-color: rgba(226,163,59,0.4); }
+.minibadge.m-virtual { color: var(--purple); border-color: rgba(122,57,255,0.4); }
+.minibadge.m-time { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
 .minibadge.m-param { color: var(--faint); }
 .minibadge.m-k1 { color: var(--green); } .minibadge.m-k2 { color: var(--yellow); } .minibadge.m-k3 { color: var(--red); }
 
@@ -378,9 +433,9 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); curso
   cursor: pointer; color: var(--faint); font-size: 12px; line-height: 1;
 }
 .chip .chip-x:hover { background: var(--red-bg); color: var(--red); }
-.chip.c-metric { border-color: rgba(79,192,138,0.45); color: var(--green); }
+.chip.c-metric { border-color: rgba(87,193,69,0.45); color: var(--green); }
 .chip.c-param { border-style: dashed; opacity: 0.75; }
-.chip.c-warn { border-color: rgba(224,196,92,0.6); }
+.chip.c-warn { border-color: rgba(244,187,54,0.6); }
 .chip.static { padding: 2px 9px; }
 
 .gran-chip {
@@ -388,7 +443,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); curso
   border: 1px solid var(--border-strong); border-radius: 4px; padding: 1px 6px;
   color: var(--muted); background: var(--bg);
 }
-.gran-chip.on { color: var(--accent-text); border-color: rgba(226,163,59,0.5); background: var(--accent-bg); }
+.gran-chip.on { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: var(--accent-bg); }
 
 /* ============ Таблицы ============ */
 table.dt { border-collapse: collapse; width: 100%; font-size: 12px; }
@@ -413,12 +468,12 @@ table.spec th {
 }
 table.spec td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
 table.spec tr:last-child td { border-bottom: none; }
-table.spec tr.param-row td { opacity: 0.55; }
 
 /* ============ Карточки / секции ============ */
 .card {
   background: var(--bg-panel); border: 1px solid var(--border);
-  border-radius: 8px; overflow: hidden;
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 .card + .card { margin-top: 14px; }
 .card-head {
@@ -487,7 +542,7 @@ pre.code.framed { border: 1px solid var(--border); }
 }
 .picker-item:hover { background: var(--bg-hover); }
 .picker-item.selected { color: var(--accent-text); }
-.picker-item.param { opacity: 0.55; }
+.picker-item.param .pi-name { color: var(--purple); }
 .picker-item .pi-name { font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
 .picker-item .pi-desc { color: var(--faint); font-size: 11px; flex: 1; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .picker-item .pi-check { width: 14px; color: var(--accent); flex: none; font-size: 11px; }
@@ -627,21 +682,21 @@ svg.linechart .axis { stroke: var(--border-strong); stroke-width: 1; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
 .form-grid .span2 { grid-column: span 2; }
 .repeat-item {
-  border: 1px solid var(--border); border-radius: 8px; background: var(--bg-panel);
+  border: 1px solid var(--border); border-radius: 10px; background: var(--bg-panel);
   padding: 10px 12px; margin-bottom: 8px; position: relative;
 }
 .repeat-item .repeat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
 .repeat-item .repeat-grid .span2 { grid-column: span 2; }
 .repeat-remove { position: absolute; top: 6px; right: 6px; }
 .validation-summary {
-  border: 1px solid rgba(226,106,90,0.4); background: var(--red-bg);
-  border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+  border: 1px solid rgba(255,63,63,0.35); background: var(--red-bg);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
 }
 .validation-summary ul { margin: 4px 0 0; padding-left: 18px; }
 .validation-summary li { color: var(--red); font-size: 12px; margin: 2px 0; }
 .validation-ok {
-  border: 1px solid rgba(79,192,138,0.35); background: var(--green-bg);
-  border-radius: 8px; padding: 8px 14px; margin-bottom: 14px; color: var(--green); font-size: 12px;
+  border: 1px solid rgba(87,193,69,0.35); background: var(--green-bg);
+  border-radius: 10px; padding: 8px 14px; margin-bottom: 14px; color: var(--green); font-size: 12px;
 }
 
 /* diff-отчёт публикации */
@@ -658,13 +713,14 @@ svg.linechart .axis { stroke: var(--border-strong); stroke-width: 1; }
 
 /* ============ Модалки и тосты ============ */
 .modal-backdrop {
-  position: fixed; inset: 0; background: rgba(5,8,12,0.65); z-index: 100;
+  position: fixed; inset: 0; background: var(--overlay); z-index: 100;
+  backdrop-filter: blur(2px);
   display: grid; place-items: center;
 }
 .modal {
   width: min(480px, 92vw); max-height: 86vh; overflow: auto;
-  background: var(--bg-panel); border: 1px solid var(--border-strong);
-  border-radius: 10px; box-shadow: 0 20px 60px var(--shadow);
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 16px; box-shadow: var(--shadow-lg);
 }
 .modal.wide { width: min(640px, 94vw); }
 .modal-head { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
@@ -726,6 +782,132 @@ svg.linechart .axis { stroke: var(--border-strong); stroke-width: 1; }
 .pager { display: flex; align-items: center; gap: 8px; }
 .pager .pg-info { color: var(--muted); font-size: 11.5px; font-family: var(--mono); }
 
+/* ============ Боковое меню (открывается бургером) ============ */
+.menu-overlay {
+  position: fixed; inset: 0; background: var(--overlay);
+  backdrop-filter: blur(2px); z-index: 55; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.menu-overlay.open { opacity: 1; pointer-events: auto; }
+
+.side-menu {
+  position: fixed; left: 12px; top: 68px; bottom: 14px; width: 302px; z-index: 60;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-120%); transition: transform 0.26s cubic-bezier(.2,.8,.25,1);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.side-menu.open { transform: translateX(0); }
+.menu-head {
+  height: 58px; flex: none; display: flex; align-items: center; gap: 11px; padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.menu-head .pulse-ico { width: 24px; height: 24px; }
+.menu-head .m-title { font-size: 14px; font-weight: 700; }
+.menu-head .iconbtn {
+  width: 34px; height: 34px; padding: 0; display: grid; place-items: center;
+  border: none; border-radius: 10px; background: transparent; color: var(--muted);
+}
+.menu-head .iconbtn:hover { background: var(--bg-hover); color: var(--text); }
+.menu-head .iconbtn svg { width: 18px; height: 18px; display: block; }
+
+.menu-scroll { flex: 1; overflow: auto; padding: 10px; }
+.menu-group { margin-bottom: 6px; }
+.menu-group-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase;
+  color: var(--faint); padding: 10px 12px 4px;
+}
+.menu-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px; border-radius: 11px; margin: 1px 0;
+  color: var(--text); font-size: 13px; cursor: pointer; font-weight: 500;
+  user-select: none; text-decoration: none;
+}
+.menu-item:hover { background: var(--bg-hover); }
+.menu-item.active { background: var(--accent-bg); color: var(--accent-text); font-weight: 600; }
+.menu-item .em { width: 24px; height: 24px; flex: none; display: grid; place-items: center; font-size: 16px; }
+.menu-item .grow { flex: 1; min-width: 0; }
+.menu-badge {
+  font-size: 10.5px; font-weight: 600; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border-strong); border-radius: 20px; padding: 1px 8px;
+  white-space: nowrap;
+}
+.menu-foot {
+  padding: 11px 16px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--faint);
+}
+
+/* ============ Главная ============ */
+.home { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+.hero-banner {
+  position: relative; overflow: hidden;
+  border-radius: 20px; padding: 30px 34px;
+  background: var(--grad); color: #fff;
+  box-shadow: 0 16px 44px rgba(0, 102, 255, 0.30);
+}
+.hero-banner::after {
+  content: ""; position: absolute; right: -60px; top: -70px; width: 260px; height: 260px;
+  border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.26), transparent 65%);
+}
+.hero-banner::before {
+  content: ""; position: absolute; right: 90px; top: -30px; width: 120px; height: 120px;
+  border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.20), transparent 65%);
+}
+.hero-kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; opacity: 0.85; }
+.hero-title { font-size: 27px; font-weight: 700; margin: 7px 0 5px; position: relative; z-index: 1; }
+.hero-sub { font-size: 13.5px; opacity: 0.92; max-width: 560px; position: relative; z-index: 1; }
+.hero-actions { display: flex; gap: 10px; margin-top: 20px; position: relative; z-index: 1; flex-wrap: wrap; }
+.hero-btn {
+  height: 38px; padding: 0 17px; display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 11px; font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+button.hero-btn.solid { background: #fff; color: var(--accent-text); border: none; }
+button.hero-btn.solid:hover { background: #eef4ff; border: none; }
+button.hero-btn.o { background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.5); }
+button.hero-btn.o:hover { background: rgba(255,255,255,0.26); border-color: rgba(255,255,255,0.6); }
+
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 900px) { .tiles { grid-template-columns: 1fr; } }
+.tile {
+  background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 18px; box-shadow: var(--shadow-sm);
+  transition: transform 0.12s, box-shadow 0.12s; cursor: pointer;
+}
+.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.tile-top { display: flex; align-items: center; gap: 12px; }
+.tile-em { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 21px; }
+.tile-em.b1 { background: var(--accent-bg); }
+.tile-em.b2 { background: var(--green-bg); }
+.tile-em.b3 { background: var(--yellow-bg); }
+.tile-title { font-size: 14.5px; font-weight: 700; }
+.tile-sub { font-size: 11.5px; color: var(--muted); }
+.tile-desc { margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+.home-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; align-items: start; }
+@media (max-width: 900px) { .home-cols { grid-template-columns: 1fr; } }
+.pcard {
+  background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.pcard-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.pcard-title { font-size: 13.5px; font-weight: 700; }
+.pcard-body { padding: 6px 16px 12px; }
+.row-item { display: flex; align-items: center; gap: 11px; padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer; min-width: 0; }
+.row-item:last-child { border-bottom: none; }
+.row-item:hover .row-name { color: var(--accent-text); }
+.row-em { width: 32px; height: 32px; flex: none; border-radius: 10px; display: grid; place-items: center; font-size: 16px; background: var(--bg-hover); }
+.row-name { font-weight: 600; font-size: 12.5px; font-family: var(--mono); }
+.row-meta { color: var(--faint); font-size: 11px; }
+.row-spacer { flex: 1; }
+.row-tag {
+  font-size: 10.5px; font-weight: 600; color: var(--accent-text);
+  background: var(--accent-bg); border-radius: 20px; padding: 2px 9px; white-space: nowrap;
+}
+.home-empty { color: var(--faint); font-size: 12px; padding: 12px 0; }
+
 /* Вкладка «Завод скиллов» оформлена в app/skill_factory/static/factory.css
    и подключается ссылкой ниже — стили едут вместе с пакетом Завода. */
 
@@ -735,12 +917,83 @@ svg.linechart .axis { stroke: var(--border-strong); stroke-width: 1; }
 <body>
 <div class="app">
   <div class="titlebar">
-    <button class="ghost iconbtn" id="sidebarToggle" title="Свернуть/развернуть каталог">☰</button>
-    <div class="logo"><span class="logo-mark">H</span><span>Heimdall</span></div>
+    <button class="burger" id="menuBtn" title="Меню" aria-label="Меню">
+      <svg viewBox="0 0 24 24" fill="none">
+        <line x1="4" y1="6.5" x2="20" y2="6.5"/>
+        <line x1="4" y1="12" x2="20" y2="12"/>
+        <line x1="4" y1="17.5" x2="20" y2="17.5"/>
+      </svg>
+    </button>
+
+    <div class="lockup">
+      <svg class="pulse-ico" aria-hidden="true" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient gradientTransform="rotate(135.002 3.474 8.681) scale(10.8914 25.0363)" cx="0" cy="0" r="1" id="pulse_svg__a" gradientUnits="userSpaceOnUse"><stop offset="0.081" stop-color="#B823FF"></stop><stop offset="0.118" stop-color="#A629FF"></stop><stop offset="0.224" stop-color="#7A39FF"></stop><stop offset="0.334" stop-color="#5547FF"></stop><stop offset="0.448" stop-color="#3652FF"></stop><stop offset="0.566" stop-color="#1E5BFF"></stop><stop offset="0.692" stop-color="#0D61FF"></stop><stop offset="0.829" stop-color="#0365FF"></stop><stop offset="1" stop-color="#06F"></stop></radialGradient><radialGradient gradientTransform="matrix(-4.621 4.62068 -10.62165 -10.62239 19.497 4.795)" cx="0" cy="0" r="1" id="pulse_svg__b" gradientUnits="userSpaceOnUse"><stop offset="0.081" stop-color="#B823FF"></stop><stop offset="0.118" stop-color="#A629FF"></stop><stop offset="0.224" stop-color="#7A39FF"></stop><stop offset="0.334" stop-color="#5547FF"></stop><stop offset="0.448" stop-color="#3652FF"></stop><stop offset="0.566" stop-color="#1E5BFF"></stop><stop offset="0.692" stop-color="#0D61FF"></stop><stop offset="0.829" stop-color="#0365FF"></stop><stop offset="1" stop-color="#06F"></stop></radialGradient><radialGradient gradientTransform="rotate(135.002 6.008 7.544) scale(4.35658 10.0145)" cx="0" cy="0" r="1" id="pulse_svg__c" gradientUnits="userSpaceOnUse"><stop offset="0.081" stop-color="#B823FF"></stop><stop offset="0.118" stop-color="#A629FF"></stop><stop offset="0.224" stop-color="#7A39FF"></stop><stop offset="0.334" stop-color="#5547FF"></stop><stop offset="0.448" stop-color="#3652FF"></stop><stop offset="0.566" stop-color="#1E5BFF"></stop><stop offset="0.692" stop-color="#0D61FF"></stop><stop offset="0.829" stop-color="#0365FF"></stop><stop offset="1" stop-color="#06F"></stop></radialGradient><radialGradient gradientTransform="rotate(135.002 -.928 10.43) scale(5.25612 12.0823)" cx="0" cy="0" r="1" id="pulse_svg__d" gradientUnits="userSpaceOnUse"><stop offset="0.081" stop-color="#B823FF"></stop><stop offset="0.118" stop-color="#A629FF"></stop><stop offset="0.224" stop-color="#7A39FF"></stop><stop offset="0.334" stop-color="#5547FF"></stop><stop offset="0.448" stop-color="#3652FF"></stop><stop offset="0.566" stop-color="#1E5BFF"></stop><stop offset="0.692" stop-color="#0D61FF"></stop><stop offset="0.829" stop-color="#0365FF"></stop><stop offset="1" stop-color="#06F"></stop></radialGradient><radialGradient gradientTransform="rotate(135.002 10.119 5.813) scale(2.17828 5.00725)" cx="0" cy="0" r="1" id="pulse_svg__e" gradientUnits="userSpaceOnUse"><stop offset="0.081" stop-color="#B823FF"></stop><stop offset="0.118" stop-color="#A629FF"></stop><stop offset="0.224" stop-color="#7A39FF"></stop><stop offset="0.334" stop-color="#5547FF"></stop><stop offset="0.448" stop-color="#3652FF"></stop><stop offset="0.566" stop-color="#1E5BFF"></stop><stop offset="0.692" stop-color="#0D61FF"></stop><stop offset="0.829" stop-color="#0365FF"></stop><stop offset="1" stop-color="#06F"></stop></radialGradient></defs><path d="M6.37 17.62C1.35 12.6-1.18 6.96.73 5.05c1.91-1.91 7.55.62 12.57 5.64 5.02 5.03 7.56 10.67 5.65 12.58-1.92 1.91-7.56-.63-12.58-5.65z" fill="url(#pulse_svg__a)"></path><path d="M16.07 7.92c-3.02-3.01-4.54-6.4-3.39-7.54 1.15-1.15 4.53.37 7.55 3.38 3.01 3.02 4.53 6.4 3.38 7.55-1.14 1.15-4.53-.38-7.54-3.39z" fill="url(#pulse_svg__b)"></path><path d="M13.3 10.69c-2.01-2.01-3.02-4.26-2.26-5.03.76-.76 3.02.25 5.03 2.26 2.01 2.01 3.02 4.27 2.26 5.03-.77.76-3.03-.25-5.03-2.26z" fill="url(#pulse_svg__c)"></path><path d="M3.03 20.96C.6 18.54-.62 15.82.3 14.9c.93-.93 3.64.3 6.07 2.72 2.43 2.42 3.64 5.15 2.73 6.07-.93.92-3.65-.3-6.07-2.73z" fill="url(#pulse_svg__d)"></path><path d="M20.23 3.76c-1.01-1-1.52-2.13-1.13-2.51.38-.38 1.51.12 2.51 1.13 1 1 1.51 2.13 1.13 2.51-.38.39-1.51-.12-2.51-1.13z" fill="url(#pulse_svg__e)"></path></svg>
+      <span class="brand" aria-label="Пульс"><svg viewBox="0 0 113.333 32.075" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#06F" fill-rule="evenodd" d="M47.25 8.09h-5.21L35 19.38 27.64 8.09h-5.22l9.97 15.08-3.65 5.79h5.21l13.3-20.87zM20.99 24.18h-4.31V12.04H4.31v12.14H0V8.09h20.99v16.09zM43.58 24.3v-4.04c3.78 0 4.12-1 4.28-1.48.81-2.43 2.17-9 2.18-9.06l.34-1.65h16.09v16.17h-4.41V12.11h-8.05c-.47 2.19-1.33 6-1.95 7.85-1.29 3.89-5.64 4.34-8.48 4.34zM86.78 12.91a6.7 6.7 0 00-2.98-.69h-9.83V8.08h-4.3v16.16H83.8c1.08 0 2.09-.26 2.98-.7 2.08-1.01 3.49-3.01 3.49-5.31 0-2.31-1.41-4.31-3.49-5.32zm-3.06 7.38h-9.75v-4.12h9.75c1.24 0 2.25.92 2.25 2.06 0 1.13-1.01 2.06-2.25 2.06zM102.65 11.7c3.56-.29 6.41 0 9.66 1.78V9.25c-2.55-1.17-6.47-1.77-9.66-1.59-5.59.32-11.4 3.44-11.4 8.51 0 5.06 5.81 8.18 11.4 8.5 3.19.18 7.11-.42 9.66-1.58v-4.24c-3.25 1.78-6.1 2.07-9.66 1.78-3.15-.26-6.69-1.46-6.69-4.47 0-3 3.54-4.2 6.69-4.46z"></path></svg></span>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="app-name" aria-label="Heimdall">
+        <svg class="wm-heimdall" viewBox="0 0 139.65 32.075" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M0 8.05L4.3 8.05L4.3 24.15L0 24.15ZM13 8.05L17.3 8.05L17.3 24.15L13 24.15ZM4.3 14.13L13 14.13L13 18.08L4.3 18.08ZM19.7 8.05L24 8.05L24 24.15L19.7 24.15ZM24 8.05L34.3 8.05L34.3 12L24 12ZM24 14.13L32.8 14.13L32.8 18.08L24 18.08ZM24 20.2L34.3 20.2L34.3 24.15L24 24.15ZM36.7 8.05L41 8.05L41 24.15L36.7 24.15ZM43.4 8.05L47.7 8.05L47.7 24.15L43.4 24.15ZM60.4 8.05L64.7 8.05L64.7 24.15L60.4 24.15ZM47.5 8.05L52.1 8.05L56.25 19.45L51.85 19.45ZM56 8.05L60.6 8.05L56.25 19.45L51.85 19.45ZM67.1 8.05L71.4 8.05L71.4 24.15L67.1 24.15ZM71.4 8.05L76.7 8.05L76.7 12L71.4 12ZM71.4 20.2L76.7 20.2L76.7 24.15L71.4 24.15ZM76.6 8.05L78.17 8.2L79.68 8.66L81.07 9.41L82.29 10.41L83.29 11.63L84.04 13.02L84.5 14.53L84.65 16.1L84.5 17.67L84.04 19.18L83.29 20.57L82.29 21.79L81.07 22.79L79.68 23.54L78.17 24L76.6 24.15L76.6 20.25L77.41 20.17L78.19 19.93L78.91 19.55L79.53 19.03L80.05 18.41L80.43 17.69L80.67 16.91L80.75 16.1L80.67 15.29L80.43 14.51L80.05 13.79L79.53 13.17L78.91 12.65L78.19 12.27L77.41 12.03L76.6 11.95ZM94.55 8.05L97.25 8.05L92.05 24.15L87.05 24.15ZM96.45 8.05L99.15 8.05L106.65 24.15L101.65 24.15ZM90.65 18.35L103.05 18.35L103.05 22.3L90.65 22.3ZM109.05 8.05L113.35 8.05L113.35 24.15L109.05 24.15ZM113.35 20.2L123.15 20.2L123.15 24.15L113.35 24.15ZM125.55 8.05L129.85 8.05L129.85 24.15L125.55 24.15ZM129.85 20.2L139.65 20.2L139.65 24.15L129.85 24.15Z"/></svg>
+        <svg class="wm-skills" viewBox="0 0 237.85 32.075" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M0.21 10.56L0.91 9.84L1.81 9.21L2.89 8.7L4.11 8.33L5.43 8.11L6.79 8.05L8.14 8.15L9.43 8.42L10.62 8.83L11.66 9.37L12.51 10.03L13.14 10.77L13.52 11.58L13.65 12.42L13.51 13.25L13.12 14.06L12.48 14.8L11.62 15.45L10.58 15.99L9.38 16.4L8.09 16.65L6.73 16.75L5.38 16.68L6.3 13.43L6.63 13.45L6.96 13.43L7.27 13.36L7.56 13.27L7.81 13.14L8.02 12.98L8.17 12.8L8.27 12.61L8.3 12.4L8.27 12.2L8.18 12.01L8.03 11.83L7.82 11.67L7.57 11.54L7.28 11.44L6.97 11.38L6.65 11.35L6.32 11.36L6 11.42L5.71 11.51L5.44 11.63L5.23 11.78L5.06 11.96ZM5.48 14.82L6.94 14.75L8.41 14.86L9.81 15.13L11.1 15.57L12.22 16.15L13.15 16.86L13.84 17.66L14.27 18.53L14.41 19.43L14.28 20.34L13.86 21.21L13.18 22.01L12.26 22.72L11.14 23.31L9.86 23.75L8.46 24.04L7 24.15L5.53 24.08L4.11 23.85L2.79 23.45L1.62 22.9L0.65 22.22L-0.1 21.44L4.74 20.04L4.97 20.27L5.26 20.48L5.61 20.64L6 20.76L6.42 20.83L6.86 20.85L7.3 20.82L7.71 20.73L8.09 20.6L8.43 20.42L8.7 20.21L8.9 19.97L9.03 19.71L9.07 19.44L9.02 19.18L8.9 18.92L8.69 18.68L8.42 18.47L8.08 18.29L7.7 18.16L7.28 18.08L6.84 18.05L6.41 18.07ZM3.9 14.65L8 14.65L8 17.65L3.9 17.65ZM24.31 8.05L27.01 8.05L21.81 24.15L16.81 24.15ZM26.21 8.05L28.91 8.05L36.41 24.15L31.41 24.15ZM20.41 18.35L32.81 18.35L32.81 22.3L20.41 22.3ZM38.81 8.05L43.11 8.05L43.11 24.15L38.81 24.15ZM43.11 8.05L46.81 8.05L46.81 10.95L43.11 10.95ZM43.11 14.3L47.11 14.3L47.11 17.2L43.11 17.2ZM43.11 21.25L47.11 21.25L47.11 24.15L43.11 24.15ZM46.71 8.05L47.92 8.13L49.07 8.37L50.14 8.77L51.07 9.29L51.84 9.94L52.41 10.67L52.76 11.47L52.88 12.3L52.76 13.13L52.41 13.93L51.84 14.66L51.07 15.31L50.14 15.83L49.07 16.23L47.92 16.47L46.71 16.55L46.71 13.65L47.1 13.62L47.46 13.55L47.8 13.42L48.1 13.25L48.34 13.05L48.52 12.82L48.63 12.56L48.67 12.3L48.63 12.04L48.52 11.78L48.34 11.55L48.1 11.35L47.8 11.18L47.46 11.05L47.1 10.98L46.71 10.95ZM47.01 14.95L48.32 15.04L49.57 15.3L50.72 15.73L51.73 16.3L52.56 16.99L53.18 17.79L53.56 18.65L53.68 19.55L53.56 20.45L53.18 21.31L52.56 22.11L51.73 22.8L50.72 23.37L49.57 23.8L48.32 24.06L47.01 24.15L47.01 21.25L47.49 21.22L47.96 21.12L48.38 20.96L48.76 20.75L49.06 20.49L49.29 20.2L49.43 19.88L49.48 19.55L49.43 19.22L49.29 18.9L49.06 18.61L48.76 18.35L48.38 18.14L47.96 17.98L47.49 17.88L47.01 17.85ZM75.08 16.1L74.9 17.67L74.36 19.18L73.48 20.57L72.3 21.79L70.86 22.79L69.22 23.54L67.44 24L65.58 24.15L63.73 24L61.95 23.54L60.31 22.79L58.87 21.79L57.68 20.57L56.81 19.18L56.27 17.67L56.08 16.1L56.27 14.53L56.81 13.02L57.68 11.63L58.87 10.41L60.31 9.41L61.95 8.66L63.73 8.2L65.58 8.05L67.44 8.2L69.22 8.66L70.86 9.41L72.3 10.41L73.48 11.63L74.36 13.02L74.9 14.53ZM70.39 15.29L70.11 14.51L69.65 13.79L69.05 13.17L68.3 12.65L67.46 12.27L66.54 12.03L65.58 11.95L64.63 12.03L63.71 12.27L62.86 12.65L62.12 13.17L61.51 13.79L61.06 14.51L60.78 15.29L60.69 16.1L60.78 16.91L61.06 17.69L61.51 18.41L62.12 19.03L62.86 19.55L63.71 19.93L64.63 20.17L65.58 20.25L66.54 20.17L67.46 19.93L68.3 19.55L69.05 19.03L69.65 18.41L70.11 17.69L70.39 16.91L70.48 16.1ZM82.68 8.05L93.48 8.05L93.48 12L82.68 12ZM89.18 8.05L93.48 8.05L93.48 20.2L89.18 20.2ZM82.68 8.05L86.28 8.05L82.88 20.2L79.28 20.2ZM77.48 20.2L96.18 20.2L96.18 24.15L77.48 24.15ZM77.48 24.15L81.08 24.15L81.08 26.45L77.48 26.45ZM92.58 24.15L96.18 24.15L96.18 26.45L92.58 26.45ZM121.08 21.89L119.63 22.86L117.99 23.58L116.21 24.02L114.37 24.15L112.53 23.98L110.77 23.51L109.15 22.76L107.73 21.76L106.56 20.54L105.69 19.16L105.16 17.66L104.98 16.1L105.16 14.54L105.69 13.04L106.56 11.66L107.73 10.44L109.15 9.44L110.77 8.69L112.53 8.22L114.37 8.05L116.21 8.18L117.99 8.62L119.63 9.34L121.08 10.31L117.88 13.11L117.14 12.61L116.29 12.24L115.37 12.02L114.42 11.95L113.48 12.04L112.57 12.28L111.73 12.67L111 13.18L110.4 13.81L109.95 14.52L109.68 15.3L109.58 16.1L109.68 16.9L109.95 17.68L110.4 18.39L111 19.02L111.73 19.53L112.57 19.92L113.48 20.16L114.42 20.25L115.37 20.18L116.29 19.96L117.14 19.59L117.88 19.09ZM123.48 8.05L127.78 8.05L127.78 24.15L123.48 24.15ZM134.68 8.05L140.28 8.05L131.38 17.6L127.58 17.6ZM127.58 14.6L131.38 14.6L140.28 24.15L134.68 24.15ZM142.48 8.05L146.78 8.05L146.78 24.15L142.48 24.15ZM155.48 8.05L159.78 8.05L159.78 24.15L155.48 24.15ZM151.48 8.05L155.68 8.05L150.78 24.15L146.58 24.15ZM175.18 8.05L179.48 8.05L179.48 24.15L175.18 24.15ZM165.28 8.05L175.28 8.05L175.28 12L165.28 12ZM165.28 8.05L169.28 8.05L166.18 24.15L162.18 24.15ZM194.88 8.05L199.18 8.05L199.18 24.15L194.88 24.15ZM184.98 8.05L194.98 8.05L194.98 12L184.98 12ZM184.98 8.05L188.98 8.05L185.88 24.15L181.88 24.15ZM220.58 16.1L220.4 17.67L219.85 19.18L218.98 20.57L217.8 21.79L216.36 22.79L214.71 23.54L212.93 24L211.08 24.15L209.23 24L207.44 23.54L205.8 22.79L204.36 21.79L203.18 20.57L202.3 19.18L201.76 17.67L201.58 16.1L201.76 14.53L202.3 13.02L203.18 11.63L204.36 10.41L205.8 9.41L207.44 8.66L209.23 8.2L211.08 8.05L212.93 8.2L214.71 8.66L216.36 9.41L217.8 10.41L218.98 11.63L219.85 13.02L220.4 14.53ZM215.88 15.29L215.6 14.51L215.15 13.79L214.54 13.17L213.8 12.65L212.95 12.27L212.03 12.03L211.08 11.95L210.12 12.03L209.2 12.27L208.36 12.65L207.62 13.17L207.01 13.79L206.55 14.51L206.28 15.29L206.18 16.1L206.28 16.91L206.55 17.69L207.01 18.41L207.62 19.03L208.36 19.55L209.2 19.93L210.12 20.17L211.08 20.25L212.03 20.17L212.95 19.93L213.8 19.55L214.54 19.03L215.15 18.41L215.6 17.69L215.88 16.91L215.98 16.1ZM222.98 8.05L227.28 8.05L227.28 24.15L222.98 24.15ZM227.28 8.05L230.98 8.05L230.98 10.95L227.28 10.95ZM227.28 14.3L231.28 14.3L231.28 17.2L227.28 17.2ZM227.28 21.25L231.28 21.25L231.28 24.15L227.28 24.15ZM230.88 8.05L232.08 8.13L233.24 8.37L234.3 8.77L235.24 9.29L236 9.94L236.57 10.67L236.92 11.47L237.04 12.3L236.92 13.13L236.57 13.93L236 14.66L235.24 15.31L234.3 15.83L233.24 16.23L232.08 16.47L230.88 16.55L230.88 13.65L231.26 13.62L231.63 13.55L231.97 13.42L232.26 13.25L232.51 13.05L232.69 12.82L232.8 12.56L232.84 12.3L232.8 12.04L232.69 11.78L232.51 11.55L232.26 11.35L231.97 11.18L231.63 11.05L231.26 10.98L230.88 10.95ZM231.18 14.95L232.48 15.04L233.73 15.3L234.88 15.73L235.89 16.3L236.72 16.99L237.34 17.79L237.72 18.65L237.85 19.55L237.72 20.45L237.34 21.31L236.72 22.11L235.89 22.8L234.88 23.37L233.73 23.8L232.48 24.06L231.18 24.15L231.18 21.25L231.66 21.22L232.12 21.12L232.55 20.96L232.92 20.75L233.23 20.49L233.45 20.2L233.6 19.88L233.64 19.55L233.6 19.22L233.45 18.9L233.23 18.61L232.92 18.35L232.55 18.14L232.12 17.98L231.66 17.88L231.18 17.85Z"/></svg>
+      </span>
+    </div>
+
     <span class="spacer"></span>
-    <button class="ghost iconbtn" id="themeToggle" title="Светлая/тёмная тема">◐</button>
-    <button class="ghost iconbtn" id="settingsBtn" title="Настройки подключения">⚙ Настройки</button>
+
+    <div class="ws-tabs">
+      <div class="ws-tab" data-tab="home"><span class="ws-tab-icon">⌂</span>Главная</div>
+      <div class="ws-tab" data-tab="explorer"><span class="ws-tab-icon">▦</span>Обзорщик</div>
+      <div class="ws-tab" data-tab="builder"><span class="ws-tab-icon">⚙</span>Конструктор</div>
+      <div class="ws-tab" data-tab="sql"><span class="ws-tab-icon">⌘</span>SQL-консоль</div>
+      <div class="ws-tab" data-tab="yaml"><span class="ws-tab-icon">≡</span>Редактор датасета</div>
+      <div class="ws-tab" data-tab="skills"><span class="ws-tab-icon">✎</span>Завод скиллов</div>
+    </div>
+
+    <span class="spacer"></span>
+
+    <button class="iconbtn" id="sidebarToggle" title="Свернуть/развернуть каталог">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14.5" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 5v14.5" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+    <button class="iconbtn" id="themeToggle" title="Светлая/тёмная тема">
+      <svg class="ico-sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.6" stroke="currentColor" stroke-width="1.8"/><path d="M12 1.6v2.6M12 19.8v2.6M4.65 4.65l1.84 1.84M17.51 17.51l1.84 1.84M1.6 12h2.6M19.8 12h2.6M4.65 19.35l1.84-1.84M17.51 6.49l1.84-1.84" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <svg class="ico-moon" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="iconbtn" id="settingsBtn" title="Настройки подключения">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </button>
   </div>
+
+  <div class="menu-overlay" id="menuOverlay"></div>
+  <aside class="side-menu" id="sideMenu">
+    <div class="menu-head">
+      <svg class="pulse-ico" aria-hidden="true" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.37 17.62C1.35 12.6-1.18 6.96.73 5.05c1.91-1.91 7.55.62 12.57 5.64 5.02 5.03 7.56 10.67 5.65 12.58-1.92 1.91-7.56-.63-12.58-5.65z" fill="url(#pulse_svg__a)"></path><path d="M16.07 7.92c-3.02-3.01-4.54-6.4-3.39-7.54 1.15-1.15 4.53.37 7.55 3.38 3.01 3.02 4.53 6.4 3.38 7.55-1.14 1.15-4.53-.38-7.54-3.39z" fill="url(#pulse_svg__b)"></path><path d="M13.3 10.69c-2.01-2.01-3.02-4.26-2.26-5.03.76-.76 3.02.25 5.03 2.26 2.01 2.01 3.02 4.27 2.26 5.03-.77.76-3.03-.25-5.03-2.26z" fill="url(#pulse_svg__c)"></path><path d="M3.03 20.96C.6 18.54-.62 15.82.3 14.9c.93-.93 3.64.3 6.07 2.72 2.43 2.42 3.64 5.15 2.73 6.07-.93.92-3.65-.3-6.07-2.73z" fill="url(#pulse_svg__d)"></path><path d="M20.23 3.76c-1.01-1-1.52-2.13-1.13-2.51.38-.38 1.51.12 2.51 1.13 1 1 1.51 2.13 1.13 2.51-.38.39-1.51-.12-2.51-1.13z" fill="url(#pulse_svg__e)"></path></svg>
+      <span class="m-title">Меню</span>
+      <span class="spacer"></span>
+      <button class="iconbtn" id="menuCloseBtn" title="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6.7 5.3a1 1 0 00-1.4 1.4L10.6 12l-5.3 5.3a1 1 0 001.4 1.4l5.3-5.3 5.3 5.3a1 1 0 001.4-1.4L13.4 12l5.3-5.3a1 1 0 00-1.4-1.4L12 10.6 6.7 5.3z" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <div class="menu-scroll">
+      <div class="menu-group">
+        <div class="menu-group-label">Рабочее пространство</div>
+        <div class="menu-item" data-page="home"><span class="em">🏠</span><span class="grow">Главная</span></div>
+        <div class="menu-item" data-page="explorer"><span class="em">📊</span><span class="grow">Обзорщик</span></div>
+        <div class="menu-item" data-page="builder"><span class="em">🧩</span><span class="grow">Конструктор</span></div>
+        <div class="menu-item" data-page="sql"><span class="em">🗄️</span><span class="grow">SQL-консоль</span></div>
+        <div class="menu-item" data-page="yaml"><span class="em">📝</span><span class="grow">Редактор датасета</span></div>
+        <div class="menu-item" data-page="skills"><span class="em">🤖</span><span class="grow">Завод скиллов</span></div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-label">Ссылки</div>
+        <a class="menu-item" href="/docs" target="_blank" rel="noopener"><span class="em">📚</span><span class="grow">Документация</span><span class="menu-badge">/docs</span></a>
+        <a class="menu-item" href="/swagger" target="_blank" rel="noopener"><span class="em">🔌</span><span class="grow">Swagger</span><span class="menu-badge">/swagger</span></a>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-label">Система</div>
+        <div class="menu-item" id="menuSettings"><span class="em">⚙️</span><span class="grow">Настройки подключения</span></div>
+        <div class="menu-item" id="menuTheme"><span class="em">🎨</span><span class="grow">Переключить тему</span></div>
+        <div class="menu-item" id="menuReload"><span class="em">🔄</span><span class="grow">Обновить каталог</span></div>
+      </div>
+    </div>
+    <div class="menu-foot"><span>Платформа «Пульс» · Heimdall</span></div>
+  </aside>
 
   <div class="main">
     <div class="sidebar" id="sidebar">
@@ -753,14 +1006,8 @@ svg.linechart .axis { stroke: var(--border-strong); stroke-width: 1; }
     <div class="resizer-v" id="vResizer"></div>
 
     <div class="center">
-      <div class="ws-tabs">
-        <div class="ws-tab" data-tab="explorer"><span class="ws-tab-icon">▦</span>Обзорщик</div>
-        <div class="ws-tab" data-tab="builder"><span class="ws-tab-icon">⚙</span>Конструктор</div>
-        <div class="ws-tab" data-tab="sql"><span class="ws-tab-icon">⌘</span>SQL-консоль</div>
-        <div class="ws-tab" data-tab="yaml"><span class="ws-tab-icon">≡</span>Редактор датасета</div>
-        <div class="ws-tab" data-tab="skills"><span class="ws-tab-icon">✎</span>Завод скиллов</div>
-      </div>
       <div class="workspace">
+        <div class="ws-page" data-page="home" id="page-home" data-screen-label="Главная"></div>
         <div class="ws-page" data-page="explorer" id="page-explorer" data-screen-label="Обзорщик"></div>
         <div class="ws-page" data-page="builder" id="page-builder" data-screen-label="Конструктор запросов"></div>
         <div class="ws-page" data-page="sql" id="page-sql" data-screen-label="SQL-консоль"></div>
@@ -768,7 +1015,7 @@ svg.linechart .axis { stroke: var(--border-strong); stroke-width: 1; }
         <div class="ws-page" data-page="skills" id="page-skills" data-screen-label="Завод скиллов"></div>
       </div>
       <div class="resizer-h" id="hResizer"></div>
-      <div class="bottom-panel" id="bottomPanel">
+      <div class="bottom-panel collapsed" id="bottomPanel">
         <div class="bp-tabs" id="bpTabs"></div>
         <div class="bp-body" id="bpBody"></div>
       </div>
@@ -1152,11 +1399,12 @@ const ModelInfo = {
 
 /* ============ Логика запроса: режим, валидация, SQL ============ */
 const QueryLogic = {
-  ALLOWED_FIELDS: ["columns", "metrics", "time_dimensions", "filters", "order_by", "limit", "offset", "limit_by"],
+  ALLOWED_FIELDS: ["columns", "metrics", "time_dimensions", "filters", "order_by", "limit", "offset", "limit_by", "param_columns", "param_metrics", "parameters"],
 
   mode(body) {
     if (Array.isArray(body.time_dimensions) && body.time_dimensions.length) return "history";
-    if (Array.isArray(body.metrics) && body.metrics.length) return "aggregate";
+    if ((Array.isArray(body.metrics) && body.metrics.length) ||
+        (Array.isArray(body.param_metrics) && body.param_metrics.length)) return "aggregate";
     return "rows";
   },
 
@@ -1181,14 +1429,30 @@ const QueryLogic = {
       if (!ModelInfo.metric(model, m)) return err(400, "unknown-metric", `Метрика '${m}' не найдена в модели '${model.logic_model}'`);
     }
 
-    // параметризованные элементы
+    // параметрические члены: голым именем нельзя, только через param_columns/param_metrics с args
     for (const m of mets) {
       const mm = ModelInfo.metric(model, m);
-      if (mm && mm._kind === "param") return err(422, "param-metric-not-supported", `Метрика '${m}' параметризована и недоступна через REST`);
+      if (mm && mm._kind === "param") return err(422, "param-metric-requires-args", `Метрика '${m}' параметрическая — передаётся в param_metrics с аргументами`);
     }
     for (const c of cols) {
       const cc = ModelInfo.column(model, c);
-      if (cc && cc._kind === "param") return err(422, "param-virtual-not-supported", `Колонка '${c}' параметризована и недоступна через REST`);
+      if (cc && cc._kind === "param") return err(422, "param-virtual-requires-args", `Колонка '${c}' параметрическая — передаётся в param_columns с аргументами`);
+    }
+    for (const inv of body.param_columns || []) {
+      const cc = ModelInfo.column(model, inv.name);
+      if (!cc) return err(400, "unknown-column", `Колонка '${inv.name}' не найдена в модели '${model.logic_model}'`);
+      if (cc._kind !== "param") return err(422, "not-a-param-column", `Колонка '${inv.name}' не параметрическая — укажите её в columns`);
+      for (const p of cc.parameters || [])
+        if (inv.args == null || inv.args[p.name] === undefined || inv.args[p.name] === "")
+          return err(422, "param-args-missing", `Не задан аргумент '${p.name}' для колонки '${inv.name}'`);
+    }
+    for (const inv of body.param_metrics || []) {
+      const mm = ModelInfo.metric(model, inv.name);
+      if (!mm) return err(400, "unknown-metric", `Метрика '${inv.name}' не найдена в модели '${model.logic_model}'`);
+      if (mm._kind !== "param") return err(422, "not-a-param-metric", `Метрика '${inv.name}' не параметрическая — укажите её в metrics`);
+      for (const p of mm.parameters || [])
+        if (inv.args == null || inv.args[p.name] === undefined || inv.args[p.name] === "")
+          return err(422, "param-args-missing", `Не задан аргумент '${p.name}' для метрики '${inv.name}'`);
     }
 
     if (tds.length) {
@@ -1206,12 +1470,13 @@ const QueryLogic = {
       const lookback = Dates.parseLookback(model.history.lookback_safety?.default_lookback || "100y");
       if (Dates.spanYears(td.range.from, td.range.to) > lookback)
         return err(422, "range-exceeds-lookback", `Период превышает допустимую глубину истории (${model.history.lookback_safety.default_lookback})`);
-      if (!mets.length) return err(422, "history-requires-metrics", "Исторический запрос требует хотя бы одну метрику");
+      if (!mets.length && !(body.param_metrics || []).length) return err(422, "history-requires-metrics", "Исторический запрос требует хотя бы одну метрику");
       if (body.limit_by) return err(422, "limit-by-not-supported-in-history", "limit_by запрещён в историческом режиме");
     }
 
     if (mode === "rows") {
-      if (!cols.length && !mets.length) return err(422, "query-empty", "Тело запроса пустое: нет ни колонок, ни метрик");
+      if (!cols.length && !mets.length && !(body.param_columns || []).length)
+        return err(422, "query-empty", "Тело запроса пустое: нет ни колонок, ни метрик");
       for (const ob of body.order_by || []) {
         const kind = ob.kind || (ModelInfo.metric(model, ob.field) ? "metric" : "column");
         if (kind === "metric") return err(422, "order-by-metric-not-allowed-in-rows", `Сортировка по метрике '${ob.field}' недоступна в режиме строк`);
@@ -1227,10 +1492,17 @@ const QueryLogic = {
     if (v == null) return "NULL";
     if (typeof v === "number") return String(v);
     if (typeof v === "boolean") return v ? "true" : "false";
+    if (Array.isArray(v)) return `[${v.map(QueryLogic.lit).join(", ")}]`;
     return `'${String(v).replace(/'/g, "\\'")}'`;
   },
 
-  filterSql(node) {
+  /* SQL параметрического члена с подставленными аргументами (для превью) */
+  paramExpr(member, args) {
+    return String(member.sql || "").replace(/\{(\w+)\}/g, (m0, p) =>
+      (args && args[p] !== undefined) ? QueryLogic.lit(args[p]) : m0);
+  },
+
+  filterSql(node, model) {
     if (!node) return "";
     switch (node.type) {
       case "condition":
@@ -1244,13 +1516,18 @@ const QueryLogic = {
       case "condition_array":
         if (node.operator === "has") return `has(${node.column}, ${QueryLogic.lit(node.value)})`;
         return `${node.operator}(${node.column}, [${(node.value || []).map(QueryLogic.lit).join(", ")}])`;
+      case "condition_param": {
+        const cc = model ? ModelInfo.column(model, node.name) : null;
+        const left = cc ? `(${QueryLogic.paramExpr(cc, node.args)})` : node.name;
+        return `${left} ${node.operator} ${QueryLogic.lit(node.value)}`;
+      }
       case "and": case "or": {
-        const parts = (node.conditions || []).map(QueryLogic.filterSql).filter(Boolean);
+        const parts = (node.conditions || []).map((n) => QueryLogic.filterSql(n, model)).filter(Boolean);
         if (!parts.length) return "";
         return `(${parts.join(node.type === "and" ? " AND " : " OR ")})`;
       }
       case "not": {
-        const inner = QueryLogic.filterSql(node.condition);
+        const inner = QueryLogic.filterSql(node.condition, model);
         return inner ? `NOT (${inner})` : "";
       }
     }
@@ -1274,7 +1551,7 @@ const QueryLogic = {
   buildSql(model, body) {
     const mode = QueryLogic.mode(body);
     const tbl = `${model.schema_name}.${model.table_name}`;
-    const where = QueryLogic.filterSql(body.filters);
+    const where = QueryLogic.filterSql(body.filters, model);
     const lim = `LIMIT ${body.limit ?? 100}${body.offset ? ` OFFSET ${body.offset}` : ""}`;
     const limitBy = body.limit_by ? `LIMIT ${body.limit_by.limit} BY ${body.limit_by.by.join(", ")}` : "";
 
@@ -1283,14 +1560,22 @@ const QueryLogic = {
       const gran = td.granularity || "day";
       const fn = GRAN.sqlFn[gran] || "toDate";
       const h = model.history;
-      const metricSel = body.metrics.map((m) => {
-        const mm = ModelInfo.metric(model, m);
-        return `    ${mm ? mm.sql : m + "()"} AS ${m}`;
-      });
+      const mets2 = body.metrics || [];
+      const pmets = body.param_metrics || [];
+      const metricSel = [
+        ...mets2.map((m) => {
+          const mm = ModelInfo.metric(model, m);
+          return `    ${mm ? mm.sql : m + "()"} AS ${m}`;
+        }),
+        ...pmets.map((inv) => {
+          const mm = ModelInfo.metric(model, inv.name);
+          return `    ${mm ? QueryLogic.paramExpr(mm, inv.args) : inv.name + "()"} AS ${inv.name}`;
+        })
+      ];
       const dims = (body.columns || []);
       const dimSel = dims.map((c) => `    ${c}`);
       const groupKeys = [td.name, ...dims].join(", ");
-      const interp = body.metrics.map((m) => `${m} AS ${m}`).join(", ");
+      const interp = [...mets2, ...pmets.map((p) => p.name)].map((m) => `${m} AS ${m}`).join(", ");
       return [
         `SELECT`,
         `    ${fn}(${td.name}) AS ${td.name},`,
@@ -1317,21 +1602,33 @@ const QueryLogic = {
       ].filter((x) => x != null).join("\n");
     }
 
+    const paramColSel = (inv) => {
+      const cc = ModelInfo.column(model, inv.name);
+      return `    ${cc ? QueryLogic.paramExpr(cc, inv.args) : inv.name} AS ${inv.name}`;
+    };
+
     if (mode === "aggregate") {
       const dims = body.columns || [];
+      const pcols = body.param_columns || [];
       const sel = [
         ...dims.map((c) => `    ${QueryLogic.colExpr(model, c)}`),
-        ...body.metrics.map((m) => {
+        ...pcols.map(paramColSel),
+        ...(body.metrics || []).map((m) => {
           const mm = ModelInfo.metric(model, m);
           return `    ${mm ? mm.sql : m + "()"} AS ${m}`;
+        }),
+        ...(body.param_metrics || []).map((inv) => {
+          const mm = ModelInfo.metric(model, inv.name);
+          return `    ${mm ? QueryLogic.paramExpr(mm, inv.args) : inv.name + "()"} AS ${inv.name}`;
         })
       ];
+      const groupKeys = [...dims, ...pcols.map((p) => p.name)];
       return [
         `SELECT`,
         sel.join(",\n"),
         `FROM ${tbl}`,
         where ? `WHERE ${where}` : null,
-        dims.length ? `GROUP BY ${dims.join(", ")}` : null,
+        groupKeys.length ? `GROUP BY ${groupKeys.join(", ")}` : null,
         QueryLogic.orderBySql(body) || null,
         limitBy || null,
         lim,
@@ -1342,7 +1639,10 @@ const QueryLogic = {
     // rows
     return [
       `SELECT`,
-      (body.columns || []).map((c) => `    ${QueryLogic.colExpr(model, c)}`).join(",\n"),
+      [
+        ...(body.columns || []).map((c) => `    ${QueryLogic.colExpr(model, c)}`),
+        ...(body.param_columns || []).map(paramColSel)
+      ].join(",\n"),
       `FROM ${tbl}`,
       where ? `WHERE ${where}` : null,
       QueryLogic.orderBySql(body) || null,
@@ -1463,13 +1763,22 @@ const YamlCodec = {
     if (s === "") return '""';
     const plain = /^[A-Za-z0-9_][A-Za-z0-9_.\-\/()]*$/.test(s);
     if (plain) return s;
-    return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+    return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n") + '"';
   },
   inlineList(arr) { return "[" + (arr || []).map((x) => YamlCodec.q(x)).join(", ") + "]"; },
 
   generate(ds) {
     const L = [];
     const p2 = "  ", p4 = "    ", p6 = "      ", p8 = "        ";
+    // многострочные значения (SQL) идут блочным скаляром «|», однострочные — как обычно
+    const scalarLine = (pad, key, val) => {
+      if (typeof val === "string" && val.includes("\n")) {
+        L.push(`${pad}${key}: |`);
+        for (const ln of val.split("\n")) L.push(`${pad}  ${ln}`);
+      } else {
+        L.push(`${pad}${key}: ${YamlCodec.q(val)}`);
+      }
+    };
     L.push("datasets:");
     L.push(`${p2}- logic_model: ${YamlCodec.q(ds.logic_model)}`);
     L.push(`${p4}table_name: ${YamlCodec.q(ds.table_name)}`);
@@ -1478,6 +1787,25 @@ const YamlCodec = {
     if (ds.allowed_groups && ds.allowed_groups.length) L.push(`${p4}allowed_groups: ${YamlCodec.inlineList(ds.allowed_groups)}`);
     if (ds.disallowed_groups && ds.disallowed_groups.length) L.push(`${p4}disallowed_groups: ${YamlCodec.inlineList(ds.disallowed_groups)}`);
     if (ds.visible && ds.visible.length) L.push(`${p4}visible: ${YamlCodec.inlineList(ds.visible)}`);
+    if (ds.allowed_roles && ds.allowed_roles.length) L.push(`${p4}allowed_roles: ${YamlCodec.inlineList(ds.allowed_roles)}`);
+    if (ds.row_scope && Object.keys(ds.row_scope).length) {
+      L.push(`${p4}row_scope:`);
+      for (const [role, bindings] of Object.entries(ds.row_scope)) {
+        const list = Array.isArray(bindings) ? bindings : [bindings];
+        L.push(`${p6}${role}:`);
+        for (const b of list) {
+          L.push(`${p8}- ${b.member != null
+            ? `{ member: ${YamlCodec.q(b.member)}, arg: ${YamlCodec.q(b.arg)} }`
+            : `{ column: ${YamlCodec.q(b.column)} }`}`);
+        }
+      }
+    }
+    if (ds.stands && ds.stands.length) L.push(`${p4}stands: ${YamlCodec.inlineList(ds.stands)}`);
+    if (ds.stand_overrides && Object.keys(ds.stand_overrides).length) {
+      L.push(`${p4}stand_overrides:`);
+      for (const [stand, o] of Object.entries(ds.stand_overrides))
+        L.push(`${p6}${stand}: { table_name: ${YamlCodec.q((o && o.table_name) || "")} }`);
+    }
 
     if (ds.history) {
       const h = ds.history;
@@ -1495,32 +1823,39 @@ const YamlCodec = {
       L.push("");
       if (!cols || !cols.length) { L.push(`${p4}${name}: []`); return; }
       L.push(`${p4}${name}:`);
+      // персональный доступ члена пишется, только если он задан на самом члене
+      const accessLines = (c) => {
+        if (c.allowed_groups && c.allowed_groups.length) L.push(`${p8}allowed_groups: ${YamlCodec.inlineList(c.allowed_groups)}`);
+        if (c.allowed_roles && c.allowed_roles.length) L.push(`${p8}allowed_roles: ${YamlCodec.inlineList(c.allowed_roles)}`);
+        if (c.security_level && c.security_level !== "K3") L.push(`${p8}security_level: ${YamlCodec.q(c.security_level)}`);
+      };
+      const paramLines = (c) => {
+        if (!c.parameters || !c.parameters.length) return;
+        L.push(`${p8}parameters:`);
+        for (const pp of c.parameters)
+          L.push(`${p8}  - { name: ${YamlCodec.q(pp.name)}, type: ${YamlCodec.q(pp.type)}${pp.description ? `, description: ${YamlCodec.q(pp.description)}` : ""} }`);
+      };
       for (const c of cols) {
         if (isMetric) {
           L.push(`${p6}- metric_name: ${YamlCodec.q(c.metric_name)}`);
           if (c.type) L.push(`${p8}type: ${YamlCodec.q(c.type)}`);
-          L.push(`${p8}sql: ${YamlCodec.q(c.sql)}`);
+          scalarLine(p8, "sql", c.sql);
           if (c.verbose_name) L.push(`${p8}verbose_name: ${YamlCodec.q(c.verbose_name)}`);
           if (c.description) L.push(`${p8}description: ${YamlCodec.q(c.description)}`);
-          if (c.parameters && c.parameters.length) {
-            L.push(`${p8}parameters:`);
-            for (const pp of c.parameters)
-              L.push(`${p8}  - { name: ${YamlCodec.q(pp.name)}, type: ${YamlCodec.q(pp.type)}${pp.description ? `, description: ${YamlCodec.q(pp.description)}` : ""} }`);
-          }
+          accessLines(c);
+          paramLines(c);
         } else {
           L.push(`${p6}- column_name: ${YamlCodec.q(c.column_name)}`);
           L.push(`${p8}type: ${YamlCodec.q(c.type || "String")}`);
+          if (c.verbose_name) L.push(`${p8}verbose_name: ${YamlCodec.q(c.verbose_name)}`);
           if (c.description) L.push(`${p8}description: ${YamlCodec.q(c.description)}`);
-          if (c.sql) L.push(`${p8}sql: ${YamlCodec.q(c.sql)}`);
+          if (c.sql) scalarLine(p8, "sql", c.sql);
           if (c.granularities && c.granularities.length) {
             L.push(`${p8}granularities: ${YamlCodec.inlineList(c.granularities)}`);
             if (c.default_granularity) L.push(`${p8}default_granularity: ${YamlCodec.q(c.default_granularity)}`);
           }
-          if (c.parameters && c.parameters.length) {
-            L.push(`${p8}parameters:`);
-            for (const pp of c.parameters)
-              L.push(`${p8}  - { name: ${YamlCodec.q(pp.name)}, type: ${YamlCodec.q(pp.type)} }`);
-          }
+          accessLines(c);
+          paramLines(c);
         }
       }
     };
@@ -1533,8 +1868,14 @@ const YamlCodec = {
     L.push("");
     L.push(`${p4}joins: ${(ds.joins && ds.joins.length) ? "" : "[]"}`);
     if (ds.joins && ds.joins.length) {
-      for (const j of ds.joins)
-        L.push(`${p6}- { logic_model: ${YamlCodec.q(j.logic_model)}, schema_name: ${YamlCodec.q(j.schema_name)}, type: ${YamlCodec.q(j.type || "left")}, on: ${YamlCodec.q(j.on)} }`);
+      for (const j of ds.joins) {
+        L.push(`${p6}- logic_model: ${YamlCodec.q(j.logic_model)}`);
+        L.push(`${p8}type: ${YamlCodec.q(j.type || "left")}`);
+        if (j.sql) scalarLine(p8, "sql", j.sql);
+        if (j.sql_alias) L.push(`${p8}sql_alias: ${YamlCodec.q(j.sql_alias)}`);
+        if (j.table_name) L.push(`${p8}table_name: ${YamlCodec.q(j.table_name)}`);
+        if (j.description) L.push(`${p8}description: ${YamlCodec.q(j.description)}`);
+      }
     }
     if (ds.array_join) {
       L.push(`${p4}array_join:`);
@@ -1543,7 +1884,7 @@ const YamlCodec = {
         L.push(`${p6}source_model: ${YamlCodec.q(ds.array_join.source_model)}`);
       L.push(`${p6}arrays:`);
       for (const a of ds.array_join.arrays || [])
-        L.push(`${p8}- { source: ${YamlCodec.q(a.source)}, as: ${YamlCodec.q(a.as)}, element_type: ${YamlCodec.q(a.element_type)} }`);
+        L.push(`${p8}- { source: ${YamlCodec.q(a.source)}, as: ${YamlCodec.q(a.as)}, element_type: ${YamlCodec.q(a.element_type)}${a.description ? `, description: ${YamlCodec.q(a.description)}` : ""} }`);
     } else {
       L.push(`${p4}array_join: null`);
     }
@@ -1612,7 +1953,19 @@ const YamlCodec = {
       const m = /^([A-Za-z_][\w]*)\s*:\s*(.*)$/.exec(lines[i].text);
       if (!m) throw new Error(`строка не похожа на key: value — «${lines[i].text}»`);
       const key = m[1], rest = m[2];
-      if (rest === "") {
+      if (/^[|>][+-]?$/.test(rest)) {
+        // блочный скаляр: собираем строки глубже текущего отступа
+        // (пустые строки внутри блока парсер не сохраняет — для SQL это не критично)
+        const parts = [];
+        let j = i + 1;
+        const base = (j < lines.length && lines[j].indent > indent) ? lines[j].indent : indent + 2;
+        while (j < lines.length && lines[j].indent >= base) {
+          parts.push(" ".repeat(lines[j].indent - base) + lines[j].text);
+          j++;
+        }
+        out[key] = parts.join(rest.startsWith(">") ? " " : "\n");
+        i = j;
+      } else if (rest === "") {
         // вложенный блок
         if (i + 1 < lines.length && lines[i + 1].indent > indent) {
           const [v, ni] = YamlCodec._block(lines, i + 1, lines[i + 1].indent);
@@ -1695,14 +2048,15 @@ const Bp = {
     for (const [id, label] of Bp.TABS) {
       tabsEl.append(U.el("div", {
         class: "bp-tab", dataset: { bptab: id },
-        onclick: () => Bp.show(id)
+        // клик по вкладке свёрнутой панели ещё и раскрывает её
+        onclick: () => { Bp.expand(); Bp.show(id); }
       }, label, U.el("span", { class: "bp-dot", style: "display:none" })));
     }
     tabsEl.append(U.el("span", { style: "flex:1" }));
     tabsEl.append(U.el("button", {
       class: "ghost iconbtn", id: "bpCollapse", title: "Свернуть/развернуть панель",
       onclick: () => U.$("#bottomPanel").classList.toggle("collapsed")
-    }, "▾"));
+    }));
     window.addEventListener("resize", U.debounce(() => { if (Bp.state.active === "chart") Bp.render(); }, 200));
     Bp.show("result");
   },
@@ -1767,11 +2121,21 @@ const Bp = {
   renderResult(body) {
     const res = Bp.state.result, ctx = Bp.state.ctx;
     if (!res) { body.append(U.el("div", { class: "bp-empty" }, "Выполните запрос — результат появится здесь")); return; }
-    const rows = res.data || [];
 
     const meta = U.el("div", { class: "bp-meta" });
     if (ctx && ctx.mode) meta.append(U.el("span", { class: `mode-pill m-${ctx.mode}`, style: "font-size:10px;padding:1px 9px" }, ctx.mode.toUpperCase()));
+
+    /* ответ, который не разбирается в таблицу (свой FORMAT пользователя) */
+    if (res.rawText != null) {
+      meta.append(U.el("span", null, "ответ сервера"),
+        ctx && ctx.note ? U.el("span", { class: "mono", style: "color:var(--faint)" }, ctx.note) : null);
+      body.append(meta, U.el("pre", { class: "code" }, res.rawText));
+      return;
+    }
+
+    const rows = res.data || [];
     meta.append(U.el("span", null, `строк: ${rows.length}`));
+    if (ctx && ctx.note) meta.append(U.el("span", { class: "mono", style: "color:var(--faint)" }, ctx.note));
     if (res.limit != null) meta.append(U.el("span", { class: "mono" }, `limit ${res.limit}, offset ${res.offset ?? 0}`));
     if (ctx && ctx.onPage) {
       meta.append(U.el("span", { style: "flex:1" }));
@@ -1799,7 +2163,8 @@ const Bp = {
     }
     const fmtCell = (v, c) => {
       if (v == null) return U.el("span", { class: "null" }, "null");
-      if (Array.isArray(v)) return U.el("span", { class: "mono", style: "color:var(--purple)" }, `['${v.join("', '")}']`);
+      if (Array.isArray(v)) return U.el("span", { class: "mono", style: "color:var(--purple)" },
+        v.length ? `['${v.join("', '")}']` : "[]");
       if (typeof v === "number") return U.fmtNum(v);
       if (typeof v === "boolean") return U.el("span", { class: "mono", style: "color:var(--green)" }, String(v));
       return String(v);
@@ -2028,8 +2393,18 @@ const Explorer = {
       U.el("div", { class: "exp-desc" }, model.description || "—"),
       U.el("div", { class: "exp-meta" },
         U.el("span", null, "Физическая таблица: ", U.el("code", { style: "color:var(--cyan)" }, `${model.schema_name}.${model.table_name}`)),
-        U.el("span", { style: "display:flex;gap:5px;align-items:center" }, "Группы доступа:",
-          ...(model.allowed_groups || []).map((g) => U.el("span", { class: "badge mono" }, g))))));
+        (model.allowed_groups || []).length
+          ? U.el("span", { style: "display:flex;gap:5px;align-items:center" }, "Группы доступа:",
+            ...(model.allowed_groups || []).map((g) => U.el("span", { class: "badge mono" }, g)))
+          : null,
+        (model.allowed_roles || []).length
+          ? U.el("span", { style: "display:flex;gap:5px;align-items:center" }, "Роли:",
+            ...model.allowed_roles.map((r) => U.el("span", { class: "badge b-cyan mono" }, r)))
+          : null,
+        (model.visible || []).length
+          ? U.el("span", { style: "display:flex;gap:5px;align-items:center" }, "Каналы:",
+            ...model.visible.map((v) => U.el("span", { class: "badge mono" }, v)))
+          : null)));
 
     const cards = U.el("div", { class: "exp-cards" });
     scroll.append(cards);
@@ -2094,8 +2469,33 @@ const Explorer = {
             ...model.joins.map((j) => U.el("div", { class: "join-row" },
               U.el("span", { class: "hist-node" }, model.logic_model),
               U.el("span", { class: "badge b-joins" }, (j.type || "left") + " join"),
-              U.el("span", { class: "hist-node", style: "color:var(--blue)" }, `${j.schema_name || model.schema_name}.${j.logic_model}`),
-              U.el("span", { class: "join-cond" }, "ON " + (j.on || "—"))))))));
+              U.el("span", { class: "hist-node", style: "color:var(--blue)" },
+                j.logic_model + (j.sql_alias ? ` (as ${j.sql_alias})` : "")),
+              U.el("span", { class: "join-cond" }, j.type === "cross" ? "без условия" : "ON " + (j.sql || "—"))))))));
+    }
+
+    /* ---------- блок ролей и охвата строк ---------- */
+    if ((model.allowed_roles || []).length || (model.row_scope && Object.keys(model.row_scope).length)) {
+      const scopeRows = Object.entries(model.row_scope || {}).map(([role, v]) => {
+        const list = Array.isArray(v) ? v : [v];
+        return U.el("div", { class: "join-row" },
+          U.el("span", { class: "badge b-cyan mono" }, role),
+          ...list.map((b) => U.el("span", { class: "hist-node" },
+            b && b.member != null ? `member: ${b.member}(${b.arg})` : `column: ${b && b.column}`)),
+          list.length > 1 ? U.el("span", { class: "join-cond" }, "условия складываются по ИЛИ") : null);
+      });
+      cards.append(U.el("div", { class: "card" },
+        U.el("div", { class: "card-head" },
+          U.el("span", { class: "card-title" }, "🔐 Роли и охват строк"),
+          U.el("span", { class: "card-sub" }, "роль даёт право видеть член и определяет видимые строки")),
+        U.el("div", { class: "card-body padded" },
+          U.el("dl", { class: "kv" },
+            U.el("dt", null, "allowed_roles"), U.el("dd", { style: "display:flex;gap:5px;flex-wrap:wrap" },
+              ...((model.allowed_roles || []).length
+                ? model.allowed_roles.map((r) => U.el("span", { class: "badge b-cyan mono" }, r))
+                : [U.el("span", { class: "badge mono" }, "public")])),
+            scopeRows.length ? U.el("dt", null, "row_scope") : null,
+            scopeRows.length ? U.el("dd", null, U.el("div", { class: "join-diagram" }, ...scopeRows)) : null))));
     }
 
     /* ---------- колонки ---------- */
@@ -2131,8 +2531,8 @@ const Explorer = {
     if ((model.param_metrics || []).length) {
       cards.append(U.el("div", { class: "card" },
         U.el("div", { class: "card-head" },
-          U.el("span", { class: "card-title" }, "⚙ Параметризованные метрики"),
-          U.el("span", { class: "badge b-yellow" }, "недоступно в REST")),
+          U.el("span", { class: "card-title" }, "⚙ Параметрические метрики"),
+          U.el("span", { class: "badge b-cyan" }, "аргументы задаются в Конструкторе")),
         U.el("div", { class: "card-body" },
           U.el("table", { class: "spec" },
             U.el("thead", null, U.el("tr", null,
@@ -2156,7 +2556,7 @@ const Explorer = {
       marks.push(U.el("span", { class: "minibadge m-time" }, "⏱ time"));
     }
     if (c._kind === "param")
-      marks.push(U.el("span", { class: "minibadge m-param", title: "параметризована — запрос вернёт 422" }, "⚙ param"));
+      marks.push(U.el("span", { class: "minibadge m-param", title: "параметрическая — аргументы задаются в Конструкторе" }, "⚙ param"));
     if (c.security_level)
       marks.push(U.el("span", { class: `minibadge m-${c.security_level.toLowerCase()}` }, c.security_level));
 
@@ -2164,12 +2564,16 @@ const Explorer = {
       ? U.el("div", { style: "display:flex;gap:3px;flex-wrap:wrap;margin-top:3px" },
         ...c.granularities.map((g) => U.el("span", { class: "gran-chip" + (g === c.default_granularity ? " on" : ""), title: GRAN.labels[g] || g }, g)))
       : null;
+    const paramChips = (c.parameters || []).length
+      ? U.el("div", { style: "display:flex;gap:3px;flex-wrap:wrap;margin-top:3px" },
+        ...c.parameters.map((p) => U.el("span", { class: "badge mono", title: p.description || "" }, `${p.name}: ${p.type}`)))
+      : null;
 
     return U.el("tr", { class: c._kind === "param" ? "param-row" : "" },
       U.el("td", { class: "mono", style: "white-space:nowrap" },
         U.el("span", { html: CHTypes.icon(c.type), style: "margin-right:6px" }), c.column_name),
       U.el("td", { class: "mono", style: "color:var(--muted)" }, c.type),
-      U.el("td", null, c.description || "", granChips),
+      U.el("td", null, c.description || "", granChips, paramChips),
       U.el("td", { style: "white-space:nowrap" }, U.el("div", { style: "display:flex;gap:4px;flex-wrap:wrap" }, ...marks)));
   }
 };
@@ -2191,6 +2595,8 @@ const Builder = {
     if (!Builder.states[key]) {
       const st = {
         columns: [], metrics: [],
+        paramArgs: {}, // "col:имя"/"met:имя" → { аргумент: сырое значение }
+        globalParams: [], // общие parameters запроса: [{ key, value }]
         tdEnabled: !!model.history,
         td: null,
         filters: { type: "and", conditions: [] },
@@ -2200,10 +2606,11 @@ const Builder = {
       };
       if (model.history) {
         const tcol = (model.columns || []).find((c) => c.column_name === model.history.time_column) || ModelInfo.timeColumns(model)[0];
+        const now = new Date();
         st.td = {
           name: tcol ? tcol.column_name : model.history.time_column,
           granularity: tcol ? (tcol.default_granularity || tcol.granularities[0]) : "day",
-          from: "2026-03-01", to: "2026-06-01",
+          from: Dates.iso(Dates.addMonths(now, -3)), to: Dates.iso(now),
           fill: model.history.fill?.mode || "previous"
         };
       }
@@ -2213,18 +2620,27 @@ const Builder = {
   },
 
   /* ---------- сборка тела запроса ---------- */
-  pruneFilters(node) {
+  pruneFilters(node, model) {
     if (!node) return null;
     if (node.type === "and" || node.type === "or") {
-      const kids = (node.conditions || []).map(Builder.pruneFilters).filter(Boolean);
+      const kids = (node.conditions || []).map((n) => Builder.pruneFilters(n, model)).filter(Boolean);
       if (!kids.length) return null;
       return { type: node.type, conditions: kids };
     }
     if (node.type === "not") {
-      const kid = Builder.pruneFilters(node.condition);
+      const kid = Builder.pruneFilters(node.condition, model);
       return kid ? { type: "not", condition: kid } : null;
     }
     if (!node.column) return null;
+    if (node.type === "condition_param") {
+      const out = { type: "condition_param", name: node.column, operator: node.operator, args: {}, value: node.value };
+      const cc = ModelInfo.column(model, node.column);
+      for (const p of (cc && cc.parameters) || []) {
+        const c2 = Builder.coerceArg(p.type, (node.args || {})[p.name]);
+        if (c2.ok) out.args[p.name] = c2.value;
+      }
+      return out;
+    }
     const out = { type: node.type, column: node.column, operator: node.operator };
     if (node.type === "condition") out.value = node.value;
     if (node.type === "condition_in") out.value = node.value || [];
@@ -2233,10 +2649,61 @@ const Builder = {
     return out;
   },
 
+  /* ---------- параметрические члены ---------- */
+  paramKey(kind, name) { return `${kind}:${name}`; },
+
+  memberOf(model, kind, name) {
+    return kind === "met" ? ModelInfo.metric(model, name) : ModelInfo.column(model, name);
+  },
+
+  isParam(model, kind, name) {
+    const it = Builder.memberOf(model, kind, name);
+    return !!(it && it._kind === "param");
+  },
+
+  declaredParams(model, kind, name) {
+    const it = Builder.memberOf(model, kind, name);
+    return (it && it.parameters) || [];
+  },
+
+  /* строка из формы → значение аргумента по объявленному типу */
+  coerceArg(type, raw) {
+    const t = String(type || "").trim();
+    const s = String(raw ?? "").trim();
+    if (s === "") return { ok: false, err: "значение не задано" };
+    if (/^(Array|Tuple|Map)\(/i.test(t)) {
+      try { return { ok: true, value: JSON.parse(s) }; }
+      catch (e) { return { ok: false, err: 'ожидается JSON, напр. [["sber", 2120663]]' }; }
+    }
+    if (/^(UInt|Int|Float|Decimal)/i.test(t)) {
+      const n = Number(s);
+      if (!Number.isFinite(n)) return { ok: false, err: "ожидается число" };
+      return { ok: true, value: n };
+    }
+    if (/^Bool/i.test(t)) return { ok: true, value: /^(1|true|да)$/i.test(s) };
+    return { ok: true, value: s };
+  },
+
+  argsFor(model, st, kind, name) {
+    const store = (st.paramArgs || {})[Builder.paramKey(kind, name)] || {};
+    const args = {};
+    for (const p of Builder.declaredParams(model, kind, name)) {
+      const c = Builder.coerceArg(p.type, store[p.name]);
+      if (c.ok) args[p.name] = c.value;
+    }
+    return args;
+  },
+
   buildBody(model, st) {
     const body = {};
-    if (st.columns.length) body.columns = [...st.columns];
-    if (st.metrics.length) body.metrics = [...st.metrics];
+    const plainCols = [], paramCols = [];
+    for (const c of st.columns) (Builder.isParam(model, "col", c) ? paramCols : plainCols).push(c);
+    const plainMets = [], paramMets = [];
+    for (const m of st.metrics) (Builder.isParam(model, "met", m) ? paramMets : plainMets).push(m);
+    if (plainCols.length) body.columns = plainCols;
+    if (plainMets.length) body.metrics = plainMets;
+    if (paramCols.length) body.param_columns = paramCols.map((n) => ({ name: n, args: Builder.argsFor(model, st, "col", n) }));
+    if (paramMets.length) body.param_metrics = paramMets.map((n) => ({ name: n, args: Builder.argsFor(model, st, "met", n) }));
     if (model.history && st.tdEnabled && st.td) {
       body.time_dimensions = [{
         name: st.td.name, granularity: st.td.granularity,
@@ -2244,7 +2711,7 @@ const Builder = {
         fill: { mode: st.td.fill }
       }];
     }
-    const f = Builder.pruneFilters(st.filters);
+    const f = Builder.pruneFilters(st.filters, model);
     if (f) body.filters = f;
     const obs = st.order_by.filter((o) => o.field);
     if (obs.length) body.order_by = obs.map((o) => {
@@ -2259,6 +2726,18 @@ const Builder = {
     if (st.limitByEnabled && st.limitBy.by.length && !(model.history && st.tdEnabled)) {
       body.limit_by = { limit: U.clamp(+st.limitBy.limit || 1, 1, 1000), by: [...st.limitBy.by] };
     }
+    /* общие parameters запроса: значение читаем как JSON, иначе строкой —
+       так проходят и числа, и списки, и выражения {"expr": "today() - 30"} */
+    const gp = {};
+    for (const p of st.globalParams || []) {
+      const k = (p.key || "").trim();
+      if (!k) continue;
+      const s = String(p.value ?? "").trim();
+      let v = s;
+      try { v = JSON.parse(s); } catch (e) { /* строка как есть */ }
+      gp[k] = v;
+    }
+    if (Object.keys(gp).length) body.parameters = gp;
     return body;
   },
 
@@ -2266,21 +2745,40 @@ const Builder = {
   preflight(model, st, body) {
     const out = [];
     const mode = QueryLogic.mode(body);
-    if (mode === "history" && !(body.metrics || []).length)
+    if (mode === "history" && !(body.metrics || []).length && !(body.param_metrics || []).length)
       out.push(["err", "История требует метрики: выберите хотя бы одну метрику или отключите временное измерение."]);
-    if (mode === "rows" && !(body.columns || []).length)
+    if (mode === "rows" && !(body.columns || []).length && !(body.param_columns || []).length)
       out.push(["err", "Пустой запрос: выберите колонки (режим строк) или метрики (агрегация)."]);
     if (mode === "rows")
       for (const o of body.order_by || [])
         if (o.kind === "metric") out.push(["err", `Сортировка по метрике «${o.field}» недоступна в режиме строк — сервер вернёт 422.`]);
-    for (const c of st.columns) {
-      const cc = ModelInfo.column(model, c);
-      if (cc && cc._kind === "param") out.push(["warn", `Колонка «${c}» параметризована — запрос вернёт 422 param-virtual-not-supported.`]);
+    /* аргументы параметрических членов: без валидного значения запрос не собрать */
+    for (const [kind, names] of [["col", st.columns], ["met", st.metrics]]) {
+      for (const n of names) {
+        if (!Builder.isParam(model, kind, n)) continue;
+        const store = (st.paramArgs || {})[Builder.paramKey(kind, n)] || {};
+        for (const p of Builder.declaredParams(model, kind, n)) {
+          const c = Builder.coerceArg(p.type, store[p.name]);
+          if (!c.ok) out.push(["err", `Аргумент «${p.name}» для «${n}»: ${c.err}.`]);
+        }
+      }
     }
-    for (const m of st.metrics) {
-      const mm = ModelInfo.metric(model, m);
-      if (mm && mm._kind === "param") out.push(["warn", `Метрика «${m}» параметризована — запрос вернёт 422 param-metric-not-supported.`]);
-    }
+    /* фильтры condition_param: аргументы и значение сравнения */
+    const walkParamFilters = (node) => {
+      if (!node) return;
+      if (node.type === "and" || node.type === "or") (node.conditions || []).forEach(walkParamFilters);
+      else if (node.type === "not") walkParamFilters(node.condition);
+      else if (node.type === "condition_param" && node.column) {
+        const cc = ModelInfo.column(model, node.column);
+        for (const p of (cc && cc.parameters) || []) {
+          const c2 = Builder.coerceArg(p.type, (node.args || {})[p.name]);
+          if (!c2.ok) out.push(["err", `Фильтр по «${node.column}»: аргумент «${p.name}» — ${c2.err}.`]);
+        }
+        if (node.value === "" || node.value == null)
+          out.push(["err", `Фильтр по «${node.column}»: не задано значение сравнения.`]);
+      }
+    };
+    walkParamFilters(st.filters);
     if (mode === "history" && st.td) {
       if (!st.td.from || !st.td.to) out.push(["err", "Укажите период from/to — сервер вернёт 422 missing-time-range."]);
       const lookback = Dates.parseLookback(model.history?.lookback_safety?.default_lookback || "100y");
@@ -2327,6 +2825,11 @@ const Builder = {
           param: x._kind === "param"
         })), "метрики не выбраны"));
     grid.append(pickers);
+
+    /* — аргументы параметрических членов — */
+    Builder.elParams = U.el("div");
+    grid.append(Builder.elParams);
+    Builder.renderParams(model, st);
 
     /* — временное измерение — */
     if (model.history) grid.append(Builder.timeDimension(model, st));
@@ -2389,7 +2892,6 @@ const Builder = {
       U.el("span", { class: "card-sub" }, `${items.length} доступно`)));
 
     const chips = U.el("div", { class: "chips", "data-empty": emptyText });
-    const warn = U.el("div", { class: "warn-inline", style: "display:none" });
     const search = U.el("input", { type: "text", placeholder: "Поиск…" });
     const list = U.el("div", { class: "picker-list" });
 
@@ -2400,17 +2902,13 @@ const Builder = {
         const item = items.find((i) => i.name === name);
         const cls = ["chip"];
         if (field === "metrics") cls.push("c-metric");
-        if (item && item.param) cls.push("c-param", "c-warn");
+        if (item && item.param) cls.push("c-param");
         chips.append(U.el("span", { class: cls.join(" ") }, name,
           U.el("span", {
             class: "chip-x", title: "убрать",
-            onclick: () => { st[field] = st[field].filter((x) => x !== name); refresh(); Builder.sync(model); }
+            onclick: () => { st[field] = st[field].filter((x) => x !== name); refresh(); Builder.renderParams(model, st); Builder.sync(model); }
           }, "×")));
       }
-      // предупреждение о param
-      const hasParam = st[field].some((n) => items.find((i) => i.name === n && i.param));
-      warn.style.display = hasParam ? "" : "none";
-      warn.textContent = "⚠ Выбраны параметризованные элементы — сервер вернёт 422 (не реализовано в REST). Оставлено для демонстрации ошибки.";
       // список
       const q = search.value.trim().toLowerCase();
       list.innerHTML = "";
@@ -2421,22 +2919,90 @@ const Builder = {
           class: "picker-item" + (on ? " selected" : "") + (it.param ? " param" : ""),
           onclick: () => {
             st[field] = on ? st[field].filter((x) => x !== it.name) : [...st[field], it.name];
-            refresh(); Builder.sync(model);
+            refresh(); Builder.renderParams(model, st); Builder.sync(model);
           }
         },
           U.el("span", { class: "pi-check" }, on ? "✓" : ""),
           U.el("span", { html: it.icon }),
           U.el("span", { class: "pi-name" }, it.name),
-          it.param ? U.el("span", { class: "minibadge m-param" }, "⚙ 422") : null,
+          it.param ? U.el("span", { class: "minibadge m-param", title: "параметрическая — аргументы в карточке ниже" }, "⚙") : null,
           it.virtual ? U.el("span", { class: "minibadge m-virtual" }, "ƒ") : null,
           U.el("span", { class: "pi-desc" }, it.desc)));
       }
       if (!list.children.length) list.append(U.el("div", { class: "bp-empty", style: "padding:12px" }, "ничего не найдено"));
     };
     search.addEventListener("input", refresh);
-    card.append(chips, warn, U.el("div", { class: "picker-search searchbox" }, search), list);
+    card.append(chips, U.el("div", { class: "picker-search searchbox" }, search), list);
     refresh();
     return card;
+  },
+
+  /* ---------- карточки параметров: аргументы членов + общие parameters ---------- */
+  renderParams(model, st) {
+    if (!Builder.elParams) return;
+    Builder.elParams.innerHTML = "";
+    const sel = [
+      ...st.columns.filter((n) => Builder.isParam(model, "col", n)).map((n) => ["col", n]),
+      ...st.metrics.filter((n) => Builder.isParam(model, "met", n)).map((n) => ["met", n])
+    ];
+    if (sel.length) {
+      st.paramArgs = st.paramArgs || {};
+      const card = U.el("div", { class: "card", style: "margin-bottom:14px" },
+        U.el("div", { class: "card-head" },
+          U.el("span", { class: "card-title" }, "⚙ Аргументы параметрических членов"),
+          U.el("span", { class: "card-sub" }, "уходят в тело запроса полями param_columns / param_metrics")));
+      const bodyEl = U.el("div", { class: "card-body padded", style: "display:flex;flex-direction:column;gap:14px" });
+      for (const [kind, name] of sel) {
+        const key = Builder.paramKey(kind, name);
+        const store = st.paramArgs[key] = st.paramArgs[key] || {};
+        const fields = Builder.declaredParams(model, kind, name).map((p) => {
+          const inp = U.el("input", { type: "text", class: "mono", value: store[p.name] ?? "", placeholder: p.type });
+          inp.addEventListener("input", () => { store[p.name] = inp.value; Builder.sync(model); });
+          return U.el("div", { class: "field", style: "min-width:220px;max-width:420px" },
+            U.el("span", { class: "field-label" }, `${p.name} (${p.type})`), inp,
+            p.description ? U.el("span", { class: "field-hint" }, p.description) : null);
+        });
+        bodyEl.append(U.el("div", null,
+          U.el("div", { style: "display:flex;align-items:center;gap:8px;margin-bottom:6px" },
+            U.el("span", { class: (kind === "met" ? "chip c-metric static" : "chip static") }, name),
+            U.el("span", { class: "field-hint" }, kind === "met" ? "параметрическая метрика" : "параметрическая колонка")),
+          fields.length
+            ? U.el("div", { style: "display:flex;gap:12px;flex-wrap:wrap" }, ...fields)
+            : U.el("div", { class: "field-hint" }, "параметры не объявлены — уйдёт пустой args")));
+      }
+      card.append(bodyEl);
+      Builder.elParams.append(card);
+    }
+
+    /* общие parameters запроса */
+    st.globalParams = st.globalParams || [];
+    const gcard = U.el("div", { class: "card" },
+      U.el("div", { class: "card-head" },
+        U.el("span", { class: "card-title" }, "Параметры запроса (parameters)"),
+        U.el("button", {
+          class: "ghost small",
+          onclick: () => { st.globalParams.push({ key: "", value: "" }); Builder.renderParams(model, st); Builder.sync(model); }
+        }, "+ параметр"),
+        U.el("span", { class: "card-sub" }, "общие значения по имени для плейсхолдеров модели и вызовов без своего args")));
+    const gbody = U.el("div", { class: "card-body padded", style: "display:flex;flex-direction:column;gap:8px" });
+    if (!st.globalParams.length) {
+      gbody.append(U.el("div", { class: "field-hint" },
+        'не заданы; значение пишется как есть или как JSON — число 42, список [1, 2], выражение {"expr": "today() - 30"}'));
+    }
+    st.globalParams.forEach((p, i) => {
+      const kIn = U.el("input", { type: "text", class: "mono", style: "width:200px", placeholder: "имя", value: p.key });
+      kIn.addEventListener("input", () => { p.key = kIn.value; Builder.sync(model); });
+      const vIn = U.el("input", { type: "text", class: "mono", style: "flex:1;min-width:200px", placeholder: 'значение, напр. 2026-08-01 или {"expr": "today() - 30"}', value: p.value });
+      vIn.addEventListener("input", () => { p.value = vIn.value; Builder.sync(model); });
+      gbody.append(U.el("div", { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap" },
+        kIn, U.el("span", { class: "field-label" }, "="), vIn,
+        U.el("button", {
+          class: "danger-ghost small", title: "удалить",
+          onclick: () => { st.globalParams.splice(i, 1); Builder.renderParams(model, st); Builder.sync(model); }
+        }, "✕")));
+    });
+    gcard.append(gbody);
+    Builder.elParams.append(gcard);
   },
 
   /* ---------- временное измерение ---------- */
@@ -2506,6 +3072,11 @@ const Builder = {
     return ModelInfo.allColumns(model).filter((c) => c._kind !== "param");
   },
 
+  /* параметрические колонки в фильтре — узел condition_param */
+  paramFilterables(model) {
+    return ModelInfo.allColumns(model).filter((c) => c._kind === "param");
+  },
+
   newCondition(model) {
     const col = Builder.filterableColumns(model)[0];
     return Builder.condFor(model, col ? col.column_name : "", "=");
@@ -2513,6 +3084,8 @@ const Builder = {
 
   condFor(model, column, operator) {
     const node = { column, operator };
+    const cc = ModelInfo.column(model, column);
+    if (cc && cc._kind === "param") { node.type = "condition_param"; node.value = ""; node.args = {}; return node; }
     if (operator === "IN" || operator === "NOT IN") { node.type = "condition_in"; node.value = []; }
     else if (/LIKE/i.test(operator)) { node.type = "condition_like"; node.pattern = ""; }
     else if (/NULL/i.test(operator)) { node.type = "condition_null"; }
@@ -2524,6 +3097,8 @@ const Builder = {
 
   opsFor(model, colName) {
     const col = ModelInfo.column(model, colName);
+    // параметрический член сравнивается только скалярно (контракт condition_param)
+    if (col && col._kind === "param") return ["=", "!=", ">", "<", ">=", "<="];
     const t = CHTypes.parse(col ? col.type : "String");
     if (t.base === "array") return ["has", "hasAny", "hasAll"];
     if (t.base === "bool") return ["=", "!=", "IS NULL", "IS NOT NULL"];
@@ -2595,8 +3170,10 @@ const Builder = {
   filterLeaf(model, st, node, remove) {
     const row = U.el("div", { class: "fcond" });
     const cols = Builder.filterableColumns(model);
-    const colSel = U.el("select", { class: "f-col" }, ...cols.map((c) =>
-      U.el("option", { value: c.column_name, selected: c.column_name === node.column }, c.column_name)));
+    const pcols = Builder.paramFilterables(model);
+    const colSel = U.el("select", { class: "f-col" },
+      ...cols.map((c) => U.el("option", { value: c.column_name, selected: c.column_name === node.column }, c.column_name)),
+      ...pcols.map((c) => U.el("option", { value: c.column_name, selected: c.column_name === node.column }, "⚙ " + c.column_name)));
     const opSel = U.el("select", { class: "f-op" });
     const valWrap = U.el("span", { style: "display:inline-flex;gap:5px;align-items:center;flex-wrap:wrap" });
 
@@ -2649,6 +3226,18 @@ const Builder = {
         const inp = U.el("input", { type: "text", class: "mono", placeholder: "значение", value: node.value ?? "" });
         inp.addEventListener("input", () => { node.value = inp.value; Builder.sync(model); });
         valWrap.append(inp);
+      }
+      /* аргументы параметрического члена — рядом со значением сравнения */
+      if (node.type === "condition_param") {
+        node.args = node.args || {};
+        for (const p of (col && col.parameters) || []) {
+          const inp = U.el("input", {
+            type: "text", class: "mono", style: "width:200px",
+            placeholder: `${p.name}: ${p.type}`, title: p.description || "", value: node.args[p.name] ?? ""
+          });
+          inp.addEventListener("input", () => { node.args[p.name] = inp.value; Builder.sync(model); });
+          valWrap.append(inp);
+        }
       }
     };
 
@@ -2796,8 +3385,8 @@ const Builder = {
       Bp.setResult(res, {
         mode,
         tdName: body.time_dimensions ? body.time_dimensions[0].name : null,
-        metrics: body.metrics || [],
-        dims: body.columns || [],
+        metrics: [...(body.metrics || []), ...((body.param_metrics || []).map((p) => p.name))],
+        dims: [...(body.columns || []), ...((body.param_columns || []).map((p) => p.name))],
         onPage: (dir) => {
           st.offset = Math.max(0, (st.offset || 0) + dir * (body.limit || 100));
           if (Builder.elOffsetInput) Builder.elOffsetInput.value = st.offset;
@@ -3022,9 +3611,15 @@ const SqlConsole = {
     const rawTrigger = /^\s*(RAW\b|\/\*\s*raw\s*\*\/|--\s*raw)/i;
     const isRaw = rawPreview || rawTrigger.test(text);
     if (rawPreview && !rawTrigger.test(text)) text = "/*raw*/ " + text;
+    /* Дефолт канала — TabSeparated без строки заголовка, из него имена колонок
+       не достать. Поэтому запросу без своего FORMAT дописываем FORMAT JSON и
+       разбираем meta+data; свой FORMAT пользователя уважаем и показываем ответ
+       сырым текстом. */
+    const ownFormat = /\bFORMAT\s+[A-Za-z][A-Za-z0-9]*\s*;?\s*$/i.test(text);
+    const sent = (isRaw || ownFormat) ? text : text.replace(/;\s*$/, "") + "\nFORMAT JSON";
     Bp.loading();
     try {
-      const res = await Api.client().sql(text);
+      const res = await Api.client().sql(sent);
       if (!res.ok) {
         Bp.setError({ chText: res.error });
         return;
@@ -3033,27 +3628,37 @@ const SqlConsole = {
         Bp.setSql(res.text);
         return;
       }
-      const rows = SqlConsole.parseTSV(res.text);
-      Bp.setResult({ data: rows, limit: null, offset: null, has_next_page: false }, { mode: null });
+      if (ownFormat) {
+        Bp.setResult({ rawText: res.text }, { mode: null, note: "формат задан в запросе — ответ без разбора" });
+        return;
+      }
+      let parsed = null;
+      try { parsed = JSON.parse(res.text); } catch (e) { parsed = null; }
+      if (!parsed || !Array.isArray(parsed.data)) {
+        // нестандартный стейтмент ответил не JSON — показываем как есть
+        Bp.setResult({ rawText: res.text }, { mode: null });
+        return;
+      }
+      const elapsed = parsed.statistics && parsed.statistics.elapsed;
+      Bp.setResult(
+        { data: SqlConsole.typedRows(parsed), limit: null, offset: null, has_next_page: false },
+        { mode: null, note: elapsed != null ? `за ${Math.round(elapsed * 1000)} мс` : null });
     } catch (e) {
       if (e instanceof ApiError) Bp.setError(e);
       else Bp.setError(new ApiError(0, "network", ERROR_RU.network, { error: String(e) }));
     }
   },
 
-  parseTSV(text) {
-    const lines = String(text || "").split("\n").filter((l) => l.length);
-    if (!lines.length) return [];
-    const header = lines[0].split("\t");
-    return lines.slice(1).map((l) => {
-      const cells = l.split("\t");
+  /* FORMAT JSON: 64-битные числа ClickHouse отдаёт строками — приводим по meta */
+  typedRows(parsed) {
+    const numeric = new Set((parsed.meta || [])
+      .filter((m) => /^(Nullable\()?(U?Int|Float|Decimal)/.test(m.type || ""))
+      .map((m) => m.name));
+    return (parsed.data || []).map((r) => {
       const row = {};
-      header.forEach((h, i) => {
-        let v = cells[i];
-        if (v === "\\N" || v === undefined) v = null;
-        else if (/^-?\d+(\.\d+)?$/.test(v)) v = +v;
-        row[h] = v;
-      });
+      for (const [k, v] of Object.entries(r)) {
+        row[k] = (numeric.has(k) && typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v) && v.length <= 15) ? +v : v;
+      }
       return row;
     });
   }
@@ -3077,14 +3682,26 @@ const YamlEditor = {
   defaultForm() {
     return {
       logic_model: "", table_name: "", schema_name: "dm_core", description: "",
-      allowed_groups: [], disallowed_groups: [], visible: [], kind: "plain",
+      allowed_groups: [], disallowed_groups: [], visible: [], allowed_roles: [],
+      row_scope: [], stands: [], stand_overrides: [], kind: "plain",
       history: { valid_from: "_change_date", primary_key: "", time_column: "", require_time_range: true, fill_mode: "previous", lookback: "5y" },
-      array_join: { type: "left", source_model: "", arrays: [{ source: "", as: "", element_type: "String" }] },
-      columns: [{ column_name: "", type: "String", description: "", sql: "", granularities: "", default_granularity: "" }],
+      array_join: { type: "left", source_model: "", arrays: [{ source: "", as: "", element_type: "String", description: "" }] },
+      columns: [{ column_name: "", type: "String", verbose_name: "", description: "", sql: "", granularities: "", default_granularity: "" }],
       virtual_columns: [],
       metrics: [],
       param_virtual_columns: [], param_metrics: [], joins: []
     };
+  },
+
+  /* Персональный доступ члена: сохраняем только отличия от табличного —
+     API возвращает allowed_groups, унаследованные каждой колонкой от таблицы. */
+  pickAccess(c, m) {
+    const ex = {};
+    const same = (a, b) => JSON.stringify([...(a || [])].sort()) === JSON.stringify([...(b || [])].sort());
+    if (c.allowed_groups && c.allowed_groups.length && !same(c.allowed_groups, m.allowed_groups)) ex.allowed_groups = [...c.allowed_groups];
+    if (c.allowed_roles && c.allowed_roles.length && !same(c.allowed_roles, m.allowed_roles)) ex.allowed_roles = [...c.allowed_roles];
+    if (c.security_level && c.security_level !== "K3") ex.security_level = c.security_level;
+    return Object.keys(ex).length ? ex : null;
   },
 
   modelToForm(m) {
@@ -3096,6 +3713,16 @@ const YamlEditor = {
     f.allowed_groups = [...(m.allowed_groups || [])];
     f.disallowed_groups = [...(m.disallowed_groups || [])];
     f.visible = [...(m.visible || [])];
+    f.allowed_roles = [...(m.allowed_roles || [])];
+    f.row_scope = Object.entries(m.row_scope || {}).map(([role, v]) => ({
+      role,
+      bindings: (Array.isArray(v) ? v : [v]).filter(Boolean).map((b) => (b.member != null
+        ? { kind: "member", member: b.member || "", arg: b.arg || "", column: "" }
+        : { kind: "column", column: b.column || "", member: "", arg: "" }))
+    }));
+    f.stands = [...(m.stands || [])];
+    f.stand_overrides = Object.entries(m.stand_overrides || {}).map(([stand, o]) =>
+      ({ stand, table_name: (o && o.table_name) || "" }));
     f.kind = m.history ? "history" : m.array_join ? "array_join" : "plain";
     if (m.history) {
       f.history = {
@@ -3111,23 +3738,45 @@ const YamlEditor = {
       f.array_join = {
         type: m.array_join.type || "left",
         source_model: m.array_join.source_model || "",
-        arrays: (m.array_join.arrays || []).map((a) => ({ source: a.source || "", as: a.as || "", element_type: a.element_type || "String" }))
+        arrays: (m.array_join.arrays || []).map((a) => ({
+          source: a.source || "", as: a.as || "", element_type: a.element_type || "String",
+          description: a.description || ""
+        }))
       };
     }
     f.columns = (m.columns || []).map((c) => ({
-      column_name: c.column_name || "", type: c.type || "String", description: c.description || "",
-      sql: c.sql || "", granularities: (c.granularities || []).join(", "), default_granularity: c.default_granularity || ""
+      column_name: c.column_name || "", type: c.type || "String", verbose_name: c.verbose_name || "",
+      description: c.description || "", sql: c.sql || "",
+      granularities: (c.granularities || []).join(", "), default_granularity: c.default_granularity || "",
+      _access: YamlEditor.pickAccess(c, m)
     }));
     if (!f.columns.length) f.columns = YamlEditor.defaultForm().columns;
     f.virtual_columns = (m.virtual_columns || []).map((c) => ({
-      column_name: c.column_name || "", type: c.type || "String", description: c.description || "", sql: c.sql || ""
+      column_name: c.column_name || "", type: c.type || "String", verbose_name: c.verbose_name || "",
+      description: c.description || "", sql: c.sql || "",
+      _access: YamlEditor.pickAccess(c, m)
     }));
     f.metrics = (m.metrics || []).map((x) => ({
-      metric_name: x.metric_name || "", sql: x.sql || "", verbose_name: x.verbose_name || "", description: x.description || ""
+      metric_name: x.metric_name || "", sql: x.sql || "", verbose_name: x.verbose_name || "",
+      description: x.description || "",
+      _access: YamlEditor.pickAccess(x, m)
     }));
-    f.param_virtual_columns = U.clone(m.param_virtual_columns || []);
-    f.param_metrics = U.clone(m.param_metrics || []);
-    f.joins = U.clone(m.joins || []);
+    f.param_virtual_columns = (m.param_virtual_columns || []).map((c) => ({
+      column_name: c.column_name || "", type: c.type || "String", verbose_name: c.verbose_name || "",
+      description: c.description || "", sql: c.sql || "",
+      parameters: (c.parameters || []).map((p) => ({ name: p.name || "", type: p.type || "String", description: p.description || "" })),
+      _access: YamlEditor.pickAccess(c, m)
+    }));
+    f.param_metrics = (m.param_metrics || []).map((x) => ({
+      metric_name: x.metric_name || "", sql: x.sql || "", verbose_name: x.verbose_name || "",
+      description: x.description || "",
+      parameters: (x.parameters || []).map((p) => ({ name: p.name || "", type: p.type || "String", description: p.description || "" })),
+      _access: YamlEditor.pickAccess(x, m)
+    }));
+    f.joins = (m.joins || []).map((j) => ({
+      logic_model: j.logic_model || "", type: j.type || "left", sql: j.sql || "",
+      sql_alias: j.sql_alias || "", table_name: j.table_name || "", description: j.description || ""
+    }));
     return f;
   },
 
@@ -3140,27 +3789,68 @@ const YamlEditor = {
       allowed_groups: [...f.allowed_groups],
       disallowed_groups: [...(f.disallowed_groups || [])],
       visible: [...(f.visible || [])],
+      allowed_roles: [...(f.allowed_roles || [])],
       history: null, array_join: null,
       columns: f.columns.filter((c) => c.column_name.trim() || c.description || c.sql).map((c) => {
         const out = { column_name: c.column_name.trim(), type: c.type.trim() || "String" };
+        if (c.verbose_name) out.verbose_name = c.verbose_name;
         if (c.description) out.description = c.description;
         if (c.sql) out.sql = c.sql;
         const g = grans(c.granularities);
         if (g.length) { out.granularities = g; if (c.default_granularity) out.default_granularity = c.default_granularity.trim(); }
+        Object.assign(out, c._access || {});
         return out;
       }),
       virtual_columns: f.virtual_columns.filter((c) => c.column_name.trim() || c.sql).map((c) => ({
         column_name: c.column_name.trim(), type: c.type.trim() || "String",
-        ...(c.description ? { description: c.description } : {}), sql: c.sql
+        ...(c.verbose_name ? { verbose_name: c.verbose_name } : {}),
+        ...(c.description ? { description: c.description } : {}), sql: c.sql,
+        ...(c._access || {})
       })),
-      param_virtual_columns: U.clone(f.param_virtual_columns || []),
+      param_virtual_columns: (f.param_virtual_columns || []).filter((c) => c.column_name.trim() || c.sql).map((c) => ({
+        column_name: c.column_name.trim(), type: c.type.trim() || "String",
+        ...(c.verbose_name ? { verbose_name: c.verbose_name } : {}),
+        ...(c.description ? { description: c.description } : {}), sql: c.sql,
+        parameters: (c.parameters || []).filter((p) => p.name.trim()).map((p) =>
+          ({ name: p.name.trim(), type: p.type.trim() || "String", description: p.description })),
+        ...(c._access || {})
+      })),
       metrics: f.metrics.filter((x) => x.metric_name.trim() || x.sql).map((x) => ({
         metric_name: x.metric_name.trim(), sql: x.sql, verbose_name: x.verbose_name,
-        ...(x.description ? { description: x.description } : {})
+        ...(x.description ? { description: x.description } : {}),
+        ...(x._access || {})
       })),
-      param_metrics: U.clone(f.param_metrics || []),
-      joins: U.clone(f.joins || [])
+      param_metrics: (f.param_metrics || []).filter((x) => x.metric_name.trim() || x.sql).map((x) => ({
+        metric_name: x.metric_name.trim(), sql: x.sql, verbose_name: x.verbose_name,
+        ...(x.description ? { description: x.description } : {}),
+        parameters: (x.parameters || []).filter((p) => p.name.trim()).map((p) =>
+          ({ name: p.name.trim(), type: p.type.trim() || "String", description: p.description })),
+        ...(x._access || {})
+      })),
+      joins: (f.joins || []).filter((j) => j.logic_model.trim()).map((j) => {
+        const out = { logic_model: j.logic_model.trim(), type: j.type || "left" };
+        if (j.type !== "cross" && (j.sql || "").trim()) out.sql = j.sql.trim();
+        if ((j.sql_alias || "").trim()) out.sql_alias = j.sql_alias.trim();
+        if ((j.table_name || "").trim()) out.table_name = j.table_name.trim();
+        if (j.description) out.description = j.description;
+        return out;
+      })
     };
+    const scope = {};
+    for (const r of f.row_scope || []) {
+      if (!r.role) continue;
+      const bs = (r.bindings || []).map((b) => b.kind === "member"
+        ? (b.member.trim() ? { member: b.member.trim(), arg: b.arg.trim() } : null)
+        : (b.column.trim() ? { column: b.column.trim() } : null)).filter(Boolean);
+      if (bs.length) scope[r.role] = bs;
+    }
+    if (Object.keys(scope).length) ds.row_scope = scope;
+    if ((f.stands || []).length) ds.stands = [...f.stands];
+    const so = {};
+    for (const o of f.stand_overrides || []) {
+      if (o.stand && (o.table_name || "").trim()) so[o.stand] = { table_name: o.table_name.trim() };
+    }
+    if (Object.keys(so).length) ds.stand_overrides = so;
     if (f.kind === "history") {
       ds.history = {
         valid_from: f.history.valid_from.trim() || "_change_date",
@@ -3176,7 +3866,8 @@ const YamlEditor = {
         type: f.array_join.type,
         source_model: (f.array_join.source_model || "").trim(),
         arrays: f.array_join.arrays.filter((a) => a.source.trim() || a.as.trim()).map((a) => ({
-          source: a.source.trim(), as: a.as.trim(), element_type: a.element_type.trim() || "String"
+          source: a.source.trim(), as: a.as.trim(), element_type: a.element_type.trim() || "String",
+          ...((a.description || "").trim() ? { description: a.description.trim() } : {})
         }))
       };
     }
@@ -3230,6 +3921,59 @@ const YamlEditor = {
       if (colNames.includes(name)) E(`met.${i}.metric_name`, `метрика «${name}» не может называться как колонка`);
       metNames.push(name);
     });
+
+    const paramList = (list, prefix, label) => {
+      list.forEach((p, k) => {
+        if (!p.name.trim()) E(`${prefix}.p${k}.name`, `${label}: параметр №${k + 1} без имени`);
+        if (!String(p.description || "").trim())
+          E(`${prefix}.p${k}.description`, `${label}: у параметра «${p.name || "№" + (k + 1)}» нет description (обязателен)`);
+      });
+      const names = list.map((p) => p.name.trim()).filter(Boolean);
+      if (new Set(names).size !== names.length) E(`${prefix}.params`, `${label}: имена параметров повторяются`);
+    };
+    (f.param_virtual_columns || []).forEach((c, i) => {
+      const name = c.column_name.trim();
+      if (!name) { E(`pvc.${i}.column_name`, `парам. колонка №${i + 1}: column_name обязателен`); return; }
+      if (!c.sql.trim()) E(`pvc.${i}.sql`, `парам. колонка «${name}»: поле sql обязательно`);
+      if (colNames.includes(name)) E(`pvc.${i}.column_name`, `имя «${name}» уже занято колонкой`);
+      colNames.push(name);
+      paramList(c.parameters || [], `pvc.${i}`, `парам. колонка «${name}»`);
+    });
+    (f.param_metrics || []).forEach((x, i) => {
+      const name = x.metric_name.trim();
+      if (!name) { E(`pmet.${i}.metric_name`, `парам. метрика №${i + 1}: metric_name обязателен`); return; }
+      if (!x.sql.trim()) E(`pmet.${i}.sql`, `парам. метрика «${name}»: sql обязателен`);
+      if (!String(x.verbose_name || "").trim()) E(`pmet.${i}.verbose_name`, `парам. метрика «${name}»: verbose_name обязателен`);
+      if (metNames.includes(name)) E(`pmet.${i}.metric_name`, `метрика «${name}» объявлена дважды`);
+      if (colNames.includes(name)) E(`pmet.${i}.metric_name`, `метрика «${name}» не может называться как колонка`);
+      metNames.push(name);
+      paramList(x.parameters || [], `pmet.${i}`, `парам. метрика «${name}»`);
+    });
+
+    (f.joins || []).forEach((j, i) => {
+      if (!j.logic_model.trim()) { E(`join.${i}.logic_model`, `join №${i + 1}: logic_model обязателен`); return; }
+      if (j.type !== "cross" && !(j.sql || "").trim())
+        E(`join.${i}.sql`, `join «${j.logic_model}»: условие sql обязательно (для всех типов, кроме cross)`);
+    });
+
+    const seenRoles = [];
+    (f.row_scope || []).forEach((r, i) => {
+      if (seenRoles.includes(r.role)) E(`rs.${i}.bindings`, `row_scope: роль «${r.role}» задана дважды`);
+      seenRoles.push(r.role);
+      const bs = r.bindings || [];
+      if (!bs.some((b) => (b.kind === "member" ? b.member.trim() : b.column.trim())))
+        E(`rs.${i}.bindings`, `row_scope: у роли «${r.role}» нет ни одного заполненного биндинга`);
+      bs.forEach((b, k) => {
+        if (b.kind === "member" && b.member.trim() && !b.arg.trim())
+          E(`rs.${i}.b${k}`, `row_scope «${r.role}»: у member-биндинга обязателен arg`);
+      });
+    });
+
+    (f.stand_overrides || []).forEach((o, i) => {
+      if (!(o.table_name || "").trim()) E(`so.${i}.table_name`, `stand_overrides «${o.stand || "№" + (i + 1)}»: table_name обязателен`);
+    });
+    const soStands = (f.stand_overrides || []).map((o) => o.stand).filter(Boolean);
+    if (new Set(soStands).size !== soStands.length) E("stand_overrides", "stand_overrides: стенд указан дважды");
 
     if (f.kind === "history") {
       const h = f.history;
@@ -3325,7 +4069,10 @@ const YamlEditor = {
 
   /* ---------- мелкие фабрики полей ---------- */
   input(key, label, value, onInput, opts) {
-    const inp = U.el("input", Object.assign({ type: "text", value: value ?? "" }, (opts && opts.attrs) || {}));
+    const inp = (opts && opts.area)
+      ? U.el("textarea", Object.assign({ rows: 3, style: "resize:vertical" }, (opts && opts.attrs) || {}))
+      : U.el("input", Object.assign({ type: "text" }, (opts && opts.attrs) || {}));
+    inp.value = value ?? "";
     if (opts && opts.mono) inp.classList.add("mono");
     inp.addEventListener("input", () => { onInput(inp.value); YamlEditor.schedule(); });
     const field = U.el("div", { class: "field" + ((opts && opts.span2) ? " span2" : "") },
@@ -3357,6 +4104,15 @@ const YamlEditor = {
     root.append(YamlEditor.summaryEl);
 
     /* — основные поля — */
+    root.append(U.el("div", { class: "form-section" },
+      U.el("div", { class: "form-section-head" }, U.el("h3", null, "Основное")),
+      U.el("div", { class: "form-grid" },
+        YamlEditor.input("logic_model", "logic_model (имя модели для клиента)", f.logic_model, (v) => f.logic_model = v, { mono: true }),
+        YamlEditor.input("table_name", "table_name (физическая таблица CH)", f.table_name, (v) => f.table_name = v, { mono: true }),
+        YamlEditor.input("schema_name", "schema_name", f.schema_name, (v) => f.schema_name = v, { mono: true }),
+        YamlEditor.input(null, "description", f.description, (v) => f.description = v, {}))));
+
+    /* — доступ и каналы — */
     const groupsInput = Builder.tagInput(f.allowed_groups, () => YamlEditor.schedule(), "service_id + Enter");
     const groupsField = YamlEditor.ref("allowed_groups", U.el("div", { class: "field span2" },
       U.el("span", { class: "field-label" }, "allowed_groups (пусто — доступ всем)"), groupsInput, U.el("span", { class: "field-error" })));
@@ -3365,18 +4121,33 @@ const YamlEditor = {
     const denyField = YamlEditor.ref("disallowed_groups", U.el("div", { class: "field span2" },
       U.el("span", { class: "field-label" }, "disallowed_groups (запрет сильнее)"), denyInput, U.el("span", { class: "field-error" })));
 
-    const visibleInput = Builder.tagInput(f.visible, () => YamlEditor.schedule(), "rest/sql/mcp/join_only + Enter");
     const visibleField = YamlEditor.ref("visible", U.el("div", { class: "field span2" },
-      U.el("span", { class: "field-label" }, "visible (пусто — во всех каналах)"), visibleInput, U.el("span", { class: "field-error" })));
+      U.el("span", { class: "field-label" }, "visible (пусто — во всех каналах)"),
+      YamlEditor.checkSet(f.visible, ["rest", "sql", "mcp", "join_only"]),
+      U.el("span", { class: "field-hint" }, "join_only несовместим с sql"),
+      U.el("span", { class: "field-error" })));
+
+    const rolesField = YamlEditor.ref("allowed_roles", U.el("div", { class: "field span2" },
+      U.el("span", { class: "field-label" }, "allowed_roles (пусто — public, без ролевых ограничений)"),
+      YamlEditor.checkSet(f.allowed_roles, ["public", "user", "director", "hrbp", "recruitment"]),
+      U.el("span", { class: "field-error" })));
 
     root.append(U.el("div", { class: "form-section" },
-      U.el("div", { class: "form-section-head" }, U.el("h3", null, "Основное")),
+      U.el("div", { class: "form-section-head" }, U.el("h3", null, "Доступ и каналы")),
       U.el("div", { class: "form-grid" },
-        YamlEditor.input("logic_model", "logic_model (имя модели для клиента)", f.logic_model, (v) => f.logic_model = v, { mono: true }),
-        YamlEditor.input("table_name", "table_name (физическая таблица CH)", f.table_name, (v) => f.table_name = v, { mono: true }),
-        YamlEditor.input("schema_name", "schema_name", f.schema_name, (v) => f.schema_name = v, { mono: true }),
-        YamlEditor.input(null, "description", f.description, (v) => f.description = v, {}),
-        groupsField, denyField, visibleField)));
+        groupsField, denyField, visibleField, rolesField,
+        YamlEditor.rowScopeSection(f))));
+
+    /* — стенды — */
+    root.append(U.el("div", { class: "form-section" },
+      U.el("div", { class: "form-section-head" }, U.el("h3", null, "Стенды"),
+        U.el("span", { class: "field-hint" }, "гейт присутствия и подмена физтаблицы; в БД каталога не пишутся")),
+      U.el("div", { class: "form-grid" },
+        U.el("div", { class: "field span2" },
+          U.el("span", { class: "field-label" }, "stands (пусто — на всех стендах)"),
+          YamlEditor.checkSet(f.stands, ["dev", "ift", "prom", "uat", "qa"]),
+          U.el("span", { class: "field-hint" }, "датасет поднимается только на отмеченных стендах")),
+        YamlEditor.standOverridesSection(f))));
 
     /* — переключатель типа — */
     const kindSeg = U.el("div", { class: "seg" }, ...[["plain", "обычный"], ["history", "history"], ["array_join", "array_join"]].map(([k, label]) =>
@@ -3392,11 +4163,12 @@ const YamlEditor = {
 
     /* — колонки — */
     root.append(YamlEditor.repeatSection("Колонки", f.columns,
-      () => ({ column_name: "", type: "String", description: "", sql: "", granularities: "", default_granularity: "" }),
+      () => ({ column_name: "", type: "String", verbose_name: "", description: "", sql: "", granularities: "", default_granularity: "" }),
       (c, i) => [
         YamlEditor.input(`col.${i}.column_name`, "column_name", c.column_name, (v) => c.column_name = v, { mono: true }),
         YamlEditor.input(null, "type (CH)", c.type, (v) => c.type = v, { mono: true, hint: "напр. Date, UUID, Nullable(String), Array(String)" }),
-        YamlEditor.input(null, "description", c.description, (v) => c.description = v, { span2: true }),
+        YamlEditor.input(null, "verbose_name (опц.)", c.verbose_name, (v) => c.verbose_name = v),
+        YamlEditor.input(null, "description", c.description, (v) => c.description = v),
         YamlEditor.input(null, "sql (выражение, опц.)", c.sql, (v) => c.sql = v, { mono: true, span2: true }),
         YamlEditor.input(`col.${i}.granularities`, "granularities (через запятую)", c.granularities, (v) => c.granularities = v, { mono: true, hint: GRAN.all.join(", ") }),
         YamlEditor.input(`col.${i}.default_granularity`, "default_granularity", c.default_granularity, (v) => c.default_granularity = v, { mono: true })
@@ -3422,14 +4194,140 @@ const YamlEditor = {
         YamlEditor.input(null, "description", x.description, (v) => x.description = v, { span2: true })
       ]));
 
-    if ((f.param_metrics || []).length || (f.param_virtual_columns || []).length || (f.joins || []).length) {
-      root.append(U.el("div", { class: "form-section" },
-        U.el("div", { class: "form-section-head" }, U.el("h3", null, "Прочее (переносится как есть)")),
-        U.el("div", { class: "field-hint" },
-          `параметризованных метрик: ${(f.param_metrics || []).length}, параметризованных колонок: ${(f.param_virtual_columns || []).length}, joins: ${(f.joins || []).length} — редактирование этих секций выполняется через импорт YAML`)));
-    }
+    /* — параметрические колонки — */
+    root.append(YamlEditor.repeatSection("Параметрические колонки", f.param_virtual_columns,
+      () => ({ column_name: "", type: "String", verbose_name: "", description: "", sql: "", parameters: [{ name: "", type: "String", description: "" }] }),
+      (c, i) => [
+        YamlEditor.input(`pvc.${i}.column_name`, "column_name", c.column_name, (v) => c.column_name = v, { mono: true }),
+        YamlEditor.input(null, "type (CH, тип результата)", c.type, (v) => c.type = v, { mono: true }),
+        YamlEditor.input(`pvc.${i}.sql`, "sql (обязательное; {имя} — плейсхолдер аргумента)", c.sql, (v) => c.sql = v, { mono: true, span2: true, area: true }),
+        YamlEditor.input(null, "verbose_name (опц.)", c.verbose_name, (v) => c.verbose_name = v),
+        YamlEditor.input(null, "description", c.description, (v) => c.description = v),
+        YamlEditor.paramListEditor(c.parameters || (c.parameters = []), `pvc.${i}`)
+      ]));
+
+    /* — параметрические метрики — */
+    root.append(YamlEditor.repeatSection("Параметрические метрики", f.param_metrics,
+      () => ({ metric_name: "", verbose_name: "", description: "", sql: "", parameters: [{ name: "", type: "String", description: "" }] }),
+      (x, i) => [
+        YamlEditor.input(`pmet.${i}.metric_name`, "metric_name", x.metric_name, (v) => x.metric_name = v, { mono: true }),
+        YamlEditor.input(`pmet.${i}.verbose_name`, "verbose_name", x.verbose_name, (v) => x.verbose_name = v),
+        YamlEditor.input(`pmet.${i}.sql`, "sql (обязательное; {имя} — плейсхолдер аргумента)", x.sql, (v) => x.sql = v, { mono: true, span2: true, area: true }),
+        YamlEditor.input(null, "description", x.description, (v) => x.description = v, { span2: true }),
+        YamlEditor.paramListEditor(x.parameters || (x.parameters = []), `pmet.${i}`)
+      ]));
+
+    /* — joins — */
+    root.append(YamlEditor.repeatSection("Joins (связи моделей)", f.joins,
+      () => ({ logic_model: "", type: "left", sql: "", sql_alias: "", table_name: "", description: "" }),
+      (j, i) => {
+        const typeSel = U.el("select", { class: "mono" }, ...["left", "inner", "right", "full", "cross"].map((t) =>
+          U.el("option", { value: t, selected: (j.type || "left") === t }, t)));
+        typeSel.addEventListener("change", () => { j.type = typeSel.value; YamlEditor.schedule(); });
+        return [
+          YamlEditor.input(`join.${i}.logic_model`, "logic_model (присоединяемая модель)", j.logic_model, (v) => j.logic_model = v, { mono: true }),
+          U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "type"), typeSel,
+            U.el("span", { class: "field-hint" }, "cross — без условия ON")),
+          YamlEditor.input(`join.${i}.sql`, "sql (условие ON; для cross не нужно)", j.sql, (v) => j.sql = v,
+            { mono: true, span2: true, hint: "напр. other_model.person_id = this_model.person_id" }),
+          YamlEditor.input(null, "sql_alias (опц.)", j.sql_alias, (v) => j.sql_alias = v, { mono: true }),
+          YamlEditor.input(null, "table_name (опц.)", j.table_name, (v) => j.table_name = v, { mono: true }),
+          YamlEditor.input(null, "description", j.description, (v) => j.description = v, { span2: true })
+        ];
+      }));
 
     YamlEditor.updatePreview();
+  },
+
+  /* ---------- наборы чекбоксов (visible, роли, стенды) ---------- */
+  checkSet(values, options) {
+    const wrap = U.el("div", { style: "display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:2px 0" });
+    for (const opt of options) {
+      const cb = U.el("input", { type: "checkbox" });
+      cb.checked = values.includes(opt);
+      cb.addEventListener("change", () => {
+        const i = values.indexOf(opt);
+        if (cb.checked && i < 0) values.push(opt);
+        if (!cb.checked && i >= 0) values.splice(i, 1);
+        YamlEditor.schedule();
+      });
+      wrap.append(U.el("label", { class: "checkline" }, cb, U.el("span", { class: "mono", style: "font-size:12px" }, opt)));
+    }
+    return wrap;
+  },
+
+  /* ---------- список parameters парам. колонки/метрики ---------- */
+  paramListEditor(list, keyPrefix) {
+    const wrap = U.el("div", { class: "span2", style: "display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--border);padding-top:8px" });
+    wrap.append(U.el("div", { style: "display:flex;align-items:center;gap:8px" },
+      U.el("span", { class: "field-label" }, "parameters"),
+      U.el("button", { class: "ghost small", onclick: () => { list.push({ name: "", type: "String", description: "" }); YamlEditor.renderForm(); } }, "+ параметр"),
+      U.el("span", { class: "field-hint" }, "аргумент подставляется в SQL на место {имя}"),
+      U.el("span", { class: "field-error" })));
+    list.forEach((p, k) => {
+      wrap.append(U.el("div", { style: "display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start" },
+        YamlEditor.input(`${keyPrefix}.p${k}.name`, "name", p.name, (v) => p.name = v, { mono: true }),
+        YamlEditor.input(null, "type", p.type, (v) => p.type = v, { mono: true, hint: "напр. String, UInt64, Array(Tuple(String, UInt64))" }),
+        YamlEditor.input(`${keyPrefix}.p${k}.description`, "description (обязателен)", p.description, (v) => p.description = v, {}),
+        U.el("button", { class: "danger-ghost small", style: "margin-top:18px", title: "удалить параметр", onclick: () => { list.splice(k, 1); YamlEditor.renderForm(); } }, "✕")));
+    });
+    if (!list.length) wrap.append(U.el("div", { class: "field-hint" }, "параметров нет"));
+    return YamlEditor.ref(`${keyPrefix}.params`, wrap);
+  },
+
+  /* ---------- row_scope: роль → биндинги охвата строк ---------- */
+  rowScopeSection(f) {
+    const sec = U.el("div", { class: "field span2" });
+    sec.append(U.el("div", { style: "display:flex;align-items:center;gap:8px" },
+      U.el("span", { class: "field-label" }, "row_scope (охват строк по ролям)"),
+      U.el("button", { class: "ghost small", onclick: () => { f.row_scope.push({ role: "user", bindings: [{ kind: "column", column: "", member: "", arg: "" }] }); YamlEditor.renderForm(); } }, "+ роль"),
+      U.el("span", { class: "field-hint" }, "несколько биндингов одной роли складываются по ИЛИ")));
+    f.row_scope.forEach((r, i) => {
+      const roleSel = U.el("select", { class: "mono" }, ...["user", "director", "hrbp", "recruitment"].map((x) =>
+        U.el("option", { value: x, selected: r.role === x }, x)));
+      roleSel.addEventListener("change", () => { r.role = roleSel.value; YamlEditor.schedule(); });
+      const item = U.el("div", { class: "repeat-item" },
+        U.el("button", { class: "danger-ghost small repeat-remove", title: "удалить роль", onclick: () => { f.row_scope.splice(i, 1); YamlEditor.renderForm(); } }, "✕"),
+        U.el("div", { style: "display:flex;gap:10px;align-items:center;margin-bottom:6px" },
+          U.el("span", { class: "field-label" }, "роль"), roleSel,
+          U.el("button", { class: "ghost small", onclick: () => { r.bindings.push({ kind: "column", column: "", member: "", arg: "" }); YamlEditor.renderForm(); } }, "+ биндинг")),
+        U.el("span", { class: "field-error" }));
+      r.bindings.forEach((b, k) => {
+        const seg = U.el("div", { class: "seg" }, ...["column", "member"].map((kk) =>
+          U.el("button", { class: b.kind === kk ? "on seg-accent" : "", onclick: () => { b.kind = kk; YamlEditor.renderForm(); } }, kk)));
+        const row = U.el("div", { style: "display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:6px" }, seg);
+        if (b.kind === "member") {
+          row.append(
+            YamlEditor.input(null, "member (парам. член)", b.member, (v) => b.member = v, { mono: true }),
+            YamlEditor.input(`rs.${i}.b${k}`, "arg (аргумент под person_id)", b.arg, (v) => b.arg = v, { mono: true }));
+        } else {
+          row.append(YamlEditor.input(null, "column (колонка с person_id)", b.column, (v) => b.column = v, { mono: true }));
+        }
+        row.append(U.el("button", { class: "danger-ghost small", title: "удалить биндинг", onclick: () => { r.bindings.splice(k, 1); YamlEditor.renderForm(); } }, "✕"));
+        item.append(row);
+      });
+      sec.append(YamlEditor.ref(`rs.${i}.bindings`, item));
+    });
+    return sec;
+  },
+
+  /* ---------- stand_overrides: стенд → подмена table_name ---------- */
+  standOverridesSection(f) {
+    const sec = U.el("div", { class: "field span2" });
+    sec.append(U.el("div", { style: "display:flex;align-items:center;gap:8px" },
+      U.el("span", { class: "field-label" }, "stand_overrides (подмена table_name по стендам)"),
+      U.el("button", { class: "ghost small", onclick: () => { f.stand_overrides.push({ stand: "dev", table_name: "" }); YamlEditor.renderForm(); } }, "+ стенд"),
+      U.el("span", { class: "field-error" })));
+    f.stand_overrides.forEach((o, i) => {
+      const standSel = U.el("select", { class: "mono" }, ...["dev", "ift", "prom", "uat", "qa"].map((x) =>
+        U.el("option", { value: x, selected: o.stand === x }, x)));
+      standSel.addEventListener("change", () => { o.stand = standSel.value; YamlEditor.schedule(); });
+      sec.append(U.el("div", { style: "display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:6px" },
+        U.el("div", { class: "field" }, U.el("span", { class: "field-label" }, "стенд"), standSel),
+        YamlEditor.input(`so.${i}.table_name`, "table_name (можно db.table)", o.table_name, (v) => o.table_name = v, { mono: true }),
+        U.el("button", { class: "danger-ghost small", title: "удалить", onclick: () => { f.stand_overrides.splice(i, 1); YamlEditor.renderForm(); } }, "✕")));
+    });
+    return YamlEditor.ref("stand_overrides", sec);
   },
 
   repeatSection(title, list, makeNew, renderFields) {
@@ -3485,6 +4383,7 @@ const YamlEditor = {
         YamlEditor.input(`aj.${i}.source`, "source", a.source, (v) => a.source = v, { mono: true }),
         YamlEditor.input(`aj.${i}.as`, "as (алиас)", a.as, (v) => a.as = v, { mono: true }),
         YamlEditor.input(null, "element_type", a.element_type, (v) => a.element_type = v, { mono: true }),
+        YamlEditor.input(null, "description (опц.)", a.description || "", (v) => a.description = v, {}),
         U.el("button", { class: "danger-ghost small", style: "margin-top:18px", onclick: () => { aj.arrays.splice(i, 1); YamlEditor.renderForm(); } }, "✕")));
     });
     return wrap;
@@ -3494,10 +4393,18 @@ const YamlEditor = {
   importDialog() {
     const ta = U.el("textarea", { class: "mono", rows: 14, style: "width:100%;resize:vertical", placeholder: "datasets:\n  - logic_model: my_model\n    table_name: my_table_dm\n    ..." });
     const errEl = U.el("div", { class: "field-error" });
+    const chooser = U.el("div");
+    const doImport = (ds) => {
+      if (ds.history && ds.array_join) { errEl.textContent = "Ошибка разбора: history и array_join несовместимы в одном датасете"; return; }
+      YamlEditor.form = YamlEditor.modelToForm(ds);
+      YamlEditor.renderForm();
+      Modal.close();
+      Toast.show(`Датасет ${ds.logic_model || ""} импортирован в форму`);
+    };
     Modal.open("Импорт YAML",
       U.el("div", { style: "display:flex;flex-direction:column;gap:8px" },
-        U.el("span", { class: "field-hint" }, "Поддерживается подмножество YAML каталога: отступы, списки «- », инлайн-списки [a, b] и инлайн-словари { a: b }. Берётся первый датасет."),
-        ta, errEl),
+        U.el("span", { class: "field-hint" }, "Поддерживается подмножество YAML каталога: отступы, списки «- », блочные скаляры «|», инлайн-списки [a, b] и инлайн-словари { a: b }. Если в файле несколько датасетов, редактор предложит выбрать."),
+        ta, errEl, chooser),
       U.el("div", { style: "display:flex;gap:8px" },
         U.el("button", { onclick: Modal.close }, "Отмена"),
         U.el("button", {
@@ -3505,13 +4412,15 @@ const YamlEditor = {
           onclick: () => {
             try {
               const parsed = YamlCodec.parse(ta.value);
-              const ds = (parsed.datasets && parsed.datasets[0]) || (parsed.logic_model ? parsed : null);
-              if (!ds) throw new Error("не найдена секция datasets");
-              if (ds.history && ds.array_join) throw new Error("history и array_join несовместимы в одном датасете");
-              YamlEditor.form = YamlEditor.modelToForm(ds);
-              YamlEditor.renderForm();
-              Modal.close();
-              Toast.show("YAML импортирован в форму");
+              const list = (parsed.datasets && parsed.datasets.length) ? parsed.datasets : (parsed.logic_model ? [parsed] : []);
+              if (!list.length) throw new Error("не найдена секция datasets");
+              if (list.length === 1) { doImport(list[0]); return; }
+              errEl.textContent = "";
+              chooser.innerHTML = "";
+              chooser.append(
+                U.el("div", { class: "field-label" }, `В файле датасетов: ${list.length} — выберите, какой импортировать:`),
+                U.el("div", { style: "display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" },
+                  ...list.map((d) => U.el("button", { class: "small mono", onclick: () => doImport(d) }, d.logic_model || "(без имени)"))));
             } catch (e) {
               errEl.textContent = "Ошибка разбора: " + e.message;
             }
@@ -3643,6 +4552,9 @@ const Skills = {
 
   render() { if (window.SkillFactory) window.SkillFactory.render(); },
 };
+
+/* экспорт в window (top-level const не попадает в window) */
+Object.assign(window, { Skills });
 </script>
 <script>
 /* ===== src/app.js ===== */
@@ -3679,11 +4591,10 @@ const App = {
 
   /* ---------- тема (светлая/тёмная) ---------- */
   applyTheme(theme) {
-    // светлая — без атрибута (работает через :root), тёмная — data-theme="dark"
+    // светлая — без атрибута (работает через :root), тёмная — data-theme="dark";
+    // иконка солнце/луна переключается стилями по этому же атрибуту
     if (theme === "dark") document.documentElement.dataset.theme = "dark";
     else delete document.documentElement.dataset.theme;
-    const btn = U.$("#themeToggle");
-    if (btn) btn.textContent = theme === "dark" ? "◑" : "◐";
   },
   currentTheme() {
     return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -3734,16 +4645,20 @@ const App = {
     App.activeTab = name;
     U.$$(".ws-tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
     U.$$(".ws-page").forEach((p) => p.classList.toggle("active", p.dataset.page === name));
+    U.$$("#sideMenu .menu-item[data-page]").forEach((i) => i.classList.toggle("active", i.dataset.page === name));
+    // на Заводе скиллов надпись в шапке меняется с HEIMDALL на ЗАВОД СКИЛЛОВ
+    document.documentElement.classList.toggle("tab-skills", name === "skills");
     localStorage.setItem("heimdall.tab", name);
     App.fitPanels(name);
     App.renderActivePage();
   },
 
-  /* Заводу скиллов экран нужен целиком: у него свой список скиллов слева и
-     разговор с агентами справа. Каталог датасетов и нижняя панель с
-     результатом запроса на этой вкладке не участвуют ни в чём и только
-     отнимают место, поэтому убираются при входе. Уходя со вкладки, возвращаем
-     как было: и каталог, и панель могли быть открыты не просто так.
+  /* Заводу скиллов и Главной экран нужен целиком: у Завода свой список скиллов
+     слева и разговор с агентами справа, Главная — лендинг без запросов.
+     Каталог датасетов и нижняя панель с результатом запроса на этих вкладках
+     не участвуют ни в чём и только отнимают место, поэтому убираются при
+     входе. Уходя со вкладки, возвращаем как было: и каталог, и панель могли
+     быть открыты не просто так.
 
      Каталог прячется без записи в localStorage — человек его не сворачивал,
      и после Завода он должен вернуться на других вкладках сам. */
@@ -3756,7 +4671,7 @@ const App = {
        иначе сворачивал каталог, который человек только что вернул кнопкой. */
     if (App.ui.fitted === name) return;
     App.ui.fitted = name;
-    if (name === "skills") {
+    if (name === "skills" || name === "home") {
       if (App.ui.bpWas === undefined) App.ui.bpWas = panel.classList.contains("collapsed");
       if (App.ui.sideWas === undefined && sidebar) {
         App.ui.sideWas = sidebar.classList.contains("collapsed");
@@ -3781,14 +4696,24 @@ const App = {
   selectModel(key, tab) {
     App.selected = key;
     localStorage.setItem("heimdall.selected", key);
+    App.rememberRecent(key);
     App.ui.treeOpen.add(key);
     App.renderTree();
     App.renderStatusbar();
     if (tab) App.openTab(tab); else App.renderActivePage();
   },
 
+  /* Недавно открытые модели — для списка на Главной. */
+  rememberRecent(key) {
+    let keys = [];
+    try { keys = JSON.parse(localStorage.getItem("heimdall.recent") || "[]"); } catch (e) { keys = []; }
+    keys = [key, ...keys.filter((k) => k !== key)].slice(0, 8);
+    try { localStorage.setItem("heimdall.recent", JSON.stringify(keys)); } catch (e) { /* приватный режим */ }
+  },
+
   renderActivePage() {
     const m = App.selectedModel();
+    if (App.activeTab === "home" && window.HomePage) HomePage.render();
     if (App.activeTab === "explorer" && window.Explorer) Explorer.render(m);
     if (App.activeTab === "builder" && window.Builder) Builder.render(m);
     if (App.activeTab === "sql" && window.SqlConsole) SqlConsole.render();
@@ -3878,7 +4803,7 @@ const App = {
         const marks = [];
         if (c._kind === "virtual") marks.push(U.el("span", { class: "minibadge m-virtual", title: "виртуальная: " + (c.sql || "") }, "ƒ"));
         if (Array.isArray(c.granularities) && c.granularities.length) marks.push(U.el("span", { class: "minibadge m-time", title: "временное измерение" }, "⏱"));
-        if (c._kind === "param") marks.push(U.el("span", { class: "minibadge m-param", title: "параметризована — не реализовано в REST" }, "⚙"));
+        if (c._kind === "param") marks.push(U.el("span", { class: "minibadge m-param", title: "параметрическая — аргументы задаются в Конструкторе" }, "⚙"));
         kids.append(U.el("div", { class: "tree-leaf" + (c._kind === "param" ? " param" : ""), title: c.description || "" },
           U.el("span", { html: CHTypes.icon(c.type) }),
           U.el("span", { class: "leaf-name" }, c.column_name),
@@ -3889,7 +4814,7 @@ const App = {
       if (mets.length) kids.append(U.el("div", { class: "tree-section-label" }, "метрики"));
       for (const x of mets) {
         const marks = x._kind === "param"
-          ? [U.el("span", { class: "minibadge m-param", title: "параметризована — не реализовано в REST" }, "⚙")] : [];
+          ? [U.el("span", { class: "minibadge m-param", title: "параметрическая — аргументы задаются в Конструкторе" }, "⚙")] : [];
         kids.append(U.el("div", { class: "tree-leaf" + (x._kind === "param" ? " param" : ""), title: x.description || x.verbose_name || "" },
           U.el("span", { html: '<span class="ticon t-metric">Σ</span>' }),
           U.el("span", { class: "leaf-name" }, x.metric_name),
@@ -3913,6 +4838,8 @@ const App = {
       App.ping = { state: "bad", latency: null };
     }
     App.renderStatusbar();
+    const hp = U.$("#homePing");
+    if (hp && window.HomePage) HomePage.renderPing(hp);
     return App.ping;
   },
 
@@ -3920,10 +4847,8 @@ const App = {
     const sb = U.$("#statusbar");
     const s = App.settings;
     sb.innerHTML = "";
-    const modeBadge = U.el("span", { class: "badge b-green" }, "LIVE");
     const pingTitle = { ok: `сервер доступен${App.ping.latency ? `, ${App.ping.latency} мс` : ""}`, bad: "сервер недоступен", wait: "проверка…" }[App.ping.state];
     sb.append(
-      U.el("span", { class: "sb-item", style: "cursor:pointer", onclick: () => SettingsModal.open() }, modeBadge),
       U.el("span", { class: "sb-item mono", style: "cursor:pointer", onclick: () => SettingsModal.open(), title: "Настройки подключения" },
         s.baseUrl || "base URL не задан"),
       U.el("span", { class: "sb-item", title: pingTitle },
@@ -4016,6 +4941,22 @@ const App = {
     }
     U.$("#themeToggle").addEventListener("click", () => App.toggleTheme());
     U.$("#settingsBtn").addEventListener("click", () => SettingsModal.open());
+
+    /* Боковое меню: бургер открывает, крестик/подложка/Escape закрывают. */
+    const sideMenu = U.$("#sideMenu"), menuOverlay = U.$("#menuOverlay");
+    const setMenu = (open) => {
+      sideMenu.classList.toggle("open", open);
+      menuOverlay.classList.toggle("open", open);
+    };
+    U.$("#menuBtn").addEventListener("click", () => setMenu(true));
+    U.$("#menuCloseBtn").addEventListener("click", () => setMenu(false));
+    menuOverlay.addEventListener("click", () => setMenu(false));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
+    U.$$("#sideMenu .menu-item[data-page]").forEach((i) =>
+      i.addEventListener("click", () => { App.openTab(i.dataset.page); setMenu(false); }));
+    U.$("#menuSettings").addEventListener("click", () => { setMenu(false); SettingsModal.open(); });
+    U.$("#menuTheme").addEventListener("click", () => App.toggleTheme());
+    U.$("#menuReload").addEventListener("click", () => { setMenu(false); App.loadCatalog(); });
     U.$("#treeSearch").addEventListener("input", U.debounce((e) => {
       App.ui.search = e.target.value;
       App.renderTree();
@@ -4029,14 +4970,124 @@ const App = {
     YamlEditor.init();
     Skills.init();
 
-    const savedTab = localStorage.getItem("heimdall.tab");
+    /* Вкладку можно назвать в адресе: `#skills` открывает Завод скиллов. Так
+       ссылаются шапка сайта документации и старый адрес редактора скиллов —
+       якорь до этого никто не читал, и человек попадал на прошлую вкладку.
+
+       Сработав, якорь убирается из адреса: иначе он перебивал бы запомненную
+       вкладку при каждой перезагрузке, и уйти с него было бы нельзя. */
+    const asked = (typeof location !== "undefined" ? location.hash || "" : "").replace(/^#/, "");
+    if (asked && typeof history !== "undefined" && history.replaceState) {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+    const savedTab = asked || localStorage.getItem("heimdall.tab");
     const savedSel = localStorage.getItem("heimdall.selected");
     if (savedSel) App.selected = savedSel;
 
     App.renderStatusbar();
     await App.loadCatalog();
     App.doPing();
-    App.openTab(savedTab && ["explorer", "builder", "sql", "yaml", "skills"].includes(savedTab) ? savedTab : "explorer");
+    App.openTab(savedTab && ["home", "explorer", "builder", "sql", "yaml", "skills"].includes(savedTab) ? savedTab : "home");
+  }
+};
+
+/* ============ Главная ============ */
+const HomePage = {
+  /* Недавно открытые модели; пока их нет — первые модели каталога. */
+  recent() {
+    let keys = [];
+    try { keys = JSON.parse(localStorage.getItem("heimdall.recent") || "[]"); } catch (e) { keys = []; }
+    const found = keys.map((k) => App.catalog.find((m) => ModelInfo.key(m) === k)).filter(Boolean);
+    return (found.length ? found : App.catalog).slice(0, 6);
+  },
+
+  modelEmoji(m) {
+    if (m.history) return "⏱";
+    if (m.array_join) return "⊞";
+    if ((m.joins || []).length) return "⇄";
+    return "▤";
+  },
+
+  modelTag(m) {
+    if (m.history) return "history";
+    if (m.array_join) return "array_join";
+    if ((m.joins || []).length) return `joins: ${m.joins.length}`;
+    return "обычный";
+  },
+
+  renderPing(el) {
+    el.innerHTML = "";
+    const st = App.ping.state;
+    el.append(
+      U.el("span", { class: `sb-dot ${st}` }),
+      st === "ok" ? `доступен · ${App.ping.latency ?? "—"} мс` : st === "bad" ? "нет связи" : "проверка…");
+  },
+
+  render() {
+    const root = U.$("#page-home");
+    root.innerHTML = "";
+    const cat = App.catalog || [];
+    const schemas = [...new Set(cat.map((m) => m.schema_name))];
+
+    const hero = U.el("div", { class: "hero-banner" },
+      U.el("div", { class: "hero-kicker" }, "Пульс · Heimdall"),
+      U.el("div", { class: "hero-title" }, "Рабочее место данных"),
+      U.el("div", { class: "hero-sub" },
+        "Каталог датасетов, конструктор запросов, SQL-консоль и Завод скиллов — в фирменном интерфейсе платформы «Пульс»."),
+      U.el("div", { class: "hero-actions" },
+        U.el("button", { class: "hero-btn solid", onclick: () => App.openTab("explorer") }, "Открыть каталог"),
+        U.el("button", { class: "hero-btn o", onclick: () => App.openTab("sql") }, "SQL-консоль")));
+
+    const tile = (em, cls, title, sub, desc, tab) => U.el("div", { class: "tile", onclick: () => App.openTab(tab) },
+      U.el("div", { class: "tile-top" },
+        U.el("span", { class: `tile-em ${cls}` }, em),
+        U.el("div", null, U.el("div", { class: "tile-title" }, title), U.el("div", { class: "tile-sub" }, sub))),
+      U.el("div", { class: "tile-desc" }, desc));
+
+    const tiles = U.el("div", { class: "tiles" },
+      tile("📊", "b1", "Датасеты", cat.length ? `${cat.length} моделей · ${schemas.length} схем` : "каталог пуст",
+        "Обзорщик моделей: колонки, метрики, связи и доступ.", "explorer"),
+      tile("🗄️", "b2", "SQL-консоль", "raw ClickHouse SQL",
+        "Запросы к логическим моделям в диалекте ClickHouse.", "sql"),
+      tile("🤖", "b3", "Завод скиллов", "скиллы MCP-канала",
+        "Сборка, проверка и публикация скиллов с агентами.", "skills"));
+
+    const recentRows = HomePage.recent().map((m) => {
+      const key = ModelInfo.key(m);
+      return U.el("div", { class: "row-item", onclick: () => App.selectModel(key, "explorer") },
+        U.el("span", { class: "row-em" }, HomePage.modelEmoji(m)),
+        U.el("div", { style: "min-width:0" },
+          U.el("div", { class: "row-name" }, m.logic_model),
+          U.el("div", { class: "row-meta" }, `${m.schema_name}${m.table_name ? " · " + m.table_name : ""}`)),
+        U.el("span", { class: "row-spacer" }),
+        U.el("span", { class: "row-tag" }, HomePage.modelTag(m)));
+    });
+
+    const pingLine = U.el("span", { id: "homePing", style: "display:inline-flex;align-items:center;gap:7px" });
+    HomePage.renderPing(pingLine);
+    const s = App.settings;
+    const standCard = U.el("div", { class: "pcard" },
+      U.el("div", { class: "pcard-head" }, U.el("span", { class: "pcard-title" }, "Стенд"),
+        U.el("span", { class: "spacer" }),
+        U.el("button", { class: "small", onclick: () => App.doPing() }, "Проверить"),
+        U.el("button", { class: "small", onclick: () => SettingsModal.open() }, "Настройки")),
+      U.el("div", { class: "pcard-body" },
+        U.el("dl", { class: "kv", style: "padding:8px 0;row-gap:8px" },
+          U.el("dt", null, "Адрес"), U.el("dd", { class: "mono" }, s.baseUrl || "не задан"),
+          U.el("dt", null, "Состояние"), U.el("dd", null, pingLine),
+          U.el("dt", null, "Токен"), U.el("dd", null, s.token ? "задан" : "не задан"),
+          U.el("dt", null, "Каталог"), U.el("dd", null, App.catalogError ? "недоступен" : `${cat.length} моделей`))));
+
+    const recentCard = U.el("div", { class: "pcard" },
+      U.el("div", { class: "pcard-head" }, U.el("span", { class: "pcard-title" }, "Модели под рукой"),
+        U.el("span", { class: "spacer" }),
+        U.el("button", { class: "small", onclick: () => App.openTab("explorer") }, "Каталог")),
+      U.el("div", { class: "pcard-body" },
+        ...(recentRows.length ? recentRows : [U.el("div", { class: "home-empty" }, "Каталог пока пуст или недоступен")])));
+
+    root.append(U.el("div", { class: "page-scroll" },
+      U.el("div", { class: "home" }, hero, tiles,
+        U.el("div", { class: "home-cols" }, recentCard, standCard))));
   }
 };
 
@@ -4109,7 +5160,7 @@ const SettingsModal = {
 window.addEventListener("DOMContentLoaded", () => App.boot());
 
 /* экспорт в window (top-level const не попадает в window) */
-Object.assign(window, { App, Modal, SettingsModal });
+Object.assign(window, { App, Modal, SettingsModal, HomePage });
 
 </script>
 </body>
