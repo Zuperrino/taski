@@ -24,7 +24,7 @@ const SkillFactory = {
 
   STAGE_ICONS: {
     interview: "❓", reuse: "♻", scout: "🔎", author: "✎", check: "✓", fix: "🔧",
-    judge: "🎯", council: "👥", council_summary: "🧾", gate: "🛂",
+    judge: "🎯", council: "🧙", council_summary: "🧾", gate: "🛂",
   },
 
   state: {
@@ -46,7 +46,7 @@ const SkillFactory = {
        за которую потом будут спорить участники совета. */
     limits: {},
     /* Оценка готового скилла: какой вид выбран в поповере и кто отмечен в совет. */
-    evalMode: "judge", council: [], councilSize: 4,
+    council: [], councilSize: 4,
     /* Разбор судьи и мнения совета последнего прогона. Держим отдельно от отчёта
        проверки: они приходят и внутри него, и рядом с ним полями черновика. */
     judgement: null, councilReport: null,
@@ -283,51 +283,62 @@ const SkillFactory = {
     /* Кнопка публикации гаснет, пока скилл не проверен на данных, а причина
        написана рядом: в каталог стенда скилл читают все агенты канала. Публикуют
        только этой кнопкой — горячей клавиши у неё нет намеренно. */
-    const publishBtn = btn("Опубликовать", {
+    const publishBtn = btn("🚀 Опубликовать", {
       class: "primary sf-act", title: this.PUBLISH_HINT, onclick: () => this.publish(),
     });
     const gate = this.el("span", { class: "sf-gate" });
     const saved = this.el("span", { class: "sf-saved", title: "Время последней записи черновика" });
 
-    /* Всё, что можно сделать со скиллом, стоит на самой панели: пряталось под
-       «⋯» именно то, что ищут глазами, а лишний клик за выгрузкой или сменой
-       модели ничего не экономил. Подсказка у каждой кнопки говорит, что она
-       делает и когда её звать. */
-    const toolbar = this.el("div", { class: "sf-toolbar" },
+    /* Панель в два ряда: сверху файл и его жизненный цикл (редкие действия),
+       снизу прогоны и оценки — то, чем пользуются постоянно, ближе к разговору.
+       Одна строка на всё переносилась flex-wrap в случайных местах. Подсказка у
+       каждой кнопки говорит, что она делает и когда её звать. */
+    const toolbarFile = this.el("div", { class: "sf-toolbar sf-toolbar-file" },
       this.el("span", { class: "sf-dot", title: "Есть несохранённые правки", text: "●" }), filename, saved,
-      btn("Проверить", {
-        class: "sf-act",
-        title: "Полная проверка: статика, прогон запросов на данных и три критика. "
-               + "Это она открывает публикацию",
-        onclick: () => this.check(true),
-      }),
-      btn("Быстро", {
-        class: "sf-act",
-        title: "Статика и прогон на данных без критиков. Когда правите по мелочи "
-               + "и ждать модель не хочется",
-        onclick: () => this.check(false),
-      }),
-      this.buildEvalPop(),
       this.el("span", { class: "sf-spacer" }),
-      modelSelect, rawToggle,
-      btn("Скачать", {
+      btn("💾 Скачать", {
         class: "sf-act",
         title: "Сохранить файл скилла на диск. Когда нужно унести его руками "
                + "или положить в репозиторий",
         onclick: () => this.download(false),
       }),
-      btn("Архив", {
+      btn("📦 Архив", {
         class: "sf-act",
         title: "Скилл, отчёт проверки и весь разговор одним архивом. Когда "
                + "нужно показать кому-то, как получился этот результат",
         onclick: () => this.download(true),
       }),
-      btn("Удалить", {
+      btn("🗑 Удалить", {
         class: "sf-del sf-act",
         title: "Убрать черновик. Опубликованный скилл каталога это не трогает",
         onclick: () => this.remove(),
       }),
       publishBtn, gate,
+    );
+    const toolbarRun = this.el("div", { class: "sf-toolbar sf-toolbar-run" },
+      btn("🧪 Проверить", {
+        class: "sf-act",
+        title: "Полная проверка: статика, прогон запросов на данных и три критика. "
+               + "Это она открывает публикацию",
+        onclick: () => this.check(true),
+      }),
+      btn("⚡ Быстро", {
+        class: "sf-act",
+        title: "Статика и прогон на данных без критиков. Когда правите по мелочи "
+               + "и ждать модель не хочется",
+        onclick: () => this.check(false),
+      }),
+      this.el("span", { class: "sf-vsep" }),
+      btn("🎯 Сверка", {
+        class: "sf-act",
+        title: "Судья получает постановку и скилл и сверяет их построчно: что "
+               + "выполнено, что не выполнено, что искажено. Публикацию не открывает",
+        onclick: () => this.startJudge(),
+      }),
+      this.buildCouncilPop(),
+      this.el("span", { class: "sf-spacer" }),
+      this.el("span", { class: "sf-model-tag", text: "🤖", title: "Модель для агентов" }),
+      modelSelect, rawToggle,
     );
 
     const progress = this.el("div", { class: "sf-progress" });
@@ -371,10 +382,10 @@ const SkillFactory = {
     const split = this.el("div", { class: "sf-split" }, chatCol, resizer, body);
 
     Object.assign(this.els, {
-      filename, saved, modelSelect, rawCheck, banner, toolbar, modes, progress, publishBtn, gate,
+      filename, saved, modelSelect, rawCheck, banner, toolbarFile, toolbarRun, modes, progress, publishBtn, gate,
       form: form.firstChild, editor, report: report.firstChild, split, chatCol, resizer, body,
       panes: { form, text, report, diff },
-      main: this.el("div", { class: "sf-main" }, toolbar, banner, progress, split),
+      main: this.el("div", { class: "sf-main" }, toolbarFile, toolbarRun, banner, progress, split),
     });
     this.initSplit();
     return this.els.main;
@@ -671,7 +682,7 @@ const SkillFactory = {
       });
       this.fillModels(s);
       this.fillCouncil(s);
-      this.renderEvalPop();
+      if (this.els.evalPop && this.els.evalPop.classList.contains("on")) this.renderCouncilPop();
       const notes = [];
       if (s.auth_mode === "unavailable") {
         notes.push(["err", "Проверка прав на стенде не поднялась: " + (s.auth_reason || "причина неизвестна")
@@ -689,16 +700,13 @@ const SkillFactory = {
         notes.push(["err", "Модель настроена, но шлюз не ответил на запрос списка моделей. "
           + "Генерация, скорее всего, работать не будет — проверьте доступность шлюза."]);
       }
-      /* Адрес называем прямо: каталог уезжает на диск чаще всего потому, что
-         сервис слушает не на том порту, от которого считается адрес по умолчанию,
+      /* Адрес называем прямо: каталог чаще всего недоступен потому, что сервис
+         слушает не на том порту, от которого считается адрес по умолчанию,
          и без адреса в тексте это ищут наугад. */
-      const where = s.catalog_url ? ` Адрес самовызова: ${s.catalog_url}.` : "";
+      const where = s.catalog_url ? ` Адрес сервиса: ${s.catalog_url}.` : "";
       if (!s.catalog_source) {
-        notes.push(["warn", "Источник каталога моделей неизвестен: сервис не ответил за отведённое время. "
-          + "Агенты возьмут то, что окажется доступно, — это видно будет в ленте." + where]);
-      } else if (s.catalog_source === "disk") {
-        notes.push(["warn", "Каталог моделей читается с диска: живой сервис не ответил. "
-          + "Часть моделей может не совпадать с тем, что реально доступно." + where]);
+        notes.push(["warn", "Каталог моделей не ответил за отведённое время: перечень, поиск и "
+          + "подбор витрин будут недоступны, пока связь с сервисом не восстановится." + where]);
       }
       this.showNotes(notes);
     } catch (err) {
@@ -1232,42 +1240,35 @@ const SkillFactory = {
 
      Ни одна из оценок публикацию не открывает и не закрывает: рубеж остаётся на
      воспроизводимом прогоне на данных. */
-  EVAL_HINTS: {
-    judge: "Судья получает постановку и скилл и сверяет их построчно: что выполнено, "
-      + "что не выполнено, что искажено.",
-    council: "Несколько моделей оценивают скилл независимо друг от друга, отдельная модель "
-      + "сводит мнения. Общей переписки нет: прочитав чужое мнение первой, модель "
-      + "прилипает к нему, и обсуждение сходится к общему, а не к верному.",
-  },
+  COUNCIL_HINT: "Несколько моделей оценивают скилл независимо друг от друга, отдельная модель "
+    + "сводит мнения. Общей переписки нет: прочитав чужое мнение первой, модель "
+    + "прилипает к нему, и обсуждение сходится к общему, а не к верному.",
   EVAL_NOTE: "Оценка публикацию не закрывает: рубеж остаётся на прогоне на данных. Невыполненное требование постановки судья отдаёт правщику — его чинят, как ошибку статики.",
   COUNCIL_MIN: 2,
 
-  buildEvalPop() {
-    const modes = this.el("div", { class: "sf-seg sf-eval-modes" },
-      this.el("button", { "data-eval": "judge", text: "Сверить с постановкой",
-                          onclick: () => this.setEvalMode("judge") }),
-      this.el("button", { "data-eval": "council", text: "Совет моделей",
-                          onclick: () => this.setEvalMode("council") }));
-    const hint = this.el("div", { class: "sf-eval-hint" });
+  /* Попап только про состав совета: сверка с постановкой запускается своей
+     кнопкой сразу, а совету нужен ростер — кого звать, с квотами и карантином. */
+  buildCouncilPop() {
     const roster = this.el("div", { class: "sf-eval-roster" });
     const picked = this.el("div", { class: "sf-eval-picked" });
-    const go = this.el("button", { class: "primary sf-eval-go", text: "Запустить",
-                                   onclick: () => this.startEval() });
-    const pop = this.el("div", { class: "sf-eval" },
-      this.el("div", { class: "sf-eval-head", text: "Оценка готового скилла" }),
-      modes, hint, roster, picked,
+    const go = this.el("button", { class: "primary sf-eval-go", text: "🧙 Созвать совет",
+                                   onclick: () => this.startCouncil() });
+    const pop = this.el("div", { class: "sf-eval council" },
+      this.el("div", { class: "sf-eval-head", text: "🧙 Совет моделей" }),
+      this.el("div", { class: "sf-eval-hint", text: this.COUNCIL_HINT }),
+      roster, picked,
       this.el("div", { class: "sf-eval-note", text: this.EVAL_NOTE }),
       this.el("div", { class: "act" }, go));
     const button = this.el("button", {
-      class: "sf-act sf-eval-btn", text: "Оценить ▾",
-      title: "Сверить скилл с постановкой или спросить совет моделей",
+      class: "sf-act sf-eval-btn", text: "🧙 Совет ▾",
+      title: "Спросить мнение нескольких моделей: выбрать участников и созвать",
       onclick: (e) => { e.stopPropagation(); this.toggleEvalPop(); },
     });
     const wrap = this.el("div", { class: "sf-eval-wrap" }, button, pop);
     document.addEventListener("click", (e) => {
       if (pop.classList.contains("on") && !wrap.contains(e.target)) this.closeEvalPop();
     });
-    Object.assign(this.els, { evalPop: pop, evalBtn: button, evalModes: modes, evalHint: hint,
+    Object.assign(this.els, { evalPop: pop, evalBtn: button,
                               evalRoster: roster, evalPicked: picked, evalGo: go });
     return wrap;
   },
@@ -1275,15 +1276,10 @@ const SkillFactory = {
   toggleEvalPop() {
     const open = !this.els.evalPop.classList.contains("on");
     this.els.evalPop.classList.toggle("on", open);
-    if (open) this.renderEvalPop();
+    if (open) this.renderCouncilPop();
   },
 
   closeEvalPop() { this.els.evalPop.classList.remove("on"); },
-
-  setEvalMode(mode) {
-    this.state.evalMode = mode === "council" ? "council" : "judge";
-    this.renderEvalPop();
-  },
 
   /* Квота и карантин по имени модели: ответ /state отдаёт их списком записей, а
      искать их в интерфейсе нужно по имени. */
@@ -1322,7 +1318,7 @@ const SkillFactory = {
     const chosen = this.state.council.filter((item) => item !== name);
     if (on) chosen.push(name);
     this.state.council = chosen;
-    this.renderEvalPop();
+    this.renderCouncilPop();
   },
 
   plural(count, one, few, many) {
@@ -1341,13 +1337,7 @@ const SkillFactory = {
     return minutes + " " + this.plural(minutes, "минута", "минуты", "минут");
   },
 
-  renderEvalPop() {
-    const council = this.state.evalMode === "council";
-    for (const button of this.els.evalModes.children) {
-      button.classList.toggle("on", button.getAttribute("data-eval") === this.state.evalMode);
-    }
-    this.els.evalHint.textContent = this.EVAL_HINTS[this.state.evalMode];
-    this.els.evalPop.classList.toggle("council", council);
+  renderCouncilPop() {
     this.renderCouncilRoster();
     const chosen = this.state.council.filter((name) => !this.jailed(name));
     const enough = chosen.length >= this.COUNCIL_MIN;
@@ -1356,9 +1346,8 @@ const SkillFactory = {
       ? `отмечено ${chosen.length}: каждый смотрит на скилл сам, свод собирается после`
       : `отмечено ${chosen.length}: совет — это как минимум двое, мнение одной модели `
         + "ничем не отличается от ещё одного критика";
-    this.els.evalGo.disabled = council && !enough;
-    this.els.evalGo.title = council && !enough
-      ? "Отметьте хотя бы двух участников" : "";
+    this.els.evalGo.disabled = !enough;
+    this.els.evalGo.title = enough ? "" : "Отметьте хотя бы двух участников";
   },
 
   /* Список участников: только то, что процессу уже известно без единого запроса.
@@ -1367,7 +1356,6 @@ const SkillFactory = {
   renderCouncilRoster() {
     const host = this.els.evalRoster;
     host.innerHTML = "";
-    if (this.state.evalMode !== "council") return;
     const names = this.state.models || [];
     if (!names.length) {
       host.append(this.el("div", { class: "sf-eval-empty",
@@ -1394,24 +1382,28 @@ const SkillFactory = {
     }
   },
 
-  async startEval() {
+  async startJudge() {
     if (this.state.busy) return;
     if (!this.state.text.trim()) { this.banner("warn", "Оценивать нечего: текст пуст."); return; }
-    const council = this.state.evalMode === "council";
-    const picked = council ? this.state.council.filter((name) => !this.jailed(name)) : [];
-    if (council && picked.length < this.COUNCIL_MIN) {
+    if (!await this.ensureDraft("Сверка с постановкой")) return;
+    this.openChat();
+    this.pushStep("Сверка с постановкой: что просили и что получилось");
+    await this.stream({ mode: "judge", model: this.state.model });
+  },
+
+  async startCouncil() {
+    if (this.state.busy) return;
+    if (!this.state.text.trim()) { this.banner("warn", "Оценивать нечего: текст пуст."); return; }
+    const picked = this.state.council.filter((name) => !this.jailed(name));
+    if (picked.length < this.COUNCIL_MIN) {
       this.banner("warn", "Отметьте хотя бы двух участников: мнение одной модели — это не совет.");
       return;
     }
-    if (!await this.ensureDraft(council ? "Совет моделей" : "Сверка с постановкой")) return;
+    if (!await this.ensureDraft("Совет моделей")) return;
     this.closeEvalPop();
     this.openChat();
-    this.pushStep(council
-      ? `Совет моделей: ${picked.length} независимых мнений, затем свод`
-      : "Сверка с постановкой: что просили и что получилось");
-    await this.stream(council
-      ? { mode: "council", model: this.state.model, council_models: picked }
-      : { mode: "judge", model: this.state.model });
+    this.pushStep(`Совет моделей: ${picked.length} независимых мнений, затем свод`);
+    await this.stream({ mode: "council", model: this.state.model, council_models: picked });
   },
 
   /* Черновик под прогон: поток идёт по нему, а у скилла каталога черновика нет.
@@ -2340,7 +2332,7 @@ const SkillFactory = {
     const names = this.el("div", { class: "sf-council-names" });
     const box = this.el("div", { class: "sf-council" },
       this.el("div", { class: "sf-council-head" },
-        this.el("span", { text: "👥 Совет моделей" }),
+        this.el("span", { text: "🧙 Совет моделей" }),
         this.el("span", { class: "sf-council-note", text: "мнения независимы: участники друг друга не видят" })),
       names, list, digest);
     this.els.log.append(box);
