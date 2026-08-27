@@ -1525,13 +1525,17 @@ const SkillFactory = {
     }
     host.append(this.el("div", { class: "sf-group", text: "Замечания" }));
     /* Разом чинить можно и отсюда: список в отчёте полный, а по одному его
-       разбирать — столько же прогонов, сколько замечаний. */
-    host.append(this.el("div", { class: "sf-report-act" },
-      this.el("button", {
-        class: "small primary sf-act", text: `Починить эти находки (${issues.length})`,
-        title: "Отметить, что именно чинить, и запустить правку с перепроверкой",
-        onclick: () => this.openFixPicker(issues, "Что чинить из отчёта проверки"),
-      })));
+       разбирать — столько же прогонов, сколько замечаний. Счёт идёт по тем
+       замечаниям, которые правкой скилла и закрываются. */
+    const fixable = this.fixableIssues(issues);
+    if (fixable.length) {
+      host.append(this.el("div", { class: "sf-report-act" },
+        this.el("button", {
+          class: "small primary sf-act", text: `Починить эти находки (${fixable.length})`,
+          title: "Отметить, что именно чинить, и запустить правку с перепроверкой",
+          onclick: () => this.openFixPicker(fixable, "Что чинить из отчёта проверки"),
+        })));
+    }
     const titles = { error: "Ошибка", warning: "Предупреждение", advice: "Совет" };
     for (const issue of issues) {
       /* Замечание называет место (поле формы, имя колонки, «прогон»), но найти
@@ -1549,9 +1553,11 @@ const SkillFactory = {
           }) : null,
           this.sourceChip(issue.source)),
         this.el("div", { text: issue.message }),
-        issue.fix_hint ? this.el("div", { class: "hint", text: issue.fix_hint }) : null,
-        this.el("div", { class: "act" },
-          this.el("button", { class: "small sf-act", text: "Исправить это", onclick: () => this.fixOne(issue) })),
+        /* У замечания не про скилл подсказка стоит одна — в строке действий
+           вместо кнопки, иначе один и тот же текст читался бы дважды. */
+        this.skillFixable(issue) && issue.fix_hint
+          ? this.el("div", { class: "hint", text: issue.fix_hint }) : null,
+        this.issueAct(issue),
       ));
     }
   },
@@ -2175,8 +2181,7 @@ const SkillFactory = {
           }) : null,
           this.sourceChip(issue.source)),
         this.el("div", { class: "text", text: issue.message }),
-        this.el("div", { class: "act" },
-          this.el("button", { class: "small sf-act", text: "Исправить это", onclick: () => this.fixOne(issue) }))));
+        this.issueAct(issue)));
     }
     /* Сколько замечаний всего. Карточек может быть меньше: в историю чата
        попадают только первые, а счёт остаётся полным. */
@@ -2708,8 +2713,41 @@ const SkillFactory = {
     await this.stream(payload);
   },
 
+  /* ---------- что чинится скиллом ----------
+     Дефект каталога стенда и несостоявшийся прогон (связь, права, таймаут)
+     скиллу не в вину: правка переписала бы исправный текст, а причина осталась
+     бы на месте. Такие замечания в отчёте остаются, но правку им не предлагаем —
+     ни кнопкой, ни в форме починки, ни счётом на ней. */
+  NOT_SKILL_CODES: ["run-catalog-defect", "run-not-performed"],
+
+  // Запасная пометка: подсказку пишет сама проверка, но отчёт мог прийти без неё.
+  NOT_SKILL_NOTE: "Чинится не в скилле.",
+
+  skillFixable(issue) {
+    return !this.NOT_SKILL_CODES.includes(String((issue && issue.code) || ""));
+  },
+
+  fixableIssues(issues) {
+    return (issues || []).filter((item) => item && typeof item === "object" && this.skillFixable(item));
+  },
+
+  /* Строка действий замечания: своё чинится кнопкой, чужое — пометкой, где его
+     чинить. Слова пометки берём из самого замечания. */
+  issueAct(issue) {
+    if (this.skillFixable(issue)) {
+      return this.el("div", { class: "act" },
+        this.el("button", { class: "small sf-act", text: "Исправить это", onclick: () => this.fixOne(issue) }));
+    }
+    return this.el("div", { class: "act" },
+      this.el("span", { class: "hint", text: String((issue && issue.fix_hint) || "").trim() || this.NOT_SKILL_NOTE }));
+  },
+
   async fixOne(issue) {
     if (this.state.busy) return;
+    if (!this.skillFixable(issue)) {
+      this.banner("info", String((issue && issue.fix_hint) || "").trim() || this.NOT_SKILL_NOTE);
+      return;
+    }
     if (!this.fixReady()) return;
     this.openChat();
     this.pushMsg("user", "Исправить: " + issue.message);
@@ -2748,9 +2786,11 @@ const SkillFactory = {
 
   openFixPicker(issues, title) {
     if (this.state.busy || !this.fixReady()) return;
-    const rows = (issues || []).filter((item) => item && typeof item === "object");
+    const rows = this.fixableIssues(issues);
     if (!rows.length) {
-      this.banner("info", "Чинить нечего: замечаний с этим источником в отчёте нет.");
+      this.banner("info", (issues || []).length
+        ? "Чинить нечего: эти замечания правкой скилла не закрываются."
+        : "Чинить нечего: замечаний с этим источником в отчёте нет.");
       return;
     }
     // Форма живёт в единственном числе: две открытые карточки спорили бы за то,
@@ -3036,9 +3076,14 @@ const SkillFactory = {
            критиков по второму разу. Поля нет — значит сборка сервиса старая, и
            ведём себя как раньше. */
         if (!event.merged) {
-          this.pushStep(`проверка: ошибок ${event.report.counts.error}, `
+          /* Красим тем же рубежом, что и кнопку публикации: замечание вроде
+             дефекта каталога ошибок не добавляет, но публикацию закрывает, и
+             зелёный шаг под закрытой публикацией читался бы как разнобой. */
+          const gap = this.publishGap();
+          const step = this.pushStep(`проверка: ошибок ${event.report.counts.error}, `
             + `предупреждений ${event.report.counts.warning}, советов ${event.report.counts.advice}`,
-            event.report.ok ? "ok" : "bad");
+            event.report.ok && !gap ? "ok" : "bad");
+          if (gap) step.title = "публикация закрыта: " + gap;
           this.sayReview(event.report.review);
           this.sayIssues(event.report);
         }
@@ -3063,14 +3108,7 @@ const SkillFactory = {
           if (kind) this.state.stale = { ...this.state.stale, [kind]: !!item.stale };
         }
         if ((event.assessments || []).length) this.renderReport();
-        /* Ход кончился ожиданием решения на воротах — это не то же самое, что
-           «нужна ваша правка»: вторая формулировка отправляет человека искать,
-           что же он должен исправить, хотя исправлять нечего. */
-        const waiting = String(event.waiting || "");
-        this.pushStep(
-          ready ? "готово"
-            : waiting === "scout-gate" ? "ждёт вашего решения" : "нужна ваша правка",
-          ready ? "ok" : "");
+        this.pushStep(ready ? "готово" : this.waitingStep(event.waiting), ready ? "ok" : "");
         break;
       }
       case "error":
@@ -3078,6 +3116,24 @@ const SkillFactory = {
         this.bannerAside("err", event.detail);
         break;
     }
+  },
+
+  /* ---------- чем кончился незаконченный ход ----------
+     Чего ждут дальше, сказано полем waiting события done. Общая подпись «нужна
+     ваша правка» годится не всегда: на воротах исправлять нечего, а при дефекте
+     каталога правка не в скилле вовсе — там она отправила бы человека искать в
+     тексте ошибку, которой нет, да ещё под репликой «скилл править не нужно». */
+  WAITING_STEPS: {
+    "scout-gate": "ждёт вашего решения",
+    "catalog-fix": "ждёт починки каталога",
+  },
+
+  waitingStep(waiting) {
+    const key = String(waiting || "");
+    // Своё поле, а не унаследованное: значение вроде toString не должно
+    // превратиться в чужую подпись.
+    return Object.prototype.hasOwnProperty.call(this.WAITING_STEPS, key)
+      ? this.WAITING_STEPS[key] : "нужна ваша правка";
   },
 
   /* Вопрос — единственное место, где виден человеческий текст роли: он приходит
@@ -3502,6 +3558,16 @@ const SkillFactory = {
   // Состояние «прогона не было» и причина «прогонять нечего» из отчёта прогона.
   RUN_NOT_PERFORMED: "not-performed",
   SKIP_NOTHING: "nothing-to-run",
+  // Код замечания «отказ пришёл по состоянию каталога стенда, а не по вине скилла».
+  CATALOG_DEFECT_CODE: "run-catalog-defect",
+  // Код замечания «запрос выполнился, но вернул ноль строк» — он-то чинится в скилле.
+  EMPTY_RESULT_CODE: "empty-result",
+
+  /* Отказ по состоянию каталога отдельной строкой: состояние прогона у него общее
+     со всеми невыполненными прогонами, а причина своя. Слова те же, которыми
+     отказывает ручка публикации. */
+  CATALOG_DEFECT_GAP: "запрос ушёл в ручку данных и получил отказ по состоянию каталога "
+    + "на стенде — скилл править не нужно, почините каталог и нажмите «Проверить» заново",
 
   /* Значение состояния прогона как оно лежит в отчёте: строка, признак или
      ничего. Сначала смотрим сам отчёт, потом его раздел про прогон. */
@@ -3526,6 +3592,22 @@ const SkillFactory = {
     return run.skip_reason === this.SKIP_NOTHING && skill.kind === "reference";
   },
 
+  /* Прогон был, ответ получен, а отказала не логика скилла: каталог стенда собран
+     не полностью. Состояние прогона такому отказу достаётся общее — «не
+     выполнялся», поэтому узнаём его по замечанию отчёта, как это делает и ручка
+     публикации. Без этого человек читает «нажмите Проверить» и получает тот же
+     отказ по кругу, пока каталог не починят. */
+  catalogDefect(report, state) {
+    if (state !== this.RUN_NOT_PERFORMED) return false;
+    const issues = report.issues;
+    if (!Array.isArray(issues)) return false;
+    const has = (code) => issues.some((item) => item && item.code === code);
+    /* Рядом с пустым запросом «править не нужно» соврало бы: ноль строк чинится
+       именно в скилле, поэтому смешанный прогон остаётся с общей причиной — так
+       же решает и ручка публикации. */
+    return has(this.CATALOG_DEFECT_CODE) && !has(this.EMPTY_RESULT_CODE);
+  },
+
   /* Что отчёт говорит о прогоне на данных.
 
      Отчёт бывает двух видов: со старым признаком «прогон подтверждён» и с
@@ -3538,6 +3620,9 @@ const SkillFactory = {
   runVerdict(report) {
     const value = this.runStateValue(report || {});
     if (this.nothingToRun(report || {}, value)) return { state: value, gap: "" };
+    if (this.catalogDefect(report || {}, value)) {
+      return { state: value, gap: this.CATALOG_DEFECT_GAP };
+    }
     if (value === true) return { state: "данные есть", gap: "" };
     if (value === false) {
       return { state: "не подтверждён",
@@ -3613,8 +3698,12 @@ const SkillFactory = {
     if (!this.els.gate) return;
     this.els.gate.textContent = gap ? "публикация закрыта: " + gap : "";
     /* Под наведением та же причина плюс пояснение прогона из самого отчёта:
-       строка рядом с кнопкой короткая, а знать надо всё. */
-    const note = this.runNote();
+       строка рядом с кнопкой короткая, а знать надо всё. Причина про дефект
+       каталога сама говорит, что прогон был, — подпись состояния «прогон на
+       данных не выполнялся» рядом с ней противоречила бы ей, поэтому в этой
+       ветке берём честную строку самого прогона. */
+    const run = (this.state.report || {}).run || {};
+    const note = gap === this.CATALOG_DEFECT_GAP ? String(run.note || "") : this.runNote();
     this.els.gate.title = gap ? (note ? gap + "\n" + note : gap) : "";
   },
 
