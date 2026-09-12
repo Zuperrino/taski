@@ -30,7 +30,10 @@ const SkillFactory = {
   state: {
     catalog: [], drafts: [], tab: "catalog", filter: "",
     mode: "form", kind: "recipe",
-    path: null, draftId: null, filename: "", text: "", previous: "",
+    /* name — имя открытого скилла стенда (ключ в перечне скиллов); откуда он,
+       черновик ли и до какого срока, вкладка смотрит в самом перечне
+       (catalogEntry), а не хранит второй копией. */
+    name: null, draftId: null, filename: "", text: "", previous: "",
     fields: { recipe: null, reference: null },
     /* report — последний отчёт проверки, reportFresh — относится ли он к тому
        тексту, который сейчас в редакторе. Публикация смотрит на оба.
@@ -106,8 +109,17 @@ const SkillFactory = {
   _autoTop: 0,
 
   /* Подсказка у кнопки публикации. Про Ctrl+S тут не сказано намеренно: клавиша
-     сохраняет черновик, а запись в каталог стенда идёт только кнопкой. */
-  PUBLISH_HINT: "Записать скилл в каталог стенда: его сразу видят все агенты канала",
+     сохраняет рабочий черновик, а запись на стенд идёт только кнопкой. */
+  PUBLISH_HINT: "Записать скилл на стенд черновиком на срок: его сразу видят все агенты канала",
+  /* Подсказки кнопки снятия черновика скилла по тому, что открыто. */
+  RETRACT_HINTS: {
+    draft: "Снять черновик скилла со стенда: снова будет действовать версия из репозитория, если она есть",
+    repo: "Это версия из репозитория, черновика у неё нет: снимать нечего. Скрыть скилл можно "
+          + "ручкой видимости POST /api/v2/skills/{name}/visible",
+    none: "Скилл стенда не открыт: снимать нечего",
+  },
+  /* Действие записи словами для баннера публикации. */
+  PUBLISH_ACTIONS: { created: "новый", updated: "обновлён", unchanged: "без изменений" },
 
   RAW_KEY: "heimdall.factory.raw",   // тумблер «показывать сырые ответы»
   THINK_LIMIT: 20000,                // сколько символов размышлений держим в DOM
@@ -287,7 +299,13 @@ const SkillFactory = {
       class: "primary sf-act", title: this.PUBLISH_HINT, onclick: () => this.publish(),
     });
     const gate = this.el("span", { class: "sf-gate" });
-    const saved = this.el("span", { class: "sf-saved", title: "Время последней записи черновика" });
+    const saved = this.el("span", { class: "sf-saved", title: "Время последней записи рабочего черновика" });
+    /* Откуда открытый скилл: из репозитория или черновик со сроком. Снять можно
+       только черновик; у версии из репозитория кнопка погашена с подсказкой. */
+    const origin = this.el("span", { class: "sf-origin" });
+    const retractBtn = btn("⏏ Снять черновик", {
+      class: "sf-del sf-act sf-retract", title: this.RETRACT_HINTS.none, onclick: () => this.retractSkill(),
+    });
 
     /* Панель в два ряда: сверху файл и его жизненный цикл (редкие действия),
        снизу прогоны и оценки — то, чем пользуются постоянно, ближе к разговору.
@@ -310,10 +328,10 @@ const SkillFactory = {
       }),
       btn("🗑 Удалить", {
         class: "sf-del sf-act",
-        title: "Убрать черновик. Опубликованный скилл каталога это не трогает",
-        onclick: () => this.remove(),
+        title: "Убрать рабочий черновик Завода. Скилл на стенде это не трогает",
+        onclick: () => this.removeDraft(),
       }),
-      publishBtn, gate,
+      retractBtn, publishBtn, gate, origin,
     );
     const toolbarRun = this.el("div", { class: "sf-toolbar sf-toolbar-run" },
       btn("🧪 Проверить", {
@@ -383,6 +401,7 @@ const SkillFactory = {
 
     Object.assign(this.els, {
       filename, saved, modelSelect, rawCheck, banner, toolbarFile, toolbarRun, modes, progress, publishBtn, gate,
+      origin, retractBtn,
       form: form.firstChild, editor, report: report.firstChild, split, chatCol, resizer, body,
       panes: { form, text, report, diff },
       main: this.el("div", { class: "sf-main" }, toolbarFile, toolbarRun, banner, progress, split),
@@ -792,8 +811,59 @@ const SkillFactory = {
       this.state.catalog = catalog || [];
       this.state.drafts = drafts || [];
       this.renderList();
+      this.renderOrigin();
     } catch (err) {
       this.banner("err", "Список не загрузился: " + err.message);
+    }
+  },
+
+  /* Запись перечня скиллов стенда по имени. Перечень — единственное место, где
+     вкладка знает происхождение скилла (репозиторий или черновик), срок
+     черновика и видимость; в состоянии и в рабочем черновике это не хранится. */
+  catalogEntry(name) {
+    if (!name) return null;
+    return (this.state.catalog || []).find((item) => item.name === name) || null;
+  },
+
+  /* Срок черновика словами: «ЧЧ:ММ», а если он не сегодня — ещё и день. Срок
+     черновика сутки, и «до 12:00» без дня читалось бы двояко. */
+  untilLabel(iso) {
+    if (!iso) return "";
+    const when = new Date(iso);
+    if (Number.isNaN(when.getTime())) return String(iso);
+    const two = (n) => String(n).padStart(2, "0");
+    const time = two(when.getHours()) + ":" + two(when.getMinutes());
+    const now = new Date();
+    const sameDay = when.getFullYear() === now.getFullYear() && when.getMonth() === now.getMonth()
+      && when.getDate() === now.getDate();
+    return sameDay ? time : two(when.getDate()) + "." + two(when.getMonth() + 1) + " " + time;
+  },
+
+  /* Подпись происхождения скилла по записи перечня. */
+  originLabel(entry) {
+    if (!entry) return "";
+    if (entry.origin !== "draft") return "из репозитория";
+    const until = this.untilLabel(entry.expires_at);
+    return "черновик" + (until ? " до " + until : "");
+  },
+
+  /* Подпись открытого скилла в панели и состояние кнопки снятия черновика. */
+  renderOrigin() {
+    const entry = this.catalogEntry(this.state.name);
+    if (this.els.origin) {
+      const parts = [];
+      if (entry) {
+        parts.push(this.originLabel(entry));
+        if (entry.origin === "draft" && entry.overrides_repo) parts.push("перекрывает версию из репозитория");
+        if (entry.visible === false) parts.push("скрыт");
+      }
+      this.els.origin.textContent = parts.join(" · ");
+      this.els.origin.className = "sf-origin" + (entry ? " " + (entry.origin === "draft" ? "draft" : "repo") : "");
+    }
+    if (this.els.retractBtn) {
+      const kind = !entry ? "none" : (entry.origin === "draft" ? "draft" : "repo");
+      this.els.retractBtn.classList.toggle("off", kind !== "draft");
+      this.els.retractBtn.title = this.RETRACT_HINTS[kind];
     }
   },
 
@@ -811,7 +881,7 @@ const SkillFactory = {
           onclick: () => this.openDraft(draft.id),
         },
           this.el("span", { class: "sf-item-title", text: draft.title || draft.filename || draft.id }),
-          draft.published_path ? this.el("span", { class: "sf-badge pub", title: draft.published_path, text: "на стенде" }) : null,
+          this.publishedBadge(draft),
           draft.issues ? this.el("span", { class: "sf-badge err", text: draft.issues + " ✕" }) : null,
           this.el("span", { class: "sf-badge draft", text: draft.kind === "reference" ? "приём" : "рецепт" }),
         ));
@@ -829,17 +899,49 @@ const SkillFactory = {
     for (const domain of domains) {
       list.append(this.el("div", { class: "sf-group", text: this.DOMAIN_TITLES[domain] || domain }));
       for (const item of groups[domain]) {
+        const draft = item.origin === "draft";
         list.append(this.el("div", {
-          class: "sf-item" + (item.ok ? "" : " broken") + (item.path === this.state.path ? " on" : ""),
-          title: item.reason || item.path,
+          class: "sf-item" + (item.name === this.state.name ? " on" : "") + (item.visible === false ? " hidden" : ""),
+          title: this.skillHint(item),
           onclick: () => this.openCatalog(item),
         },
           this.el("span", { class: "sf-item-title", text: item.title || item.name }),
-          item.ok ? null : this.el("span", { class: "sf-badge err", text: "!" }),
+          item.visible === false ? this.el("span", { class: "sf-badge off", text: "скрыт" }) : null,
+          draft ? this.el("span", {
+            class: "sf-badge draft" + (item.overrides_repo ? " over" : ""),
+            text: this.originLabel(item) + (item.overrides_repo ? " ⇡" : ""),
+          }) : null,
           this.el("span", { class: "sf-badge " + item.kind, text: item.kind === "recipe" ? "рецепт" : "приём" }),
         ));
       }
     }
+  },
+
+  /* Подсказка к записи перечня: имя, происхождение, перекрытие и видимость. */
+  skillHint(item) {
+    const lines = [item.name, this.originLabel(item)];
+    if (item.origin === "draft" && item.overrides_repo) lines.push("черновик перекрывает версию из репозитория");
+    if (item.visible === false) lines.push("скрыт: агентам не выдаётся");
+    return lines.filter(Boolean).join(" · ");
+  },
+
+  /* Пометка опубликованного рабочего черновика. Срок берётся из перечня
+     скиллов стенда: рабочий черновик помнит только имя, под которым
+     опубликован, и после истечения черновика скилла пометка не врёт. */
+  publishedBadge(draft) {
+    if (!draft.published_name) return null;
+    const live = this.catalogEntry(draft.published_name);
+    if (live && live.origin === "draft") {
+      const until = this.untilLabel(live.expires_at);
+      return this.el("span", {
+        class: "sf-badge pub", title: draft.published_name,
+        text: "опубликован" + (until ? " до " + until : ""),
+      });
+    }
+    return this.el("span", {
+      class: "sf-badge off", title: draft.published_name + ": черновика скилла на стенде уже нет",
+      text: "срок черновика вышел",
+    });
   },
 
   /* ---------- открытие ----------
@@ -859,11 +961,12 @@ const SkillFactory = {
   async openCatalog(item, options) {
     if (!this.askedToTakeOver(options)) return false;
     try {
-      const data = await this.api("/skills/raw?path=" + encodeURIComponent(item.path));
+      const data = await this.api("/skills/raw?name=" + encodeURIComponent(item.name));
+      const kind = data.kind === "reference" ? "reference" : "recipe";
       Object.assign(this.state, {
-        path: data.path, draftId: null, aiFlow: false,
-        kind: data.suffix === ".md" ? "reference" : "recipe",
-        filename: data.path.split("/").pop(), report: null, reportFresh: false,
+        name: data.name, draftId: null, aiFlow: false, kind,
+        filename: data.name + (data.suffix || (kind === "reference" ? ".md" : ".yaml")),
+        report: null, reportFresh: false,
         reportMark: "", stale: { judge: false, council: false },
         judgement: null, councilReport: null,
       });
@@ -871,6 +974,7 @@ const SkillFactory = {
       this.renderPublishGate();
       this.clearBanner();
       this.renderList();
+      this.renderOrigin();
       this.renderChatLog([]);
       this.syncFlow();
       this.switchMode("form");
@@ -886,7 +990,7 @@ const SkillFactory = {
     try {
       const draft = await this.api("/drafts/" + id);
       Object.assign(this.state, {
-        draftId: draft.id, path: draft.source_path || null, kind: draft.kind,
+        draftId: draft.id, name: draft.source_name || draft.published_name || null, kind: draft.kind,
         filename: draft.filename || (draft.kind === "reference" ? "new_reference.md" : "new_recipe.yaml"),
         report: draft.report || null, reportFresh: !!draft.report_fresh,
         reportMark: draft.report_mark || "", stale: { judge: false, council: false },
@@ -906,6 +1010,7 @@ const SkillFactory = {
       this.restoreScoutGate(draft);
       this.syncFlow();
       this.renderList();
+      this.renderOrigin();
       this.switchMode("form");
       if (!draft.text) this.openChat();
       return true;
@@ -1406,13 +1511,13 @@ const SkillFactory = {
     await this.stream({ mode: "council", model: this.state.model, council_models: picked });
   },
 
-  /* Черновик под прогон: поток идёт по нему, а у скилла каталога черновика нет.
-     Если по этому же файлу черновик уже заводили, берём его — иначе каждое
+  /* Рабочий черновик под прогон: поток идёт по нему, а у скилла стенда его нет.
+     Если по этому же скиллу черновик уже заводили, берём его — иначе каждое
      открытие скилла плодило бы ещё один. Отвечает, есть ли теперь черновик:
      без него запускать поток некуда. */
   async ensureDraft(title) {
-    if (!this.state.draftId && this.state.path) {
-      const known = (this.state.drafts || []).find((d) => d.source_path === this.state.path);
+    if (!this.state.draftId && this.state.name) {
+      const known = (this.state.drafts || []).find((d) => d.source_name === this.state.name);
       if (known) this.state.draftId = known.id;
     }
     if (this.state.draftId) {
@@ -1421,7 +1526,7 @@ const SkillFactory = {
     }
     const draft = await this.post("/drafts", {
       kind: this.state.kind, title: this.state.filename || title,
-      source_path: this.state.path || "", text: this.state.text,
+      source_name: this.state.name || "", text: this.state.text,
     }).catch((err) => { this.banner("err", "Не удалось завести черновик: " + err.message); return null; });
     if (!draft) return false;
     this.state.draftId = draft.id;
@@ -3335,19 +3440,19 @@ const SkillFactory = {
      работаем в режиме улучшения. Черновик обязателен — чат живёт только с ним. */
   async reuseSkill(skill) {
     if (this.state.busy) return;
-    const entry = (this.state.catalog || []).find((item) => item.name === skill.name);
-    if (!entry || !entry.path) {
-      this.banner("warn", `Скилл ${skill.name} не найден в каталоге стенда — придётся писать новый.`);
+    const entry = this.catalogEntry(skill.name);
+    if (!entry) {
+      this.banner("warn", `Скилл ${skill.name} не найден среди скиллов стенда — придётся писать новый.`);
       return;
     }
     this.closeReuse();
     let created;
     try {
-      const raw = await this.api("/skills/raw?path=" + encodeURIComponent(entry.path));
+      const raw = await this.api("/skills/raw?name=" + encodeURIComponent(skill.name));
       created = await this.post("/drafts", {
-        kind: raw.suffix === ".md" ? "reference" : "recipe",
+        kind: raw.kind === "reference" ? "reference" : "recipe",
         title: skill.title || skill.name,
-        source_path: entry.path,
+        source_name: skill.name,
         text: raw.text,
       });
     } catch (err) {
@@ -3724,13 +3829,16 @@ const SkillFactory = {
     try {
       const result = await this.post("/publish", {
         filename, text: this.state.text,
-        path: this.state.path || null, draft_id: this.state.draftId || "", force: !!force,
+        source_name: this.state.name || null, draft_id: this.state.draftId || "", force: !!force,
       });
-      this.state.path = result.path;
+      this.state.name = result.skill || this.state.name;
       this.state.dirty = false;
       this.els.main.classList.remove("dirty");
-      this.banner("ok", `Опубликовано на стенде: ${result.path} (${result.action}). Скилл уже виден агентам.`);
-      this.reloadList();
+      const until = this.untilLabel(result.expires_at);
+      const action = this.PUBLISH_ACTIONS[result.action] || result.action;
+      this.banner("ok", `Опубликовано черновиком${until ? " до " + until : ""} (${action}). Скилл уже виден агентам.`
+        + (result.overrides_repo ? " Черновик перекрывает версию из репозитория." : ""));
+      await this.reloadList();
     } catch (err) {
       this.banner("err", "Публикация отклонена: " + err.message);
       this.switchMode("report");
@@ -3779,26 +3887,45 @@ const SkillFactory = {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
 
-  async remove() {
+  /* Удаление рабочего черновика Завода. Скилл на стенде не трогает: его
+     черновик снимается отдельным действием (retractSkill). */
+  async removeDraft() {
     if (!this.guardBusy()) return;
-    if (this.state.draftId && !this.state.path) {
-      if (!confirm("Удалить черновик?")) return;
-      await this.api("/drafts/" + this.state.draftId, { method: "DELETE" }).catch(() => {});
-      this.state.draftId = null;
-      this.setText("", "");
-      this.reloadList();
+    if (!this.state.draftId) {
+      this.banner("warn", "Рабочего черновика нет. Черновик скилла со стенда снимает кнопка «Снять черновик».");
       return;
     }
-    if (!this.state.path) return;
-    if (!confirm("Удалить скилл со стенда: " + this.state.path + "?")) return;
+    if (!confirm("Удалить рабочий черновик?")) return;
+    await this.api("/drafts/" + this.state.draftId, { method: "DELETE" }).catch(() => {});
+    this.state.draftId = null;
+    this.setText("", "");
+    this.reloadList();
+  },
+
+  /* Снятие черновика скилла со стенда: после него снова действует версия из
+     репозитория, если она есть. У версии из репозитория снимать нечего —
+     скрывают её ручкой видимости. Рабочий черновик остаётся. */
+  async retractSkill() {
+    if (!this.guardBusy()) return;
+    const name = this.state.name;
+    const entry = this.catalogEntry(name);
+    if (!entry || entry.origin !== "draft") {
+      this.banner("warn", this.RETRACT_HINTS[entry ? "repo" : "none"] + ".");
+      return;
+    }
+    const tail = entry.overrides_repo
+      ? " Снова будет действовать версия из репозитория."
+      : " Версии из репозитория у него нет: со стенда он пропадёт.";
+    if (!confirm("Снять черновик скилла " + name + "?" + tail)) return;
     try {
-      await this.api("/skills?path=" + encodeURIComponent(this.state.path), { method: "DELETE" });
-      this.state.path = null;
-      this.setText("", "");
-      this.banner("ok", "Скилл удалён со стенда.");
-      this.reloadList();
+      const result = await this.api("/skills?name=" + encodeURIComponent(name), { method: "DELETE" });
+      if (!result.repo_restored) this.state.name = null;
+      this.banner("ok", result.repo_restored
+        ? "Черновик снят: снова действует версия из репозитория."
+        : "Черновик снят: скилла на стенде больше нет.");
+      await this.reloadList();
     } catch (err) {
-      this.banner("err", "Удалить не вышло: " + err.message);
+      this.banner("err", "Снять черновик не вышло: " + err.message);
     }
   },
 };
